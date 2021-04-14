@@ -4,12 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
-import com.isel_5gqos.Models.Models.QosModel
+import com.isel_5gqos.Models.InternetViewModel
+import com.isel_5gqos.Models.QosModel
 import com.isel_5gqos.R
 
 const val USER = "USER"
@@ -27,14 +26,12 @@ class MainActivity : AppCompatActivity() {
 
         //val text = findViewById<TextView>(R.id.text)
 
-        //val model = InternetModel()
+        val model2 = InternetViewModel()
 
-        /**model.observe(this) {
-            //text.text = it.result
-            text.text = it.avg.toString()
-        }**/
+        model2.observe(this) {
+        }
 
-        //model.getResults()
+        model2.getResults("google.com",25)
 
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
@@ -42,35 +39,27 @@ class MainActivity : AppCompatActivity() {
         val username = findViewById<TextInputEditText>(R.id.username_edit_text)
         val password = findViewById<TextInputEditText>(R.id.password_edit_text)
 
-        username.addTextChangedListener {
-            if(it!!.isNotEmpty() && password.text!!.isNotEmpty())
-                loginButton.isEnabled = true
-        }
-
-        username.addTextChangedListener {
-            if(it!!.isNotEmpty() && username.text!!.isNotEmpty())
-                loginButton.isEnabled = true
-        }
-
-        loginButton.isEnabled = false
-
         loginButton.setOnClickListener {
             val user = username.text.toString()
             val pass = password.text.toString()
 
-            val login = model.login(user, pass)
+            if(pass.isNullOrBlank() || user.isNullOrBlank()) {
+                Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
 
-            if(login){
-                val intent = Intent(this,DashboardActivity::class.java)
+            }
+            else{
+                if(model.login(user, pass)){
+                    val intent = Intent(this,DashboardActivity::class.java)
 
-                intent.putExtra(USER,username.text.toString())
-                intent.putExtra(PASS,password.text.toString())
+                    intent.putExtra(USER,username.text.toString())
+                    intent.putExtra(PASS,password.text.toString())
 
-                startActivity(intent)
-            } else {
-                username.setText("")
-                password.setText("")
-                Toast.makeText(this,"Invalid Credentials",Toast.LENGTH_SHORT).show()
+                    startActivity(intent)
+                } else {
+                    username.setText("")
+                    password.setText("")
+                    Toast.makeText(this,"Invalid Credentials",Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

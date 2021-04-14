@@ -1,4 +1,4 @@
-package com.isel_5gqos.Models.Models
+package com.isel_5gqos.Models
 
 import androidx.lifecycle.ViewModel
 
