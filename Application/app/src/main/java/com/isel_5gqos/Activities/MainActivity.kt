@@ -26,13 +26,6 @@ class MainActivity : AppCompatActivity() {
 
         //val text = findViewById<TextView>(R.id.text)
 
-        val model2 = InternetViewModel()
-
-        model2.observe(this) {
-        }
-
-        model2.getResults("google.com",25)
-
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
 
@@ -43,27 +36,25 @@ class MainActivity : AppCompatActivity() {
             val user = username.text.toString()
             val pass = password.text.toString()
 
-            if(pass.isNullOrBlank() || user.isNullOrBlank()) {
+            if (pass.isBlank() || user.isBlank()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
+            } else {
+                if (model.login(user, pass)) {
+                    val intent = Intent(this, DashboardActivity::class.java)
 
-            }
-            else{
-                if(model.login(user, pass)){
-                    val intent = Intent(this,DashboardActivity::class.java)
-
-                    intent.putExtra(USER,username.text.toString())
-                    intent.putExtra(PASS,password.text.toString())
+                    intent.putExtra(USER, username.text.toString())
+                    intent.putExtra(PASS, password.text.toString())
 
                     startActivity(intent)
                 } else {
                     username.setText("")
                     password.setText("")
-                    Toast.makeText(this,"Invalid Credentials",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        cancelButton.setOnClickListener{
+        cancelButton.setOnClickListener {
             username.setText("")
             password.setText("")
         }
