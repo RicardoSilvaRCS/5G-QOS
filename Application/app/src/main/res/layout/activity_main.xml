@@ -16,14 +16,11 @@
         android:padding="24dp"
         android:paddingTop="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
+            android:layout_width="400dp"
+            android:layout_height="350dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="132dp"
-            android:text="5G QOS"
-            android:textAppearance="@style/TextAppearance.Shrine.Title"
-            android:textColor="@color/black" />
+            app:srcCompat="@mipmap/logo_launcher_foreground" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Shrine.TextInputLayout"

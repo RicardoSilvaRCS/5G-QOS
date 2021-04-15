@@ -4,10 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
-import com.isel_5gqos.Models.InternetViewModel
 import com.isel_5gqos.Models.QosModel
 import com.isel_5gqos.R
 
@@ -24,7 +24,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //val text = findViewById<TextView>(R.id.text)
+        //Hides Action Bar
+        val actionBar: ActionBar? = supportActionBar
+        actionBar?.hide()
 
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
