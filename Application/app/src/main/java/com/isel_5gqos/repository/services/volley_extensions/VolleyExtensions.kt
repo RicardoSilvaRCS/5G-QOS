@@ -1,10 +1,17 @@
 package com.isel_5gqos.repository.services
 
+import com.android.volley.NetworkResponse
+import com.android.volley.ParseError
 import com.android.volley.Response
 import com.android.volley.VolleyError
+import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.JsonRequest
 import com.isel_5gqos.repository.services.volley_extensions.IRequestHeader
+import org.json.JSONException
 import org.json.JSONObject
+import java.io.UnsupportedEncodingException
+
 
 class VolleyExtensions {
     companion object {
@@ -42,6 +49,39 @@ class JsonObjectRequestBuilder {
                 Response.ErrorListener(onError)
             ) {
                 override fun getHeaders(): MutableMap<String, String> = getHeaders()
+
+                //This is required because the response from server comes empty and the normal parser can't parse the response
+                override fun parseNetworkResponse(response: NetworkResponse): Response<JSONObject> {
+                    var networkResponse = response
+                    try {
+                        if (networkResponse.data.isEmpty()) {
+                            val responseData = "{}".toByteArray(charset("UTF8"))
+                            networkResponse = NetworkResponse(
+                                networkResponse.statusCode, responseData,
+                                networkResponse.notModified, networkResponse.networkTimeMs, networkResponse.allHeaders
+                            )
+                        }
+                    } catch (e: UnsupportedEncodingException) {
+                        e.printStackTrace()
+                    }
+
+                    return try {
+                        val jsonString = String(
+                            networkResponse.data
+                        )
+
+                        val jsonResponse = JSONObject(jsonString)
+                        jsonResponse.put("headers", JSONObject(networkResponse.headers as Map<*, *>))
+
+                        Response.success(
+                            jsonResponse, HttpHeaderParser.parseCacheHeaders(networkResponse)
+                        )
+                    } catch (e: UnsupportedEncodingException) {
+                        Response.error<JSONObject>(ParseError(e))
+                    } catch (je: JSONException) {
+                        Response.error<JSONObject>(ParseError(je))
+                    }
+                }
             }
         }
     }
