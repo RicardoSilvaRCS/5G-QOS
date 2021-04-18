@@ -4,15 +4,10 @@ import android.app.ActionBar
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
-import androidx.core.view.marginLeft
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.isel_5gqos.Models.InternetViewModel
-import com.isel_5gqos.Models.QosModel
 import com.isel_5gqos.R
 
 class DashboardActivity : AppCompatActivity() {

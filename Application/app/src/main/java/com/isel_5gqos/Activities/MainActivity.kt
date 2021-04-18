@@ -8,7 +8,7 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
-import com.isel_5gqos.Models.QosModel
+import com.isel_5gqos.Models.QosViewModel
 import com.isel_5gqos.R
 
 const val USER = "USER"
@@ -17,16 +17,12 @@ const val PASS = "PASS"
 class MainActivity : AppCompatActivity() {
 
     val model by lazy {
-        ViewModelProviders.of(this)[QosModel::class.java]
+        ViewModelProviders.of(this)[QosViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        //Hides Action Bar
-        val actionBar: ActionBar? = supportActionBar
-        actionBar?.hide()
 
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
@@ -41,7 +37,7 @@ class MainActivity : AppCompatActivity() {
             if (pass.isBlank() || user.isBlank()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
             } else {
-                if (model.login(user, pass)) {
+                if (model.login(user, pass) != null) {
                     val intent = Intent(this, DashboardActivity::class.java)
 
                     intent.putExtra(USER, username.text.toString())
