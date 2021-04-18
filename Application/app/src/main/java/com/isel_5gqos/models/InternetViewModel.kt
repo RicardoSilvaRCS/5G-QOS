@@ -1,4 +1,4 @@
-package com.isel_5gqos.Models
+package com.isel_5gqos.models
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
@@ -8,13 +8,13 @@ import com.qiniu.android.netdiag.Ping
 
 class InternetViewModel : ViewModel() {
 
-    val liveData: MutableLiveData<com.isel_5gqos.Models.Ping> by lazy {
-        MutableLiveData<com.isel_5gqos.Models.Ping>()
+    val liveData: MutableLiveData<com.isel_5gqos.models.Ping> by lazy {
+        MutableLiveData<com.isel_5gqos.models.Ping>()
     }
 
-    val pingResult: com.isel_5gqos.Models.Ping get() = liveData.value ?: Ping(0, "")
+    val pingResult: com.isel_5gqos.models.Ping get() = liveData.value ?: Ping(0, "")
 
-    fun observe(owner: LifecycleOwner, observer: (com.isel_5gqos.Models.Ping) -> Unit) {
+    fun observe(owner: LifecycleOwner, observer: (com.isel_5gqos.models.Ping) -> Unit) {
         liveData.observe(owner, androidx.lifecycle.Observer { observer(it) })
     }
 

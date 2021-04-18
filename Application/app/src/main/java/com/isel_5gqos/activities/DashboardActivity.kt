@@ -1,4 +1,4 @@
-package com.isel_5gqos.Activities
+package com.isel_5gqos.activities
 
 import android.app.ActionBar
 import android.os.Bundle
@@ -7,7 +7,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
-import com.isel_5gqos.Models.InternetViewModel
+import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.R
 
 class DashboardActivity : AppCompatActivity() {

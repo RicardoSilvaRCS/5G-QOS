@@ -6,16 +6,17 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-
+        android:name=".common.QoSApp"
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/logo_launcher_foreground"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/logo_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/Theme.Isel_5GQos">
-        <activity android:name=".Activities.DashboardActivity"></activity>
+        <activity android:name=".activities.DashboardActivity" />
         <activity
-            android:name=".Activities.MainActivity"
+            android:name=".activities.MainActivity"
             android:theme="@style/Laucher"
             android:screenOrientation="portrait">
             <intent-filter>

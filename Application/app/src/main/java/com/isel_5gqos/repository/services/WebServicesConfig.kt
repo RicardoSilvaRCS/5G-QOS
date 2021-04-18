@@ -1,4 +1,4 @@
-package com.isel_5gqos.Repository.Services
+package com.isel_5gqos.repository.services
 
 const val MANAGEMENT_SYSTEM_URL = "http://192.68.221.41:8080/mobix"
 

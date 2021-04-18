@@ -1,28 +1,31 @@
-package com.isel_5gqos.Activities
+package com.isel_5gqos.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
-import com.isel_5gqos.Models.QosViewModel
+import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.R
+import com.isel_5gqos.factories.QosFactory
 
 const val USER = "USER"
 const val PASS = "PASS"
 
 class MainActivity : AppCompatActivity() {
 
-    val model by lazy {
-        ViewModelProviders.of(this)[QosViewModel::class.java]
+    private lateinit var qosFactory: QosFactory
+    private val model:QosViewModel by lazy {
+        ViewModelProviders.of(this,qosFactory)[QosViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        qosFactory = QosFactory(savedInstanceState)
 
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)

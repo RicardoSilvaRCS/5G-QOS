@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.DashboardActivity">
+    tools:context=".activities.DashboardActivity">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -48,6 +48,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/linearLayout"
+        app:layout_constraintBottom_toTopOf="@id/button"
+        app:layout_constraintStart_toEndOf="@id/tries"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 
     <HorizontalScrollView

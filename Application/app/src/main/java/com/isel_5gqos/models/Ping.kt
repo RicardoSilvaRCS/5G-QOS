@@ -1,4 +1,4 @@
-package com.isel_5gqos.Models
+package com.isel_5gqos.models
 
 data class Ping(
     val numberOfTries: Int,
