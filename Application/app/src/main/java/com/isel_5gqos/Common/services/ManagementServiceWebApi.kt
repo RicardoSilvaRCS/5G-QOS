@@ -1,4 +1,4 @@
-package com.isel_5gqos.repository.services
+package com.isel_5gqos.Common.services
 
 import android.content.Context
 import android.os.AsyncTask
@@ -8,7 +8,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
 import com.isel_5gqos.dtos.UserDto
-import com.isel_5gqos.repository.services.volley_extensions.BasicAuthHeader
+import com.isel_5gqos.Common.services.volley_extensions.BasicAuthHeader
 
 class ManagementServiceWebApi(val ctx: Context) {
 

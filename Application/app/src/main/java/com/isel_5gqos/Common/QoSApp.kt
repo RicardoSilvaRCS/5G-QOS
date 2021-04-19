@@ -1,7 +1,7 @@
 package com.isel_5gqos.common
 
 import android.app.Application
-import com.isel_5gqos.repository.services.ManagementServiceWebApi
+import com.isel_5gqos.Common.services.ManagementServiceWebApi
 
 class QoSApp : Application() {
     companion object {

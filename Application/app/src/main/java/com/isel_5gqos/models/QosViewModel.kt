@@ -5,7 +5,7 @@ import android.widget.Toast
 import com.android.volley.NoConnectionError
 import com.isel_5gqos.Common.TAG
 import com.isel_5gqos.dtos.UserDto
-import com.isel_5gqos.repository.services.ManagementServiceWebApi
+import com.isel_5gqos.Common.services.ManagementServiceWebApi
 
 class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : AbstractModel<UserDto>({ UserDto("", "") }) {
     companion object {

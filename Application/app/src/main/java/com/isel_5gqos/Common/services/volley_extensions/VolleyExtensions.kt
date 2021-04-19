@@ -1,4 +1,4 @@
-package com.isel_5gqos.repository.services
+package com.isel_5gqos.Common.services
 
 import com.android.volley.NetworkResponse
 import com.android.volley.ParseError
@@ -6,8 +6,7 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.JsonRequest
-import com.isel_5gqos.repository.services.volley_extensions.IRequestHeader
+import com.isel_5gqos.Common.services.volley_extensions.IRequestHeader
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
