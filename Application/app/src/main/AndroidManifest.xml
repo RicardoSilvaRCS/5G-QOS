@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.isel_5gqos">
+    package="com.isel5gqos">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".common.QoSApp"
+        android:name="com.isel5gqos.Common.QoSApp"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/logo_launcher_foreground"
@@ -14,9 +14,9 @@
         android:roundIcon="@mipmap/logo_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/Theme.Isel_5GQos">
-        <activity android:name=".activities.DashboardActivity" />
+        <activity android:name="com.isel5gqos.activities.DashboardActivity" />
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.isel5gqos.activities.MainActivity"
             android:theme="@style/Laucher"
             android:screenOrientation="portrait">
             <intent-filter>
