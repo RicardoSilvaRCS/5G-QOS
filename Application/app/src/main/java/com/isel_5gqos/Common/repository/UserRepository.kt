@@ -3,7 +3,8 @@ package com.isel_5gqos.common.repository
 import android.content.ContentValues.TAG
 import android.util.Base64
 import android.util.Log
-import com.isel_5gqos.common.QoSApp.Companion.api
+import com.isel_5gqos.common.   QoSApp.Companion.api
+
 import com.isel_5gqos.dtos.UserDto
 import retrofit2.Call
 import retrofit2.Callback
@@ -13,7 +14,7 @@ class UserRepository {
 
     fun login(username:String,password:String) {
 
-        val authHeader = "Basic ${Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n","")}"
+        val authHeader = "Basic ${Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT)}"
         val call = api.login(authHeader)
 
         call.enqueue(UserCallback())

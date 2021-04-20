@@ -5,7 +5,7 @@ import com.isel_5gqos.Common.services.MANAGEMENT_SYSTEM_URL
 import com.isel_5gqos.Common.services.ManagementServiceWebApi
 import com.isel_5gqos.common.services.api.Service
 import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 
 class QoSApp : Application() {
     companion object {
@@ -18,7 +18,7 @@ class QoSApp : Application() {
         msWebApi = ManagementServiceWebApi(applicationContext)
 
         val retrofit = Retrofit.Builder().baseUrl(MANAGEMENT_SYSTEM_URL)
-            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
         api = retrofit.create(Service::class.java)
     }

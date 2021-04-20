@@ -17,7 +17,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
         Log.v(TAG, "*Logging In*")
 
-        UserRepository().login(username, password)
+        UserRepository().login("afonso.nobre@isel.pt", "i9bif4fGcmEn")//username, password)
         /*managementSystemApi.login("afonso.nobre@isel.pt", "i9bif4fGcmEn", { userDto ->
             Log.v(TAG, "*Logging is valid!*")
 
