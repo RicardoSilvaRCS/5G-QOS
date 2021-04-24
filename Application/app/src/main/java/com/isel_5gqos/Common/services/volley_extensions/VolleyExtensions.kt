@@ -64,6 +64,10 @@ class JsonObjectRequestBuilder {
                         e.printStackTrace()
                     }
 
+                    return returnResponseWithHeaders(networkResponse)
+                }
+
+                fun returnResponseWithHeaders(networkResponse: NetworkResponse): Response<JSONObject> {
                     return try {
                         val jsonString = String(
                             networkResponse.data
@@ -81,6 +85,7 @@ class JsonObjectRequestBuilder {
                         Response.error<JSONObject>(ParseError(je))
                     }
                 }
+
             }
         }
     }

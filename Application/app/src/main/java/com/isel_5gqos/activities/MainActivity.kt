@@ -12,7 +12,7 @@ import com.isel_5gqos.R
 import com.isel_5gqos.factories.QosFactory
 
 const val USER = "USER"
-const val PASS = "PASS"
+const val TOKEN = "TOKEN"
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,17 +40,14 @@ class MainActivity : AppCompatActivity() {
             if (pass.isBlank() || user.isBlank()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
             } else {
-                if (model.login(user, pass) != null) {
+                model.login(user,pass)
+                model.observe(this) {
                     val intent = Intent(this, DashboardActivity::class.java)
 
-                    intent.putExtra(USER, username.text.toString())
-                    intent.putExtra(PASS, password.text.toString())
+                    intent.putExtra(TOKEN, it.userToken)
+                    intent.putExtra(USER, it.username)
 
                     startActivity(intent)
-                } else {
-                    username.setText("")
-                    password.setText("")
-                    Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show()
                 }
             }
         }

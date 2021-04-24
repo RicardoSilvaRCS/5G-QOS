@@ -21,7 +21,7 @@ class DashboardActivity : AppCompatActivity() {
         setContentView(R.layout.activity_dashboard2)
 
         val userName = intent.getStringExtra(USER)
-        val password = intent.getStringExtra(PASS)
+        val token = intent.getStringExtra(TOKEN)
         val tries = findViewById<TextView>(R.id.tries)
         findViewById<Button>(R.id.button).setOnClickListener {
             model.getResults("google.com", 25)
@@ -103,6 +103,6 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         val person = findViewById<TextView>(R.id.person)
-        person.text = "${userName} ${password}"
+        person.text = "${userName} ${token}"
     }
 }
