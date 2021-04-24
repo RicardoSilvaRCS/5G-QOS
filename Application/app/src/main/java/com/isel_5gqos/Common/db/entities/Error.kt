@@ -5,10 +5,9 @@ import androidx.room.PrimaryKey
 import java.sql.Timestamp
 import java.util.*
 
-@Entity(tableName = "Errors")
-class Errors (
-    @PrimaryKey
-    val id : UUID,
+@Entity(tableName = "Errors",primaryKeys = ["id"])
+class Error (
+    val id : String,
     val description: String,
     val timestamp: Timestamp
 )

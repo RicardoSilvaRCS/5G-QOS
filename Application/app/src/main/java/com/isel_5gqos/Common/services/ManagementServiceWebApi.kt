@@ -35,6 +35,12 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
+    private fun <T,R> executeAsyncTaskGeneric(response: JSONObject, function:(T) -> R, param:T, onSuccess: (R) -> Unit): AsyncTask<T, Int, R> =
+        object : AsyncTask<T,Int,R>(){
+            override fun doInBackground(vararg params: T): R = function(param)
+            override fun onPostExecute(result: R) = onSuccess(result)
+        }
+
     private fun executeAsyncTask(response: JSONObject, username: String, onSuccess: (UserDto) -> Unit) =
         object : AsyncTask<String, Int, UserDto>() {
             override fun doInBackground(vararg params: String?): UserDto =

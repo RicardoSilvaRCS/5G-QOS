@@ -1,8 +1,11 @@
 package com.isel_5gqos.models
 
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.isel_5gqos.Common.QoSApp
+import com.isel_5gqos.Common.db.entities.ThroughPut
 import com.qiniu.android.netdiag.Output
 import com.qiniu.android.netdiag.Ping
 
@@ -17,6 +20,8 @@ class InternetViewModel : ViewModel() {
     fun observe(owner: LifecycleOwner, observer: (com.isel_5gqos.models.Ping) -> Unit) {
         liveData.observe(owner, androidx.lifecycle.Observer { observer(it) })
     }
+
+    fun getThroughputResultsFromDb(): LiveData<List<ThroughPut>> = QoSApp.db.throughPutDao().get(QoSApp.sessionId)
 
     fun getResults(url: String, numberOfTries: Int) {
 

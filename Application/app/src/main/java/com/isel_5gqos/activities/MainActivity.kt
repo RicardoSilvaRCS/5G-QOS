@@ -7,9 +7,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
+import com.isel_5gqos.Common.QoSApp
+import com.isel_5gqos.Common.db.asyncTask
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.R
+import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.factories.QosFactory
+import java.sql.Date
+import java.sql.Timestamp
 
 const val USER = "USER"
 const val TOKEN = "TOKEN"
@@ -32,6 +37,16 @@ class MainActivity : AppCompatActivity() {
 
         val username = findViewById<TextInputEditText>(R.id.username_edit_text)
         val password = findViewById<TextInputEditText>(R.id.password_edit_text)
+
+        val session = SessionDto(
+            id = QoSApp.sessionId,
+            sessionName = "test",
+            username = "ricardo.silva@isel.pt",
+            beginDate = Timestamp(System.currentTimeMillis()),
+            endDate = Timestamp(System.currentTimeMillis() + (60*1000).toLong())
+        )
+
+        asyncTask({ QoSApp.db.sessionDao().insert(session) }, {})
 
         loginButton.setOnClickListener {
             val user = username.text.toString()

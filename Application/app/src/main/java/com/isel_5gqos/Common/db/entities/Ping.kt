@@ -3,10 +3,9 @@ package com.isel_5gqos.Common.db.entities
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import java.sql.Timestamp
 
 @Entity(
-    tableName = "ThroughPuts",
+    tableName = "Pings",
     foreignKeys = [
         ForeignKey(
             entity = Session::class,
@@ -16,15 +15,16 @@ import java.sql.Timestamp
         )
     ],
     primaryKeys = [
-        "regId"
+        "sessionId"
     ]
 )
 
-class ThroughPut(
-    val regId: String,
-    val txResult: Long,
-    val rxResult: Long,
-    val sessionId: String,
-    val timestamp: Timestamp
+class Ping(
+    val id: String,
+    val sessionId:String,
+    val avg:Int,
+    val max:Int,
+    val min:Int,
+    val nrOfPackets:Int,
+    val url:String
 )
-

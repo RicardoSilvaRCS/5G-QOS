@@ -5,10 +5,9 @@ import androidx.room.PrimaryKey
 import java.sql.Timestamp
 import java.util.*
 
-@Entity(tableName = "Users")
+@Entity(tableName = "Users",primaryKeys = ["regId"])
 class User (
-    @PrimaryKey
-    val regId : UUID,
+    val regId : String,
     val username : String,
     val token : String,
     val isValid : Boolean,

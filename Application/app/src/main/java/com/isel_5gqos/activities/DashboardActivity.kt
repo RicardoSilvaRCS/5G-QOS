@@ -2,14 +2,20 @@ package com.isel_5gqos.activities
 
 import android.app.ActionBar
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
+import com.isel_5gqos.Common.QoSApp
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.R
 import com.isel_5gqos.Workers.scheduleThroughPutBackgroundWork
+import androidx.lifecycle.Observer
+import com.isel_5gqos.Common.db.entities.ThroughPut
+import com.isel_5gqos.Common.TAG
+import com.isel_5gqos.Common.db.asyncTask
 
 class DashboardActivity : AppCompatActivity() {
     private val model by lazy {
@@ -32,7 +38,10 @@ class DashboardActivity : AppCompatActivity() {
         val linearLayout = findViewById<LinearLayout>(R.id.results)
 
         linearLayout.orientation = LinearLayout.HORIZONTAL
-        scheduleThroughPutBackgroundWork()
+
+        //TODO: Não fui eu que fiz isto :) Isto não vai ficar assim
+        scheduleThroughPutBackgroundWork(QoSApp.sessionId.toString())
+
         model.observe(this) {
             if(it.pingInfos.size > 0) {
                 val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,ActionBar.LayoutParams.WRAP_CONTENT)
@@ -102,6 +111,18 @@ class DashboardActivity : AppCompatActivity() {
                 linearLayout.addView(verticalLayout)
             }
         }
+
+        asyncTask(
+            {
+                Thread.sleep(10000)
+                model.getThroughputResultsFromDb().observe(this, Observer{
+                    it.forEach { throughput ->
+                        Log.v(TAG,throughput.toString())
+                    }
+                })
+            },
+            {}
+        )
 
         val person = findViewById<TextView>(R.id.person)
         person.text = "${userName} ${token}"
