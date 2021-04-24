@@ -1,4 +1,4 @@
-package com.isel_5gqos.common
+package com.isel_5gqos.Common
 
 import android.app.Application
 import com.isel_5gqos.Common.services.ManagementServiceWebApi

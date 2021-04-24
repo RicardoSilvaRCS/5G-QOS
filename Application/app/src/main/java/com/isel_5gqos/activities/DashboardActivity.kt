@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.R
+import com.isel_5gqos.Workers.scheduleThroughPutBackgroundWork
 
 class DashboardActivity : AppCompatActivity() {
     private val model by lazy {
@@ -31,7 +32,7 @@ class DashboardActivity : AppCompatActivity() {
         val linearLayout = findViewById<LinearLayout>(R.id.results)
 
         linearLayout.orientation = LinearLayout.HORIZONTAL
-
+        scheduleThroughPutBackgroundWork()
         model.observe(this) {
             if(it.pingInfos.size > 0) {
                 val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,ActionBar.LayoutParams.WRAP_CONTENT)

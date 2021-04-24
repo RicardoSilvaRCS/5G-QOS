@@ -1,9 +1,7 @@
 package com.isel_5gqos.models
 
-import android.util.Log
 import android.widget.Toast
 import com.android.volley.NoConnectionError
-import com.isel_5gqos.Common.TAG
 import com.isel_5gqos.Common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
 
@@ -11,8 +9,8 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
     fun login(username: String, password: String) {
         managementSystemApi.login(
-            username = username,
-            password = password,
+            username = "ricardo.silva@isel.pt",
+            password = "maiZm3jiBPmW",
             onSuccess = { userDto ->
                 //TODO: Store user info in db
                 liveData.postValue(userDto)
