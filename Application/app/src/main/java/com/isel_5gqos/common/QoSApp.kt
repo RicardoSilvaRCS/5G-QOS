@@ -18,8 +18,4 @@ class QoSApp : Application() {
         msWebApi = ManagementServiceWebApi(applicationContext)
         db = Room.databaseBuilder(applicationContext, QosDb::class.java, "Qos-Db").build()
     }
-
-    override fun onDestroy() {
-
-    }
 }
