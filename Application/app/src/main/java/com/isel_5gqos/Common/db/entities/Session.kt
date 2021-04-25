@@ -1,5 +1,6 @@
 package com.isel_5gqos.Common.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
@@ -12,7 +13,7 @@ import java.util.*
         ForeignKey(
             entity = User::class,
             parentColumns = arrayOf("username"),
-            childColumns = arrayOf("username"),
+            childColumns = arrayOf("user"),
             onDelete = ForeignKey.CASCADE
         )
     ],
@@ -24,7 +25,8 @@ import java.util.*
 class Session(
     val id: String,
     val sessionName: String,
-    val username: String,
-    val beginDate: Timestamp,
-    val endDate: Timestamp
+    @ColumnInfo(name= "user", index = true)
+    val user: String,
+    val beginDate: Long,
+    val endDate: Long
 )

@@ -40,7 +40,7 @@ class DashboardActivity : AppCompatActivity() {
         linearLayout.orientation = LinearLayout.HORIZONTAL
 
         //TODO: Não fui eu que fiz isto :) Isto não vai ficar assim
-        scheduleThroughPutBackgroundWork(QoSApp.sessionId.toString())
+        scheduleThroughPutBackgroundWork(QoSApp.sessionId)
 
         model.observe(this) {
             if(it.pingInfos.size > 0) {
@@ -112,17 +112,12 @@ class DashboardActivity : AppCompatActivity() {
             }
         }
 
-        asyncTask(
-            {
-                Thread.sleep(10000)
-                model.getThroughputResultsFromDb().observe(this, Observer{
-                    it.forEach { throughput ->
-                        Log.v(TAG,throughput.toString())
-                    }
-                })
-            },
-            {}
-        )
+
+        model.getThroughputResultsFromDb().observe(this, Observer{
+            it.forEach { throughput ->
+                Log.v(TAG,"${throughput.rxResult} TX Bytes , ${throughput.txResult} tx Bytes")
+            }
+        })
 
         val person = findViewById<TextView>(R.id.person)
         person.text = "${userName} ${token}"

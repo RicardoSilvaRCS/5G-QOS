@@ -8,6 +8,7 @@ import com.isel_5gqos.Common.QoSApp
 import com.isel_5gqos.Common.QoSApp.Companion.db
 import com.isel_5gqos.Common.SESSION_ID
 import com.isel_5gqos.Common.TAG
+import com.isel_5gqos.Common.db.entities.ThroughPut
 import com.isel_5gqos.dtos.ThroughPutDto
 import java.sql.Timestamp
 import java.util.*
@@ -31,19 +32,17 @@ class ThroughPutWorker(context: Context, private val workerParams: WorkerParamet
 
             //TODO: Go to DB
             try{
-                val throughPut = ThroughPutDto(
+                val throughPut = ThroughPut(
                     regId = UUID.randomUUID().toString(),
-                    txResult = newCountTx-oldCountRX,
+                    txResult = newCountTx - oldCountTX,
                     rxResult = newCountRx-oldCountRX,
                     sessionId = inputData.getString(SESSION_ID).toString(),
-                    timestamp = Timestamp(System.currentTimeMillis())
+                    timestamp = System.currentTimeMillis()
                 )
+
                 //This is only possible because this code is being executed in background on a worker thread from the
                 // thread pool. When using the main thread, the insert must be done with an AsyncTask
                 db.throughPutDao().insert(throughPut)
-
-                Log.v(TAG,"${newCountRx-oldCountRX} Rx Bytes")
-                Log.v(TAG,"${newCountTx - oldCountTX} Tx Bytes")
 
             }catch (ex : Exception) {
 

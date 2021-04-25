@@ -2,7 +2,6 @@ package com.isel_5gqos.Common.db.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "Pings",
@@ -21,10 +20,10 @@ import androidx.room.PrimaryKey
 
 class Ping(
     val id: String,
-    val sessionId:String,
-    val avg:Int,
-    val max:Int,
-    val min:Int,
-    val nrOfPackets:Int,
-    val url:String
+    val sessionId: String,
+    val avg: Int,
+    val max: Int,
+    val min: Int,
+    val nrOfPackets: Int,
+    val url: String
 )

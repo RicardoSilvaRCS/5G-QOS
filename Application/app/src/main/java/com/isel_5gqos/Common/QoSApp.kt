@@ -17,6 +17,6 @@ class QoSApp : Application() {
     override fun onCreate() {
         super.onCreate()
         msWebApi = ManagementServiceWebApi(applicationContext)
-        db = Room.databaseBuilder(this,QosDb::class.java,"5GQoSDb").build()
+        db = Room.databaseBuilder(applicationContext,QosDb::class.java,"Qos-Db").build()
     }
 }

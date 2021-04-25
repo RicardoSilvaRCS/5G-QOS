@@ -1,23 +1,20 @@
 package com.isel_5gqos.Common.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
+import com.isel_5gqos.Common.db.entities.Session
 import com.isel_5gqos.Common.db.entities.ThroughPut
-import com.isel_5gqos.dtos.SessionDto
-import com.isel_5gqos.dtos.ThroughPutDto
 import java.util.*
 
+@Dao
 interface SessionDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(vararg sessionDto : SessionDto)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(vararg session : Session)
 
     @Delete()
-    fun delete(session: SessionDto)
+    fun delete(session: Session)
 
     @Query("Select * from Sessions where id = :session")
-    fun get(session: UUID): LiveData<List<ThroughPut>>
+    fun get(session: String): LiveData<List<Session>>
 }
