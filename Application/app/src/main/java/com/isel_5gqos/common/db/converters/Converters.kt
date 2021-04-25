@@ -1,4 +1,4 @@
-package com.isel_5gqos.Common.db.converters
+package com.isel_5gqos.common.db.converters
 
 import androidx.room.TypeConverter
 import java.util.*

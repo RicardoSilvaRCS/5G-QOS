@@ -1,25 +1,29 @@
 package com.isel_5gqos.activities
 
 import android.app.ActionBar
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProviders
-import com.isel_5gqos.Common.QoSApp
-import com.isel_5gqos.models.InternetViewModel
-import com.isel_5gqos.R
-import com.isel_5gqos.Workers.scheduleThroughPutBackgroundWork
 import androidx.lifecycle.Observer
-import com.isel_5gqos.Common.db.entities.ThroughPut
-import com.isel_5gqos.Common.TAG
-import com.isel_5gqos.Common.db.asyncTask
+import androidx.lifecycle.ViewModelProviders
+import com.isel_5gqos.R
+import com.isel_5gqos.common.QoSApp
+import com.isel_5gqos.common.TAG
+import com.isel_5gqos.models.InternetViewModel
+import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.workers.scheduleThroughPutBackgroundWork
 
 class DashboardActivity : AppCompatActivity() {
     private val model by lazy {
         ViewModelProviders.of(this)[InternetViewModel::class.java]
+    }
+
+    private val testModel by lazy {
+        ViewModelProviders.of(this)[TestViewModel::class.java]
     }
 
     var nrOfTests = 0
@@ -27,9 +31,26 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
 
-        val userName = intent.getStringExtra(USER)
-        val token = intent.getStringExtra(TOKEN)
+        val userName = intent.getStringExtra(USER)?.toString() ?: ""
+
+        /**Create new Session*/
+
+        val createButton = findViewById<Button>(R.id.createSession)
+        val deleteButton = findViewById<Button>(R.id.endSession)
+
+        createButton.setOnClickListener {
+            testModel.startSession(userName)
+            Log.v(TAG,"Started session")
+        }
+
+        deleteButton.setOnClickListener {
+            testModel.endSession()
+            Log.v(TAG,"Finished session")
+
+        }
+
         val tries = findViewById<TextView>(R.id.tries)
+
         findViewById<Button>(R.id.button).setOnClickListener {
             model.getResults("google.com", 25)
             tries.text = (++nrOfTests).toString()
@@ -39,15 +60,13 @@ class DashboardActivity : AppCompatActivity() {
 
         linearLayout.orientation = LinearLayout.HORIZONTAL
 
-        //TODO: Não fui eu que fiz isto :) Isto não vai ficar assim
-        scheduleThroughPutBackgroundWork(QoSApp.sessionId)
-
+        /**Linear layout to make ping results view*/
         model.observe(this) {
-            if(it.pingInfos.size > 0) {
-                val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,ActionBar.LayoutParams.WRAP_CONTENT)
-                layoutParams.setMargins(5,0,0,0)
-                val layoutParamsV = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,ActionBar.LayoutParams.WRAP_CONTENT)
-                layoutParamsV.setMargins(0,5,0,0)
+            if (it.pingInfos.size > 0) {
+                val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT)
+                layoutParams.setMargins(5, 0, 0, 0)
+                val layoutParamsV = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT)
+                layoutParamsV.setMargins(0, 5, 0, 0)
 
                 val verticalLayout = LinearLayout(this)
                 verticalLayout.orientation = LinearLayout.VERTICAL
@@ -113,13 +132,7 @@ class DashboardActivity : AppCompatActivity() {
         }
 
 
-        model.getThroughputResultsFromDb().observe(this, Observer{
-            it.forEach { throughput ->
-                Log.v(TAG,"${throughput.rxResult} TX Bytes , ${throughput.txResult} tx Bytes")
-            }
-        })
-
         val person = findViewById<TextView>(R.id.person)
-        person.text = "${userName} ${token}"
+        person.text = userName
     }
 }

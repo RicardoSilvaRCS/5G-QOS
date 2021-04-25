@@ -1,11 +1,8 @@
-package com.isel_5gqos.Common.db.entities
+package com.isel_5gqos.common.db.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
-import java.sql.Timestamp
-import java.util.*
 
 @Entity(
     tableName = "Sessions",
@@ -25,7 +22,7 @@ import java.util.*
 class Session(
     val id: String,
     val sessionName: String,
-    @ColumnInfo(name= "user", index = true)
+    @ColumnInfo(name = "user", index = true)
     val user: String,
     val beginDate: Long,
     val endDate: Long

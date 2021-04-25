@@ -1,19 +1,18 @@
-package com.isel_5gqos.Common.db.dao
+package com.isel_5gqos.common.db.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.isel_5gqos.Common.db.entities.Ping
-import java.util.*
+import com.isel_5gqos.common.db.entities.Ping
 
 @Dao
 interface PingDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun addNewPing(vararg pings:Ping)
+    fun addNewPing(vararg pings: Ping)
 
     @Query("Select * from Pings where sessionId=:sessionId")
-    fun getPingsBySessionId(sessionId:String) : LiveData<List<Ping>>
+    fun getPingsBySessionId(sessionId: String): LiveData<List<Ping>>
 }

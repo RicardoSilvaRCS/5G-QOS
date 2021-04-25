@@ -1,4 +1,4 @@
-package com.isel_5gqos.Common.db
+package com.isel_5gqos.common.db
 
 import android.os.AsyncTask
 

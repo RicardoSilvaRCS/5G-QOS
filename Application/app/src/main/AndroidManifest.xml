@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".Common.QoSApp"
+        android:name=".common.QoSApp"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/logo_launcher_foreground"

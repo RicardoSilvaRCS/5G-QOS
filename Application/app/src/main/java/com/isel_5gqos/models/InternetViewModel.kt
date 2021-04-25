@@ -4,8 +4,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.isel_5gqos.Common.QoSApp
-import com.isel_5gqos.Common.db.entities.ThroughPut
+import com.isel_5gqos.common.QoSApp
+import com.isel_5gqos.common.db.entities.ThroughPut
 import com.qiniu.android.netdiag.Output
 import com.qiniu.android.netdiag.Ping
 
@@ -21,7 +21,7 @@ class InternetViewModel : ViewModel() {
         liveData.observe(owner, androidx.lifecycle.Observer { observer(it) })
     }
 
-    fun getThroughputResultsFromDb(): LiveData<List<ThroughPut>> = QoSApp.db.throughPutDao().get(QoSApp.sessionId)
+    fun getThroughputResultsFromDb(sessionId:String): LiveData<List<ThroughPut>> = QoSApp.db.throughPutDao().get(sessionId)
 
     fun getResults(url: String, numberOfTries: Int) {
 
@@ -50,8 +50,6 @@ class InternetViewModel : ViewModel() {
 
     inner class Logger : Output {
         override fun write(line: String?) {
-
-            println(line)
 
             if (!line!!.contains("ttl") || pingResult.pingInfos.size == pingResult.numberOfTries)
                 return

@@ -5,7 +5,7 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.isel_5gqos.Common.TAG
+import com.isel_5gqos.common.TAG
 
 
 abstract class AbstractFactory(private val bundle: Bundle?) : ViewModelProvider.Factory {

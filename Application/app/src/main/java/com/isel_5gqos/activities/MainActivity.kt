@@ -7,13 +7,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
-import com.isel_5gqos.Common.QoSApp
-import com.isel_5gqos.Common.db.asyncTask
-import com.isel_5gqos.Common.db.entities.Session
-import com.isel_5gqos.Common.db.entities.User
-import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.R
 import com.isel_5gqos.factories.QosFactory
+import com.isel_5gqos.models.QosViewModel
 
 const val USER = "USER"
 const val TOKEN = "TOKEN"
@@ -21,8 +17,8 @@ const val TOKEN = "TOKEN"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var qosFactory: QosFactory
-    private val model:QosViewModel by lazy {
-        ViewModelProviders.of(this,qosFactory)[QosViewModel::class.java]
+    private val model: QosViewModel by lazy {
+        ViewModelProviders.of(this, qosFactory)[QosViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,31 +40,12 @@ class MainActivity : AppCompatActivity() {
             if (pass.isBlank() || user.isBlank()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
             } else {
-                model.login(user,pass)
+                model.login(user, pass)
                 model.observe(this) {
                     val intent = Intent(this, DashboardActivity::class.java)
-
+                    //TODO: Debate if intent is really needed
                     intent.putExtra(TOKEN, it.userToken)
                     intent.putExtra(USER, it.username)
-
-                    val user = User(
-                        regId = QoSApp.sessionId,
-                        username = "ricardo.silva@isel.pt",
-                        token = it.userToken,
-                        timestamp = System.currentTimeMillis() + (60*1000).toLong()
-                    )
-
-                    asyncTask({ QoSApp.db.userDao().insert(user) }, {})
-
-                    val session = Session(
-                        id = QoSApp.sessionId,
-                        sessionName = "test",
-                        user = "ricardo.silva@isel.pt",
-                        beginDate = System.currentTimeMillis(),
-                        endDate = System.currentTimeMillis() + (60*1000).toLong()
-                    )
-
-                    asyncTask({ QoSApp.db.sessionDao().insert(session) }, {})
 
                     startActivity(intent)
                 }

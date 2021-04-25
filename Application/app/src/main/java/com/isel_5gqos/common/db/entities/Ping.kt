@@ -1,14 +1,10 @@
-package com.isel_5gqos.Common.db.entities
+package com.isel_5gqos.common.db.entities
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
-import java.sql.Timestamp
-import java.util.*
 
 @Entity(
-    tableName = "ThroughPuts",
+    tableName = "Pings",
     foreignKeys = [
         ForeignKey(
             entity = Session::class,
@@ -18,17 +14,16 @@ import java.util.*
         )
     ],
     primaryKeys = [
-        "regId",
         "sessionId"
     ]
 )
 
-class ThroughPut(
-    val regId: String,
-    val txResult: Long,
-    val rxResult: Long,
-    @ColumnInfo(name= "sessionId", index = true)
+class Ping(
+    val id: String,
     val sessionId: String,
-    val timestamp: Long
+    val avg: Int,
+    val max: Int,
+    val min: Int,
+    val nrOfPackets: Int,
+    val url: String
 )
-
