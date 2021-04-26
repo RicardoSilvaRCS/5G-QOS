@@ -18,6 +18,8 @@ class ThroughPutWorker(private val context: Context, private val workerParams: W
 
     override fun doWork(): Result {
         val workInfo = WorkManager.getInstance(context).getWorkInfoById(this.id)
+        val sessionId = inputData.getString(SESSION_ID).toString()
+
         do {
             val oldCountRX = TrafficStats.getMobileRxBytes()
             val oldCountTX = TrafficStats.getMobileTxBytes()
@@ -35,7 +37,7 @@ class ThroughPutWorker(private val context: Context, private val workerParams: W
                     regId = UUID.randomUUID().toString(),
                     txResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / K_BIT,
                     rxResult = (newCountRx - oldCountRX) * BITS_IN_BYTE / K_BIT,
-                    sessionId = inputData.getString(SESSION_ID).toString(),
+                    sessionId = sessionId,
                     timestamp = System.currentTimeMillis()
                 )
 

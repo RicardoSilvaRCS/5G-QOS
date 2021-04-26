@@ -9,6 +9,7 @@ import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Session
 import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
+import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
 import com.isel_5gqos.workers.scheduleThroughPutBackgroundWork
 import java.lang.IllegalArgumentException
 import java.sql.Time
@@ -40,7 +41,8 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         )
         asyncTask({ QoSApp.db.sessionDao().insert(session) }) {}
 
-        scheduleThroughPutBackgroundWork(sessionId = session.id)
+        //scheduleThroughPutBackgroundWork(sessionId = session.id)
+        scheduleRadioParametersBackgroundWork(sessionId = session.id, isRecording = true)
     }
 
     fun endSession() {
