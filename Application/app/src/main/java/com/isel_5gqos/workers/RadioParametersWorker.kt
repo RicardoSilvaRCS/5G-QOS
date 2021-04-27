@@ -10,14 +10,11 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.work.*
-import com.isel_5gqos.common.QoSApp
-import com.isel_5gqos.common.SESSION_ID
-import com.isel_5gqos.common.TAG
-import com.isel_5gqos.common.WORKER_TAG
-import com.isel_5gqos.dtos.RadioParameters
+import com.isel_5gqos.common.*
+import com.isel_5gqos.dtos.RadioParametersDto
 
 
-class RadioParametersWorker (private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
+class RadioParametersWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
 
 
     override fun doWork(): Result {
@@ -30,71 +27,79 @@ class RadioParametersWorker (private val context: Context, private val workerPar
         val sessionId = inputData.getString(SESSION_ID).toString()
 
         val telephonyManager = getSystemService(context, TelephonyManager::class.java)
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        do {
 
-        do{
+            try {
 
-            try{
-
-                //Needed to make this way because of the compatibility of the Api.
-                //The found correct form was only available at Api 29 reducing to much the compatibility of this app
-                //The most correct way was to call telephonyManager!!.signalStrength!!.cellSignalStrengths and catch the cellSignal that is instance of CellSignalStrengthLte
-                val info = telephonyManager!!.signalStrength!!.toString().split(" ")
-
-                val rsrp = info[9]
-                val rsrq = info[10]
-                val rssnr = (info[11].toFloat()/10)
-                val networkDataType = info[13]
-
-                Log.v(TAG,"$rsrp RSRQ DBm")
-                Log.v(TAG,"$rsrq RSRQ DB")
-                Log.v(TAG,"$rssnr RSSNR DB")
-                Log.v(TAG,"$info INFO") //Network Data Type 0= LTE
-
-                val cellInfoList : MutableList<RadioParameters> = mutableListOf()
+                val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
                 var no = 0
-                telephonyManager.allCellInfo.forEach{
-
-                    val cellInfo : RadioParameters
-
+                //allCellInfo[0] = serving cell, others = neighbor cells
+                telephonyManager!!.allCellInfo.forEach {
                     if (it is CellInfoGsm) {
-                        cellInfo = RadioParameters(
-                            no = no++,
-                            tech = "G${it.cellSignalStrength}",
-                            arfcn = it.cellIdentity.arfcn,
-                            rssi = 5F,
-                            rsrp = 5F,
-                            cId = it.cellIdentity.cid,s
-                            psc = it.cellIdentity.psc,
-                            netDataType = "GSM"
+                        cellInfoList.add(
+                            RadioParametersDto(
+                                no = no++,
+                                tech = "G${it.cellIdentity}",
+                                arfcn = it.cellIdentity.arfcn,
+                                rssi = if (it.cellConnectionStatus == CONNECTION_STATUS_UNKNOWN) MIN_RSSI else null,
+                                cId = it.cellIdentity.cid,
+                                netDataType = NetworkDataTypesEnum.GSM
+                            )
                         )
-                        val mobileOperator = it.cellIdentity.mobileNetworkOperator
-                        val cid = it.cellIdentity.lac
-                    }
-
-                    else if (it is CellInfoLte){
-
-                    }
-                    else if (it is CellInfoWcdma){
+                    } else if (it is CellInfoLte) {
+                        cellInfoList.add(
+                            RadioParametersDto(
+                                no = no++,
+                                tech = "L${it.cellIdentity.bandwidth}",
+                                arfcn = it.cellIdentity.earfcn,
+                                rssi = it.cellSignalStrength.rssi,
+                                rsrp = it.cellSignalStrength.rsrp,
+                                pci = it.cellIdentity.pci,
+                                rssnr = it.cellSignalStrength.rssnr,
+                                rsrq = it.cellSignalStrength.rsrq,
+                                netDataType = NetworkDataTypesEnum.LTE
+                            )
+                        )
+                    } else if (it is CellInfoWcdma) {
                         //Measure UMTS
-
-                    }
-                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && it is CellInfoNr) {
+                        cellInfoList.add(
+                            RadioParametersDto(
+                                no = no++,
+                                tech = "U${it.cellIdentity}",
+                                arfcn = it.cellIdentity.uarfcn,
+                                rssi = if (it.cellConnectionStatus == CONNECTION_STATUS_UNKNOWN) MIN_RSSI else null,
+                                psc = it.cellIdentity.psc,
+                                netDataType = NetworkDataTypesEnum.UMTS
+                            )
+                        )
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && it is CellInfoNr) {
                         //Measure 5G
+                        cellInfoList.add(
+                            RadioParametersDto(
+                                no = no++,
+                                tech = "5G${it.cellIdentity}",
+                                rssi = if (it.cellConnectionStatus == CONNECTION_STATUS_UNKNOWN) MIN_RSSI else null,
+                                netDataType = NetworkDataTypesEnum.FiveG
+                            )
+                        )
                     }
-
                 }
 
+                cellInfoList.forEach {
+                    it
+                }
 
                 //Network Operator Info
                 val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                Log.v(TAG,"${telephonyManager.networkOperatorName} Network Operator name")
-                Log.v(TAG,"${telephonyManager.networkOperator} MCC/MNC")
-                Log.v(TAG,"${telephonyManager.imei} IMEI")
-                Log.v(TAG,"${(telephonyManager.allCellInfo[0] as CellInfoLte).cellIdentity.tac} TAC")
+                Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
+                Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
+                Log.v(TAG, "${telephonyManager.imei} IMEI")
+                Log.v(TAG, "${(telephonyManager.allCellInfo[0] as CellInfoLte).cellIdentity.tac} TAC")
 
                 Thread.sleep(10000)
 
-            }catch (ex : Exception){
+            } catch (ex: Exception) {
 
                 //TODO: register new error to db
 
@@ -102,13 +107,13 @@ class RadioParametersWorker (private val context: Context, private val workerPar
             }
 
 
-        }while(!workInfo.isCancelled)
+        } while (!workInfo.isCancelled)
 
         return Result.success()
     }
 }
 
-fun scheduleRadioParametersBackgroundWork(sessionId: String, isRecording : Boolean) {
+fun scheduleRadioParametersBackgroundWork(sessionId: String, isRecording: Boolean) {
     val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     val inputData = workDataOf(SESSION_ID to sessionId)
@@ -118,6 +123,6 @@ fun scheduleRadioParametersBackgroundWork(sessionId: String, isRecording : Boole
         .setConstraints(constraints)
         .build()
 
-    Log.v(TAG,request.id.toString())
-    WorkManager.getInstance(QoSApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE,request)
+    Log.v(TAG, request.id.toString())
+    WorkManager.getInstance(QoSApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE, request)
 }
