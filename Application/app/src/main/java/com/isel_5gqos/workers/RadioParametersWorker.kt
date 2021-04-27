@@ -4,9 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.telephony.CellInfoGsm
-import android.telephony.CellInfoLte
-import android.telephony.TelephonyManager
+import android.os.Build
+import android.telephony.*
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -15,6 +14,7 @@ import com.isel_5gqos.common.QoSApp
 import com.isel_5gqos.common.SESSION_ID
 import com.isel_5gqos.common.TAG
 import com.isel_5gqos.common.WORKER_TAG
+import com.isel_5gqos.dtos.RadioParameters
 
 
 class RadioParametersWorker (private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
@@ -48,16 +48,38 @@ class RadioParametersWorker (private val context: Context, private val workerPar
                 Log.v(TAG,"$rsrp RSRQ DBm")
                 Log.v(TAG,"$rsrq RSRQ DB")
                 Log.v(TAG,"$rssnr RSSNR DB")
-                Log.v(TAG,"$networkDataType Network Data Type 0= LTE")
+                Log.v(TAG,"$info INFO") //Network Data Type 0= LTE
 
-
+                val cellInfoList : MutableList<RadioParameters> = mutableListOf()
+                var no = 0
                 telephonyManager.allCellInfo.forEach{
 
+                    val cellInfo : RadioParameters
+
                     if (it is CellInfoGsm) {
-                        val arfcn = it.cellIdentity.arfcn
+                        cellInfo = RadioParameters(
+                            no = no++,
+                            tech = "G${it.cellSignalStrength}",
+                            arfcn = it.cellIdentity.arfcn,
+                            rssi = 5F,
+                            rsrp = 5F,
+                            cId = it.cellIdentity.cid,s
+                            psc = it.cellIdentity.psc,
+                            netDataType = "GSM"
+                        )
                         val mobileOperator = it.cellIdentity.mobileNetworkOperator
                         val cid = it.cellIdentity.lac
-                        Log.v(TAG,"${arfcn} arfcn")
+                    }
+
+                    else if (it is CellInfoLte){
+
+                    }
+                    else if (it is CellInfoWcdma){
+                        //Measure UMTS
+
+                    }
+                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && it is CellInfoNr) {
+                        //Measure 5G
                     }
 
                 }
