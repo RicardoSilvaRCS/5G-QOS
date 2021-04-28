@@ -42,7 +42,19 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         asyncTask({ QoSApp.db.sessionDao().insert(session) }) {}
 
         //scheduleThroughPutBackgroundWork(sessionId = session.id)
-        scheduleRadioParametersBackgroundWork(sessionId = session.id, isRecording = true)
+        val requestId = scheduleRadioParametersBackgroundWork(sessionId = sessionDto.id, isRecording = true)
+
+//        WorkManager.getInstance(context)
+//            // requestId is the WorkRequest id
+//            .getWorkInfoByIdLiveData(requestId.id)
+//            .observe(observer, Observer { workInfo: WorkInfo? ->
+//                if (workInfo != null) {
+//                    val progress = workInfo.progress
+//                    val value = progress.getInt(Progress, 0)
+//                    // Do something with progress information
+//                }
+//            })
+
     }
 
     fun endSession() {

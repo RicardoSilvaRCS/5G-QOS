@@ -2,6 +2,7 @@ package com.isel_5gqos.models
 
 import android.widget.Toast
 import com.android.volley.NoConnectionError
+import com.android.volley.TimeoutError
 import com.isel_5gqos.common.QoSApp
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.User
@@ -29,7 +30,11 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
             onError = {
                 if (it is NoConnectionError) {
                     Toast.makeText(managementSystemApi.ctx, "Please check your internet connection", Toast.LENGTH_LONG).show()
-                } else {
+                }
+                if(it is TimeoutError){
+                    Toast.makeText(managementSystemApi.ctx, "There is a problem with the server", Toast.LENGTH_LONG).show()
+                }
+                else {
                     Toast.makeText(managementSystemApi.ctx, "Invalid Credentials", Toast.LENGTH_LONG).show()
                 }
             }

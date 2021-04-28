@@ -1,6 +1,15 @@
 package com.isel_5gqos.common
 
-import android.telephony.CellInfo
+
+/**        Permissions           */
+
+const val APP_PERMISSIONS = 10
+/**        In case to make exclusive permissions treatment        */
+const val ACCESS_FINE_LOCATION_PERMISSION = 1
+const val INTERNET_PERMISSION = 2
+const val ACCESS_NETWORK_STATE_PERMISSION = 3
+const val READ_PHONE_STATE_PERMISSION = 4
+
 
 /**        TAGS           */
 const val TAG = "5GQosApp"
