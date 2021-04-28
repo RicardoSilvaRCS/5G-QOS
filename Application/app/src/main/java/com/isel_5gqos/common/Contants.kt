@@ -1,5 +1,7 @@
 package com.isel_5gqos.common
 
+import android.telephony.CellInfo
+
 /**        TAGS           */
 const val TAG = "5GQosApp"
 const val WORKER_TAG = "WORKER_TAG"
@@ -13,8 +15,6 @@ const val BITS_IN_BYTE = 8
 
 
 /**  RADIO PARAMS CONSTANT VALUES */
-const val CONNECTION_STATUS_UNKNOWN = Int.MAX_VALUE
-
 const val MIN_RSSI = -113
 const val MIN_RSRP = -140
 const val MIN_RSRQ = -34

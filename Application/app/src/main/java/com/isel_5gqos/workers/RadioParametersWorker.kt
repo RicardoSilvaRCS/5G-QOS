@@ -42,7 +42,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                                 no = no++,
                                 tech = "G${it.cellIdentity}",
                                 arfcn = it.cellIdentity.arfcn,
-                                rssi = if (it.cellConnectionStatus == CONNECTION_STATUS_UNKNOWN) MIN_RSSI else null,
+                                rssi = if (it.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || it.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                                 cId = it.cellIdentity.cid,
                                 netDataType = NetworkDataTypesEnum.GSM
                             )
@@ -68,7 +68,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                                 no = no++,
                                 tech = "U${it.cellIdentity}",
                                 arfcn = it.cellIdentity.uarfcn,
-                                rssi = if (it.cellConnectionStatus == CONNECTION_STATUS_UNKNOWN) MIN_RSSI else null,
+                                rssi = if (it.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || it.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                                 psc = it.cellIdentity.psc,
                                 netDataType = NetworkDataTypesEnum.UMTS
                             )
@@ -79,7 +79,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                             RadioParametersDto(
                                 no = no++,
                                 tech = "5G${it.cellIdentity}",
-                                rssi = if (it.cellConnectionStatus == CONNECTION_STATUS_UNKNOWN) MIN_RSSI else null,
+                                rssi = if (it.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || it.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                                 netDataType = NetworkDataTypesEnum.FiveG
                             )
                         )
