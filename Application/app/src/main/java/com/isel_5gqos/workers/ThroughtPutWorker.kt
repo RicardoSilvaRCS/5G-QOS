@@ -4,10 +4,10 @@ import android.content.Context
 import android.net.TrafficStats
 import android.util.Log
 import androidx.work.*
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
-import com.isel_5gqos.common.QoSApp.Companion.db
+import com.isel_5gqos.QosApp.Companion.db
 import com.isel_5gqos.common.db.entities.ThroughPut
-import com.isel_5gqos.models.QosViewModel
 import java.util.*
 
 class ThroughPutWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
@@ -44,6 +44,7 @@ class ThroughPutWorker(private val context: Context, private val workerParams: W
                 //This is only possible because this code is being executed in background on a worker thread from the
                 // thread pool. When using the main thread, the insert must be done with an AsyncTask
                 db.throughPutDao().insert(throughPut)
+
                 Log.v(TAG,"${throughPut.rxResult} TX KBits/s , ${throughPut.txResult} tx KBits/s WORKER WORKER WORKER")
             } catch (ex: Exception) {
 
@@ -67,5 +68,5 @@ fun scheduleThroughPutBackgroundWork(sessionId: String) {
         .build()
 
     Log.v(TAG,request.id.toString())
-    WorkManager.getInstance(QoSApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG,ExistingWorkPolicy.REPLACE,request)
+    WorkManager.getInstance(QosApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG,ExistingWorkPolicy.REPLACE,request)
 }

@@ -3,15 +3,23 @@ package com.isel_5gqos.workers
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
+import android.os.Bundle
 import android.telephony.*
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.work.*
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
+import com.isel_5gqos.dtos.LocationDto
 import com.isel_5gqos.dtos.RadioParametersDto
+import com.isel_5gqos.dtos.WrapperDto
+import kotlinx.coroutines.awaitAll
 
 
 class RadioParametersWorker(private val context: Context, private val workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
@@ -33,6 +41,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
 
                 val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
 
+
                 telephonyManager!!.allCellInfo.forEach {
                     val currentCell = convertCellInfoToRadioParameter(it)
                     if (currentCell != null) {
@@ -40,17 +49,48 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                     }
                 }
 
+                val servingCell = getServingCell(cellInfoList)
                 //Network Operator Info
                 val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val networkOperatorName = telephonyManager.networkOperatorName
+//                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//                var latLon: Pair<Double, Double> = Pair(0.0,0.0)
+//
+//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0f, object : LocationListener {
+//                    override fun onLocationChanged(location: Location?) {
+//                        latLon = Pair(location?.latitude ?: 0.0, location?.longitude ?: 0.0)
+//                    }
+//
+//                    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+//                    override fun onProviderEnabled(provider: String?) {}
+//                    override fun onProviderDisabled(provider: String?) {}
+//                })
+
                 Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
                 Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
                 Log.v(TAG, "${telephonyManager.imei} IMEI")
 
+                setProgress(
+                    workDataOf(
+                        Pair(
+                            PROGRESS,
+                            WrapperDto(
+                                radioParametersDtos = cellInfoList,
+                                servingCell = servingCell,
+                                locationDto = LocationDto(
+                                    networkOperatorName = networkOperatorName,
+                                    latitude = 1.0,//latLon.first,
+                                    longitude = 1.0//latLon.second
+                                )
+                            )
+                        )
+                    )
+                )
 
                 Thread.sleep(10000)
 
             } catch (ex: Exception) {
-
+                throw ex
                 //TODO: register new error to db
             }
 
@@ -58,6 +98,9 @@ class RadioParametersWorker(private val context: Context, private val workerPara
 
         return Result.success()
     }
+
+    private fun getServingCell(cellInfoList: MutableList<RadioParametersDto>) =
+        cellInfoList.find { it.isServingCell } ?: cellInfoList[0]
 
     private fun convertCellInfoToRadioParameter(cellInfo: CellInfo): RadioParametersDto? {
         if (cellInfo is CellInfoGsm) {
@@ -106,7 +149,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
     }
 }
 
-fun scheduleRadioParametersBackgroundWork(sessionId: String, isRecording: Boolean): OneTimeWorkRequest {
+fun scheduleRadioParametersBackgroundWork(sessionId: String, saveToDb: Boolean): OneTimeWorkRequest {
     val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     val inputData = workDataOf(SESSION_ID to sessionId)
@@ -118,7 +161,7 @@ fun scheduleRadioParametersBackgroundWork(sessionId: String, isRecording: Boolea
         .build()
 
     Log.v(TAG, request.id.toString())
-    WorkManager.getInstance(QoSApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE, request)
+    WorkManager.getInstance(QosApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE, request)
 
     return request
 }

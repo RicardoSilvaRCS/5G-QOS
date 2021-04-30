@@ -11,7 +11,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <application
-        android:name=".common.QoSApp"
+        android:name=".QosApp"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/logo_launcher_foreground"

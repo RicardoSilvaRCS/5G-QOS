@@ -13,7 +13,7 @@ abstract class AbstractModel<T>(val tMaker: () -> T) : ViewModel() {
     val value: T get() = liveData.value ?: tMaker()
 
     fun observe(owner: LifecycleOwner, observer: (T) -> Unit) {
-        liveData.observe(owner, Observer {
+        liveData.observe(owner, {
             observer(it)
         })
     }

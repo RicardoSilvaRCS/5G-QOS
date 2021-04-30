@@ -1,18 +1,20 @@
 package com.isel_5gqos.models
 
-import android.util.Log
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.isel_5gqos.common.QoSApp
-import com.isel_5gqos.common.TAG
+import com.isel_5gqos.QosApp
+import com.isel_5gqos.common.PROGRESS
 import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Session
+import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SessionDto
+import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
 import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
-import com.isel_5gqos.workers.scheduleThroughPutBackgroundWork
 import java.lang.IllegalArgumentException
-import java.sql.Time
 import java.sql.Timestamp
 import java.util.*
 
@@ -30,7 +32,6 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             username = userName,
             beginDate = Timestamp(System.currentTimeMillis())
         )
-        liveData.postValue(sessionDto)
 
         val session = Session(
             id = sessionDto.id,
@@ -39,22 +40,12 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             beginDate = sessionDto.beginDate.time,
             endDate = sessionDto.endDate.time
         )
-        asyncTask({ QoSApp.db.sessionDao().insert(session) }) {}
+
+        asyncTask({ QosApp.db.sessionDao().insert(session) }) {}
+
+        liveData.postValue(sessionDto)
 
         //scheduleThroughPutBackgroundWork(sessionId = session.id)
-        val requestId = scheduleRadioParametersBackgroundWork(sessionId = sessionDto.id, isRecording = true)
-
-//        WorkManager.getInstance(context)
-//            // requestId is the WorkRequest id
-//            .getWorkInfoByIdLiveData(requestId.id)
-//            .observe(observer, Observer { workInfo: WorkInfo? ->
-//                if (workInfo != null) {
-//                    val progress = workInfo.progress
-//                    val value = progress.getInt(Progress, 0)
-//                    // Do something with progress information
-//                }
-//            })
-
     }
 
     fun endSession() {
@@ -64,7 +55,7 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
         val session = value.dtoToDaoMapper()
 
-        asyncTask({QoSApp.db.sessionDao().updateSession(session)}) {}
-        WorkManager.getInstance(QoSApp.msWebApi.ctx).cancelAllWorkByTag(WORKER_TAG)
+        asyncTask({ QosApp.db.sessionDao().updateSession(session)}) {}
+        WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWorkByTag(WORKER_TAG)
     }
 }

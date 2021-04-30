@@ -3,7 +3,7 @@ package com.isel_5gqos.models
 import android.widget.Toast
 import com.android.volley.NoConnectionError
 import com.android.volley.TimeoutError
-import com.isel_5gqos.common.QoSApp
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.common.services.ManagementServiceWebApi
@@ -18,12 +18,12 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
             onSuccess = { userDto ->
 
                 val user = User(
-                    regId = QoSApp.sessionId,
+                    regId = QosApp.sessionId,
                     username = "ricardo.silva@isel.pt",
                     token = userDto.userToken,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong()
                 )
-                asyncTask({ QoSApp.db.userDao().insert(user) }, {})
+                asyncTask({ QosApp.db.userDao().insert(user) }, {})
 
                 liveData.postValue(userDto)
             },

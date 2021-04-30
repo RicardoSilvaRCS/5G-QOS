@@ -14,4 +14,26 @@ class RadioParametersDto(
     val rsrq: Int? = null,   //Reference Signal Received Quality
     val netDataType: NetworkDataTypesEnum,
     val isServingCell : Boolean
+) {
+
+    fun getCellId() = when(netDataType) {
+        NetworkDataTypesEnum.LTE -> pci.toString()
+        NetworkDataTypesEnum.GSM -> cId.toString()
+        NetworkDataTypesEnum.UMTS -> psc.toString()
+        else -> pci.toString()
+    }
+}
+
+class LocationDto(
+    val networkOperatorName:String,
+    val latitude:Double,
+    val longitude:Double
 )
+
+class WrapperDto(
+    val radioParametersDtos: List<RadioParametersDto>,
+    val servingCell: RadioParametersDto,
+    val locationDto: LocationDto
+){
+    override fun toString(): String = "$locationDto\n$servingCell\n$radioParametersDtos"
+}

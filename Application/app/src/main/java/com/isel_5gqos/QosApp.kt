@@ -1,12 +1,13 @@
-package com.isel_5gqos.common
+package com.isel_5gqos
 
 import android.app.Application
 import androidx.room.Room
 import com.isel_5gqos.common.db.QosDb
 import com.isel_5gqos.common.services.ManagementServiceWebApi
+import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
 import java.util.*
 
-class QoSApp : Application() {
+class QosApp : Application() {
     companion object {
         lateinit var msWebApi: ManagementServiceWebApi
         lateinit var db: QosDb
@@ -19,3 +20,5 @@ class QoSApp : Application() {
         db = Room.databaseBuilder(applicationContext, QosDb::class.java, "Qos-Db").build()
     }
 }
+
+

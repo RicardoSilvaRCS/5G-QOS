@@ -17,6 +17,7 @@ const val WORKER_TAG = "WORKER_TAG"
 
 /**   WORKER INPUT DATA   */
 const val SESSION_ID = "SESSION_ID"
+const val PROGRESS = "PROGRESS"
 
 /**      VARIABLES        */
 const val K_BIT = 1024
