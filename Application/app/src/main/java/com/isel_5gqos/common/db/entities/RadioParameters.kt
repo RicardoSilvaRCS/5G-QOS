@@ -36,4 +36,5 @@ class RadioParameters (
     @ColumnInfo(name = "sessionId", index = true)
     val sessionId: String,
     val timestamp: Long,
+    val isUpToDate:Boolean
 )

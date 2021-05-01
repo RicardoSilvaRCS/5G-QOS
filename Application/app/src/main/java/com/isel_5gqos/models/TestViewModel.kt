@@ -1,18 +1,14 @@
 package com.isel_5gqos.models
 
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.LifecycleOwner
 import androidx.work.WorkManager
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
-import com.isel_5gqos.common.db.executeAsyncTaskGeneric
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
-import java.lang.IllegalArgumentException
 import java.sql.Timestamp
 import java.util.*
 
@@ -46,6 +42,28 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         //scheduleThroughPutBackgroundWork(sessionId = session.id)
     }
 
+    fun startDefaultSession(userName: String) {
+        val currentDate = Date(System.currentTimeMillis())
+        val dateFormatted: String = formatDate(currentDate)
+
+        val sessionDto = SessionDto(
+            id = "-1",
+            sessionName = "Session $dateFormatted",
+            username = userName,
+            beginDate = Timestamp(System.currentTimeMillis())
+        )
+
+        val session = Session(
+            id = sessionDto.id,
+            sessionName = sessionDto.sessionName,
+            user = sessionDto.username,
+            beginDate = sessionDto.beginDate.time,
+            endDate = sessionDto.endDate.time
+        )
+
+        asyncTask({ QosApp.db.sessionDao().insert(session) }) { liveData.postValue(sessionDto) }
+    }
+
     fun endSession() {
         val endDate = Timestamp(System.currentTimeMillis())
 
@@ -53,42 +71,38 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
         val session = value.dtoToDaoMapper()
 
-        asyncTask({ QosApp.db.sessionDao().updateSession(session)}) {}
+        asyncTask({ QosApp.db.sessionDao().updateSession(session) }) {}
         WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWorkByTag(WORKER_TAG)
     }
 
-    fun updateRadioParameters () {
-
-        val radioParameters = executeAsyncTaskGeneric<String,LiveData<List<RadioParameters>>>(
-            { sessionId : String ->
-                QosApp.db.radioParametersDao().get(sessionId)
-            }
-            ,value.id
-        ) {
+    fun updateRadioParameters(id: String = "", lifecycleOwner: LifecycleOwner) {
+        QosApp.db.radioParametersDao().getUpToDateRadioParameters(if (id == "") value.id else id).observe(lifecycleOwner) {
             val radioParametersDto = mutableListOf<RadioParametersDto>()
-            it.value?.forEach{
+            it.forEach { radioParameters ->
 
                 radioParametersDto.add(
                     RadioParametersDto(
-                        no = it.no,
-                        tech = it.tech,
-                        arfcn = it.arfcn,
-                        rssi = it.rssi,
-                        rsrp = it.rsrp,
-                        cId = it.cId,
-                        psc = it.psc,
-                        pci = it.pci,
-                        rssnr = it.rssnr,
-                        rsrq = it.rsrq,
-                        netDataType = enumValueOf(it.netDataType),
-                        isServingCell = it.isServingCell
+                        no = radioParameters.no,
+                        tech = radioParameters.tech,
+                        arfcn = radioParameters.arfcn,
+                        rssi = radioParameters.rssi,
+                        rsrp = radioParameters.rsrp,
+                        cId = radioParameters.cId,
+                        psc = radioParameters.psc,
+                        pci = radioParameters.pci,
+                        rssnr = radioParameters.rssnr,
+                        rsrq = radioParameters.rsrq,
+                        netDataType = enumValueOf(radioParameters.netDataType),
+                        isServingCell = radioParameters.isServingCell
                     )
                 )
             }
+
             //TODO Possible pass this to a mapper
-
-            value.radioParameters.radioParametersDtos = radioParametersDto
+            val session = value
+            session.radioParameters.radioParametersDtos = radioParametersDto
+            liveData.postValue(session)
+//            value.radioParameters.radioParametersDtos = radioParametersDto
         }
-
     }
 }

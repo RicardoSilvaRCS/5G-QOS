@@ -5,31 +5,29 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.TableLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.work.ForegroundInfo
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.anychart.AnyChart
+import com.anychart.AnyChart.treeMap
 import com.anychart.AnyChartView
 import com.anychart.chart.common.dataentry.DataEntry
-import com.anychart.chart.common.dataentry.HeatDataEntry
-import com.anychart.chart.common.dataentry.TreeDataEntry
+import com.anychart.enums.SelectionMode
 import com.anychart.enums.TreeFillingMethod
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.PROGRESS
 import com.isel_5gqos.common.TAG
-import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.anyChartUtils.customTreeDataEntry
 import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
 import com.isel_5gqos.workers.scheduleThroughPutBackgroundWork
+
 
 class DashboardActivity : AppCompatActivity() {
     private val model by lazy {
@@ -145,10 +143,15 @@ class DashboardActivity : AppCompatActivity() {
             }
         }
 
+        testModel.startDefaultSession(userName)
 
         testModel.observe(this) {
-            scheduleThroughPutBackgroundWork(sessionId = it.id)
-            setupRadioParametersBackgroundWorker(sessionId = it.id, saveToDb = true)
+            if(it.id == "-1")
+                setupRadioParametersBackgroundWorker("", false)
+            else {
+                scheduleThroughPutBackgroundWork(sessionId = it.id)
+                setupRadioParametersBackgroundWorker(sessionId = it.id, saveToDb = true)
+            }
 
             if(!it.radioParameters.radioParametersDtos.isEmpty()){
                 updateGraph(it.radioParameters)
@@ -166,13 +169,12 @@ class DashboardActivity : AppCompatActivity() {
         WorkManager.getInstance(QosApp.msWebApi.ctx)
             // requestId is the WorkRequest id
             .getWorkInfoByIdLiveData(request.id)
-            .observe(this, Observer{ workInfo: WorkInfo? ->
+            .observe(this, Observer { workInfo: WorkInfo? ->
                 if (workInfo != null) {
                     val progress = workInfo.progress
-                    if(!progress.getBoolean(PROGRESS,false)) return@Observer
+                    if (!progress.getBoolean(PROGRESS, false)) return@Observer
 
-                    testModel.updateRadioParameters()
-
+                    testModel.updateRadioParameters(if (sessionId.isEmpty()) "-1" else "", this)
                 }
             })
     }
@@ -189,22 +191,40 @@ class DashboardActivity : AppCompatActivity() {
         val rssi = "RSSI/RSRP"
         val cid = "CID/PSC/PCI"
         val data = mutableListOf<DataEntry>()
-        data.add(customTreeDataEntry(neighbors,null,neighbors))
-        data.add(customTreeDataEntry(no,neighbors,no))
-        data.add(customTreeDataEntry(tech,neighbors,tech))
-        data.add(customTreeDataEntry(arfcn,neighbors,arfcn))
-        data.add(customTreeDataEntry(rssi,neighbors,rssi))
-        data.add(customTreeDataEntry(cid,neighbors,cid))
+        data.add(customTreeDataEntry(neighbors, null, neighbors))
+        data.add(customTreeDataEntry(no, neighbors, no))
+        data.add(customTreeDataEntry(tech, neighbors, tech))
+        data.add(customTreeDataEntry(arfcn, neighbors, arfcn))
+        data.add(customTreeDataEntry(rssi, neighbors, rssi))
+        data.add(customTreeDataEntry(cid, neighbors, cid))
 
-        wrapperDto.radioParametersDtos.forEachIndexed { index,value->
-            data.add(customTreeDataEntry("$value$index",no,(index + 1).toString()))
-            data.add(customTreeDataEntry("$value$index",tech,value.tech.toString()))
-            data.add(customTreeDataEntry("$value$index",arfcn,value.arfcn.toString()))
-            data.add(customTreeDataEntry("$value$index",rssi,value.rssi.toString()))
-            data.add(customTreeDataEntry("$value$index",cid,value.getCellId()))
+        wrapperDto.radioParametersDtos.forEachIndexed { index, value->
+            data.add(customTreeDataEntry("$value$index", no, (index + 1).toString()))
+            data.add(customTreeDataEntry("$value$index", tech, value.tech.toString()))
+            data.add(customTreeDataEntry("$value$index", arfcn, value.arfcn.toString()))
+            data.add(customTreeDataEntry("$value$index", rssi, value.rssi.toString()))
+            data.add(customTreeDataEntry("$value$index", cid, value.getCellId()))
         }
 
         table.data(data, TreeFillingMethod.AS_TABLE)
+
+        table.labels().useHtml(true)
+        table.labels().fontColor("#212121")
+        table.labels().fontSize(12.0)
+        table.labels().format(
+            """function() {
+      return this.getData('product');
+    }"""
+        )
+
+        table.padding(10.0, 10.0, 10.0, 20.0)
+        table.maxDepth(2.0)
+        table.selectionMode(SelectionMode.NONE)
+        table.headers().format(
+            "function() {\n" +
+                    "    return this.getData('product');\n" +
+                    "  }"
+        );
 
         tableView.setChart(table)
     }

@@ -23,7 +23,8 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     token = userDto.userToken,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong()
                 )
-                asyncTask({ QosApp.db.userDao().insert(user) }, {})
+
+                asyncTask({ QosApp.db.userDao().insert(user) }) {}
 
                 liveData.postValue(userDto)
             },

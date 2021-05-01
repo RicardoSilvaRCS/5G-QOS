@@ -17,6 +17,7 @@ const val WORKER_TAG = "WORKER_TAG"
 
 /**   WORKER INPUT DATA   */
 const val SESSION_ID = "SESSION_ID"
+const val DB_SAVE = "DB_SAVE"
 const val PROGRESS = "PROGRESS"
 
 /**      VARIABLES        */
