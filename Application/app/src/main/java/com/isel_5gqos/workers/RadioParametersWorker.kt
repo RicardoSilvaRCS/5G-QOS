@@ -13,7 +13,6 @@ import android.telephony.*
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
-import androidx.room.ColumnInfo
 import androidx.work.*
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
@@ -23,7 +22,6 @@ import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.WrapperDto
 import java.util.*
 import com.isel_5gqos.QosApp.Companion.db
-import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.utils.Errors.Exceptions
 
 
@@ -47,8 +45,8 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                 val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
 
 
-                telephonyManager!!.allCellInfo.forEach {
-                    val currentCell = convertCellInfoToRadioParameter(it)
+                telephonyManager!!.allCellInfo.forEachIndexed { index, cellInfo ->
+                    val currentCell = convertCellInfoToRadioParameter(index,cellInfo)
                     if (currentCell != null) {
                         cellInfoList.add(currentCell)
                     }
@@ -78,8 +76,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                     )
                 )
 
-                setProgressAsync( workDataOf(PROGRESS to true) ) // notify main activity that model isn't up to date anymore
-
+                setProgress( workDataOf(PROGRESS to true) ) // notify main activity that model isn't up to date anymore
 
                 Thread.sleep(10000)
 
@@ -95,9 +92,10 @@ class RadioParametersWorker(private val context: Context, private val workerPara
     private fun getServingCell(cellInfoList: MutableList<RadioParametersDto>) =
         cellInfoList.find { it.isServingCell } ?: cellInfoList[0]
 
-    private fun convertCellInfoToRadioParameter(cellInfo: CellInfo): RadioParametersDto? {
+    private fun convertCellInfoToRadioParameter(index : Int , cellInfo: CellInfo): RadioParametersDto? {
         if (cellInfo is CellInfoGsm) {
             return RadioParametersDto(
+                no= index + 1,
                 tech = "G${cellInfo.cellIdentity}",
                 arfcn = cellInfo.cellIdentity.arfcn,
                 rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
@@ -107,6 +105,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
             )
         } else if (cellInfo is CellInfoLte) {
             return RadioParametersDto(
+                no= index + 1,
                 tech = "L${cellInfo.cellIdentity.bandwidth}",
                 arfcn = cellInfo.cellIdentity.earfcn,
                 rssi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) cellInfo.cellSignalStrength.rssi else MIN_RSSI,
@@ -120,6 +119,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
         } else if (cellInfo is CellInfoWcdma) {
             //Measure UMTS
             return RadioParametersDto(
+                no= index + 1,
                 tech = "U${cellInfo.cellIdentity}",
                 arfcn = cellInfo.cellIdentity.uarfcn,
                 rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
@@ -131,6 +131,7 @@ class RadioParametersWorker(private val context: Context, private val workerPara
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && cellInfo is CellInfoNr) {
             //Measure 5G
             return RadioParametersDto(
+                no= index + 1,
                 tech = "5G${cellInfo.cellIdentity}",
                 rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                 netDataType = NetworkDataTypesEnum.FiveG,
@@ -158,31 +159,30 @@ class RadioParametersWorker(private val context: Context, private val workerPara
             override fun onProviderDisabled(provider: String?) {}
         })
 
-       val location = LocationDto(
-            networkOperatorName = telephonyManager.networkOperatorName,
-            latitude = latLon.first,
-            longitude = latLon.second
+        return LocationDto(
+             networkOperatorName = telephonyManager.networkOperatorName,
+             latitude = latLon.first,
+             longitude = latLon.second
         )
-
-        return location
     }
 
     private fun insertInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
 
-        wrapperDto.radioParametersDtos.forEach{
+        wrapperDto.radioParametersDtos.forEachIndexed { index, radioParametersDto ->
             val radioParameter = RadioParameters(
                 regId = UUID.randomUUID().toString(),
-                tech= it.tech ?: "",
-                arfcn= it.arfcn ?: -1 ,
-                rssi= it.rssi?: -1,
-                rsrp= it.rsrp?: -1,
-                cId= it.cId?: -1,
-                psc= it.psc?: -1,
-                pci= it.pci?: -1,
-                rssnr= it.pci?: -1,
-                rsrq= it.pci?: -1,
-                netDataType= it.netDataType.toString(),
-                isServingCell = it.isServingCell,
+                no = radioParametersDto.no,
+                tech= radioParametersDto.tech ?: "",
+                arfcn= radioParametersDto.arfcn ?: -1 ,
+                rssi= radioParametersDto.rssi?: -1,
+                rsrp= radioParametersDto.rsrp?: -1,
+                cId= radioParametersDto.cId?: -1,
+                psc= radioParametersDto.psc?: -1,
+                pci= radioParametersDto.pci?: -1,
+                rssnr= radioParametersDto.pci?: -1,
+                rsrq= radioParametersDto.pci?: -1,
+                netDataType= radioParametersDto.netDataType.toString(),
+                isServingCell = radioParametersDto.isServingCell,
                 sessionId= sessionId,
                 timestamp= System.currentTimeMillis(),
             )

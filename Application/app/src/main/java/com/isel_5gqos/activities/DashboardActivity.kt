@@ -148,9 +148,12 @@ class DashboardActivity : AppCompatActivity() {
 
         testModel.observe(this) {
             scheduleThroughPutBackgroundWork(sessionId = it.id)
-            val request = setupRadioParametersBackgroundWorker(sessionId = it.id, saveToDb = true)
+            setupRadioParametersBackgroundWorker(sessionId = it.id, saveToDb = true)
 
-            updateGraph(it.radioParameters)
+            if(!it.radioParameters.radioParametersDtos.isEmpty()){
+                updateGraph(it.radioParameters)
+            }
+
         }
 
         val person = findViewById<TextView>(R.id.person)

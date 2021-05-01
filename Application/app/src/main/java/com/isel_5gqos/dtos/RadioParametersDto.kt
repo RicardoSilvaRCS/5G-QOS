@@ -1,8 +1,10 @@
 package com.isel_5gqos.dtos
 
 import com.isel_5gqos.common.NetworkDataTypesEnum
+import java.sql.Timestamp
 
 class RadioParametersDto(
+    val no : Int=-1,
     val tech: String? = null,
     val arfcn: Int? = null,  //Absolute Radio-Frequency Channel Number
     val rssi: Int? = null,   //Received signal strength indication
@@ -12,8 +14,8 @@ class RadioParametersDto(
     val pci: Int? = null,    //Primary cell Identity LTE
     val rssnr: Int? = null,  //Reference Signal Signal-to-noise Ratio
     val rsrq: Int? = null,   //Reference Signal Received Quality
-    val netDataType: NetworkDataTypesEnum,
-    val isServingCell : Boolean
+    val netDataType: NetworkDataTypesEnum = NetworkDataTypesEnum.LTE,
+    val isServingCell : Boolean = false
 ) {
 
     fun getCellId() = when(netDataType) {
@@ -25,15 +27,24 @@ class RadioParametersDto(
 }
 
 class LocationDto(
-    val networkOperatorName:String,
-    val latitude:Double,
-    val longitude:Double
+    val networkOperatorName:String? = null,
+    val latitude:Double? = null,
+    val longitude:Double? = null
 )
 
 class WrapperDto(
-    val radioParametersDtos: List<RadioParametersDto>,
-    val servingCell: RadioParametersDto,
-    val locationDto: LocationDto
+    var radioParametersDtos: List<RadioParametersDto>,
+    var servingCell: RadioParametersDto = RadioParametersDto(),
+    var locationDto: LocationDto
 ){
     override fun toString(): String = "$locationDto\n$servingCell\n$radioParametersDtos"
+
+    companion object {
+        fun makeDefault() = WrapperDto(
+            radioParametersDtos = mutableListOf(),
+            servingCell = RadioParametersDto(),
+            locationDto = LocationDto()
+        )
+
+    }
 }

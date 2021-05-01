@@ -1,19 +1,17 @@
 package com.isel_5gqos.models
 
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import androidx.work.WorkInfo
+import androidx.lifecycle.LiveData
 import androidx.work.WorkManager
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.common.PROGRESS
+import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
+import com.isel_5gqos.common.db.executeAsyncTaskGeneric
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SessionDto
-import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
-import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
 import java.lang.IllegalArgumentException
 import java.sql.Timestamp
 import java.util.*
@@ -61,6 +59,36 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
     fun updateRadioParameters () {
 
-        TODO("Ir buscar a todas as tabelas a infos e atualizar a activity")
+        val radioParameters = executeAsyncTaskGeneric<String,LiveData<List<RadioParameters>>>(
+            { sessionId : String ->
+                QosApp.db.radioParametersDao().get(sessionId)
+            }
+            ,value.id
+        ) {
+            val radioParametersDto = mutableListOf<RadioParametersDto>()
+            it.value?.forEach{
+
+                radioParametersDto.add(
+                    RadioParametersDto(
+                        no = it.no,
+                        tech = it.tech,
+                        arfcn = it.arfcn,
+                        rssi = it.rssi,
+                        rsrp = it.rsrp,
+                        cId = it.cId,
+                        psc = it.psc,
+                        pci = it.pci,
+                        rssnr = it.rssnr,
+                        rsrq = it.rsrq,
+                        netDataType = enumValueOf(it.netDataType),
+                        isServingCell = it.isServingCell
+                    )
+                )
+            }
+            //TODO Possible pass this to a mapper
+
+            value.radioParameters.radioParametersDtos = radioParametersDto
+        }
+
     }
 }

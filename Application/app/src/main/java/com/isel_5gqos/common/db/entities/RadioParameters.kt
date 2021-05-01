@@ -21,6 +21,7 @@ import androidx.room.ForeignKey
 
 class RadioParameters (
     val regId: String,
+    val no : Int,
     val tech: String,
     val arfcn: Int,
     val rssi: Int,
