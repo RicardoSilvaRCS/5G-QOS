@@ -10,9 +10,10 @@ import com.isel_5gqos.common.db.entities.Ping
 @Dao
 interface PingDao {
 
+    @Query("Select * from Pings where sessionId=:sessionId")
+    fun getPingsBySessionId(sessionId: String): LiveData<List<Ping>>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun addNewPing(vararg pings: Ping)
 
-    @Query("Select * from Pings where sessionId=:sessionId")
-    fun getPingsBySessionId(sessionId: String): LiveData<List<Ping>>
 }

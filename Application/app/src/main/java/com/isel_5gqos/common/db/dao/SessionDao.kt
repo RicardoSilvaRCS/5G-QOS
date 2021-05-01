@@ -7,6 +7,9 @@ import com.isel_5gqos.common.db.entities.Session
 @Dao
 interface SessionDao {
 
+    @Query("Select * from Sessions where id = :session")
+    fun get(session: String): LiveData<List<Session>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg session: Session)
 
@@ -16,6 +19,4 @@ interface SessionDao {
     @Delete()
     fun delete(session: Session)
 
-    @Query("Select * from Sessions where id = :session")
-    fun get(session: String): LiveData<List<Session>>
 }

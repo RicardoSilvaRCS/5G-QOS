@@ -58,4 +58,9 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         asyncTask({ QosApp.db.sessionDao().updateSession(session)}) {}
         WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWorkByTag(WORKER_TAG)
     }
+
+    fun updateRadioParameters () {
+
+        TODO("Ir buscar a todas as tabelas a infos e atualizar a activity")
+    }
 }

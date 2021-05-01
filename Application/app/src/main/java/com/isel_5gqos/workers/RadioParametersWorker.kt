@@ -1,9 +1,9 @@
 package com.isel_5gqos.workers
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -13,13 +13,18 @@ import android.telephony.*
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.room.ColumnInfo
 import androidx.work.*
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
+import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.dtos.LocationDto
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.WrapperDto
-import kotlinx.coroutines.awaitAll
+import java.util.*
+import com.isel_5gqos.QosApp.Companion.db
+import com.isel_5gqos.common.db.entities.Location
+import com.isel_5gqos.utils.Errors.Exceptions
 
 
 class RadioParametersWorker(private val context: Context, private val workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
@@ -53,45 +58,33 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                 //Network Operator Info
                 val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val networkOperatorName = telephonyManager.networkOperatorName
-//                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//                var latLon: Pair<Double, Double> = Pair(0.0,0.0)
-//
-//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0f, object : LocationListener {
-//                    override fun onLocationChanged(location: Location?) {
-//                        latLon = Pair(location?.latitude ?: 0.0, location?.longitude ?: 0.0)
-//                    }
-//
-//                    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-//                    override fun onProviderEnabled(provider: String?) {}
-//                    override fun onProviderDisabled(provider: String?) {}
-//                })
+
 
                 Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
                 Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
                 Log.v(TAG, "${telephonyManager.imei} IMEI")
 
-                setProgress(
-                    workDataOf(
-                        Pair(
-                            PROGRESS,
-                            WrapperDto(
-                                radioParametersDtos = cellInfoList,
-                                servingCell = servingCell,
-                                locationDto = LocationDto(
-                                    networkOperatorName = networkOperatorName,
-                                    latitude = 1.0,//latLon.first,
-                                    longitude = 1.0//latLon.second
-                                )
-                            )
+                insertInfoInDb(
+                    sessionId,
+                    WrapperDto(
+                        radioParametersDtos = cellInfoList,
+                        servingCell = servingCell,
+                        locationDto = LocationDto(
+                            networkOperatorName = networkOperatorName,
+                            latitude = 1.0,//latLon.first,
+                            longitude = 1.0//latLon.second
                         )
+                        //locationDto = getLocation(telephonyManager)
                     )
                 )
+
+                setProgressAsync( workDataOf(PROGRESS to true) ) // notify main activity that model isn't up to date anymore
+
 
                 Thread.sleep(10000)
 
             } catch (ex: Exception) {
-                throw ex
-                //TODO: register new error to db
+                Exceptions(ex)
             }
 
         } while (!workInfo.isCancelled)
@@ -146,6 +139,68 @@ class RadioParametersWorker(private val context: Context, private val workerPara
         }
 
         return null
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLocation (telephonyManager: TelephonyManager) : LocationDto {
+
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        var latLon: Pair<Double, Double> = Pair(0.0, 0.0)
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0f, object : LocationListener {
+
+            override fun onLocationChanged(location: android.location.Location?) {
+                latLon = Pair(location?.latitude ?: 0.0, location?.longitude ?: 0.0)
+            }
+
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+            override fun onProviderEnabled(provider: String?) {}
+            override fun onProviderDisabled(provider: String?) {}
+        })
+
+       val location = LocationDto(
+            networkOperatorName = telephonyManager.networkOperatorName,
+            latitude = latLon.first,
+            longitude = latLon.second
+        )
+
+        return location
+    }
+
+    private fun insertInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
+
+        wrapperDto.radioParametersDtos.forEach{
+            val radioParameter = RadioParameters(
+                regId = UUID.randomUUID().toString(),
+                tech= it.tech ?: "",
+                arfcn= it.arfcn ?: -1 ,
+                rssi= it.rssi?: -1,
+                rsrp= it.rsrp?: -1,
+                cId= it.cId?: -1,
+                psc= it.psc?: -1,
+                pci= it.pci?: -1,
+                rssnr= it.pci?: -1,
+                rsrq= it.pci?: -1,
+                netDataType= it.netDataType.toString(),
+                isServingCell = it.isServingCell,
+                sessionId= sessionId,
+                timestamp= System.currentTimeMillis(),
+            )
+
+            db.radioParametersDao().insert(radioParameter)
+        }
+
+//        val location = Location(
+//             regId= UUID.randomUUID().toString(),
+//             networkOperatorName= wrapperDto.locationDto.networkOperatorName,
+//             latitude= wrapperDto.locationDto.latitude,
+//             longitude= wrapperDto.locationDto.longitude,
+//             sessionId= sessionId,
+//             timestamp= System.currentTimeMillis(),
+//        )
+//
+//        db.locationDao().insert(location)
+
     }
 }
 

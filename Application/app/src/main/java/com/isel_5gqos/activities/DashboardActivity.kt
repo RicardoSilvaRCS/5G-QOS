@@ -8,7 +8,9 @@ import android.widget.LinearLayout
 import android.widget.TableLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.work.ForegroundInfo
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.anychart.AnyChart
@@ -143,12 +145,13 @@ class DashboardActivity : AppCompatActivity() {
             }
         }
 
-        setupRadioParametersBackgroundWorker()
+
         testModel.observe(this) {
             scheduleThroughPutBackgroundWork(sessionId = it.id)
             val request = setupRadioParametersBackgroundWorker(sessionId = it.id, saveToDb = true)
 
-           }
+            updateGraph(it.radioParameters)
+        }
 
         val person = findViewById<TextView>(R.id.person)
         person.text = userName
@@ -160,16 +163,13 @@ class DashboardActivity : AppCompatActivity() {
         WorkManager.getInstance(QosApp.msWebApi.ctx)
             // requestId is the WorkRequest id
             .getWorkInfoByIdLiveData(request.id)
-            .observe(this, { workInfo: WorkInfo? ->
+            .observe(this, Observer{ workInfo: WorkInfo? ->
                 if (workInfo != null) {
                     val progress = workInfo.progress
-                    val value = progress.getInt(PROGRESS,0)
-                    val map = progress.keyValueMap
-                    if(map.isEmpty()) return@observe
-                    val wrapperDto = map[PROGRESS] as WrapperDto
-                    Log.v(TAG, wrapperDto.toString())
-                    updateGraph(wrapperDto)
-                    // Do something with progress information
+                    if(!progress.getBoolean(PROGRESS,false)) return@Observer
+
+                    testModel.updateRadioParameters()
+
                 }
             })
     }

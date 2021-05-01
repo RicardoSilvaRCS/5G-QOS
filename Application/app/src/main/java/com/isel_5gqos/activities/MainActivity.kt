@@ -1,20 +1,18 @@
 package com.isel_5gqos.activities
 
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager.GPS_PROVIDER
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
-import java.util.jar.Manifest
 
 const val USER = "USER"
 const val TOKEN = "TOKEN"

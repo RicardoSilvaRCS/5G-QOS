@@ -8,15 +8,18 @@ import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.QosApp.Companion.db
 import com.isel_5gqos.common.db.entities.ThroughPut
+import com.isel_5gqos.utils.Errors.Exceptions
 import java.util.*
 
-class ThroughPutWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
+//This is only possible because this code is being executed in background on a worker thread from the
+// thread pool. When using the main thread, the insert must be done with an AsyncTask
+class ThroughPutWorker(private val context: Context, private val workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
     companion object {
         var notificationTimer = 1L
     }
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         val workInfo = WorkManager.getInstance(context).getWorkInfoById(this.id)
         val sessionId = inputData.getString(SESSION_ID).toString()
 
@@ -41,16 +44,12 @@ class ThroughPutWorker(private val context: Context, private val workerParams: W
                     timestamp = System.currentTimeMillis()
                 )
 
-                //This is only possible because this code is being executed in background on a worker thread from the
-                // thread pool. When using the main thread, the insert must be done with an AsyncTask
                 db.throughPutDao().insert(throughPut)
 
-                Log.v(TAG,"${throughPut.rxResult} TX KBits/s , ${throughPut.txResult} tx KBits/s WORKER WORKER WORKER")
             } catch (ex: Exception) {
 
-                Log.v(TAG, ex.toString())
+                Exceptions(ex)
 
-                return Result.failure()
             }
 
         } while (!workInfo.isCancelled)
@@ -58,7 +57,7 @@ class ThroughPutWorker(private val context: Context, private val workerParams: W
     }
 }
 
-fun scheduleThroughPutBackgroundWork(sessionId: String) {
+fun scheduleThroughPutBackgroundWork(sessionId: String): OneTimeWorkRequest {
     val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
     val inputData = workDataOf(SESSION_ID to sessionId)
 
@@ -67,6 +66,9 @@ fun scheduleThroughPutBackgroundWork(sessionId: String) {
         .setInputData(inputData)
         .build()
 
-    Log.v(TAG,request.id.toString())
     WorkManager.getInstance(QosApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG,ExistingWorkPolicy.REPLACE,request)
+
+    return request
 }
+
+//TODO ("implement observer in activity")

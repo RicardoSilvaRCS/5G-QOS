@@ -10,10 +10,10 @@ import com.isel_5gqos.common.db.entities.ThroughPut
 @Dao
 interface ThroughPutDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(vararg throughPutDto: ThroughPut)
-
     @Query("Select * from ThroughPuts where sessionId = :session")
     fun get(session: String): LiveData<List<ThroughPut>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(vararg throughPutDto: ThroughPut)
 
 }

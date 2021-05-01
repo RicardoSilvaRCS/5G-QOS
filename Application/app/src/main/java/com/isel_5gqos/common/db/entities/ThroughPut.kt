@@ -15,8 +15,7 @@ import androidx.room.ForeignKey
         )
     ],
     primaryKeys = [
-        "regId",
-        "sessionId"
+        "regId"
     ]
 )
 

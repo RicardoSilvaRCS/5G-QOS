@@ -10,10 +10,10 @@ import com.isel_5gqos.common.db.entities.User
 @Dao
 interface UserDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg throughPutDto: User)
-
     @Query("Select * from Users where username = :username")
     fun getToken(username: String): LiveData<List<User>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(vararg throughPutDto: User)
 
 }

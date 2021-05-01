@@ -10,9 +10,13 @@ import com.isel_5gqos.common.db.entities.Error
 @Dao
 interface ErrorDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun addNewError(vararg errorDto: Error)
+    @Query("Select * from Errors")
+    fun getAllErrors (): LiveData<List<Error>>
 
-    @Query("Select * from Errors where id=:id")
+    @Query("Select * from Errors where regId=:id")
     fun getErrorById(id: String): LiveData<List<Error>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(vararg errorDto: Error)
+
 }
