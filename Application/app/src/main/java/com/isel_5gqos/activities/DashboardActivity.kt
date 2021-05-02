@@ -11,16 +11,16 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.anychart.AnyChart
-import com.anychart.AnyChart.treeMap
 import com.anychart.AnyChartView
 import com.anychart.chart.common.dataentry.DataEntry
 import com.anychart.enums.SelectionMode
 import com.anychart.enums.TreeFillingMethod
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.common.PROGRESS
-import com.isel_5gqos.common.TAG
+import com.isel_5gqos.common.*
+import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
@@ -39,11 +39,13 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     var nrOfTests = 0
+    val workers = mutableListOf<WorkRequest>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
 
-        val userName = intent.getStringExtra(USER)?.toString() ?: ""
+        val username = intent.getStringExtra(USER)?.toString() ?: ""
 
         /**Create new Session*/
 
@@ -51,14 +53,22 @@ class DashboardActivity : AppCompatActivity() {
         val deleteButton = findViewById<Button>(R.id.endSession)
 
         createButton.setOnClickListener {
-            testModel.startSession(userName)
+            finishWorkers()
+            testModel.startSession(username)
+
+            scheduleThroughPutBackgroundWork(sessionId = testModel.value.id )
+            setupRadioParametersBackgroundWorker(sessionId = testModel.value.id, saveToDb = true)
+
             Log.v(TAG, "Started session")
         }
 
         deleteButton.setOnClickListener {
             testModel.endSession()
+
             Log.v(TAG, "Finished session")
 
+            finishWorkers()
+            setupRadioParametersBackgroundWorker(DEFAULT_SESSION_ID, false)
         }
 
         val tries = findViewById<TextView>(R.id.tries)
@@ -143,15 +153,11 @@ class DashboardActivity : AppCompatActivity() {
             }
         }
 
-        testModel.startDefaultSession(userName)
+        /**Start real Time Session*/
+        startDefaultSession(username)
+
 
         testModel.observe(this) {
-            if(it.id == "-1")
-                setupRadioParametersBackgroundWorker("", false)
-            else {
-                scheduleThroughPutBackgroundWork(sessionId = it.id)
-                setupRadioParametersBackgroundWorker(sessionId = it.id, saveToDb = true)
-            }
 
             if(!it.radioParameters.radioParametersDtos.isEmpty()){
                 updateGraph(it.radioParameters)
@@ -160,21 +166,29 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         val person = findViewById<TextView>(R.id.person)
-        person.text = userName
+        person.text = username
     }
 
-    private fun setupRadioParametersBackgroundWorker(sessionId: String = "", saveToDb: Boolean = false) {
-        val request = scheduleRadioParametersBackgroundWork(sessionId, saveToDb)
+    private fun startDefaultSession(username: String) {
+        asyncTask({testModel.startDefaultSession(username)}){
+           setupRadioParametersBackgroundWorker(DEFAULT_SESSION_ID, false)
+        }
+    }
 
+    private fun setupRadioParametersBackgroundWorker(sessionId: String, saveToDb: Boolean = false) {
+        val request = scheduleRadioParametersBackgroundWork(sessionId, saveToDb)
+        workers.add(request)
         WorkManager.getInstance(QosApp.msWebApi.ctx)
             // requestId is the WorkRequest id
             .getWorkInfoByIdLiveData(request.id)
             .observe(this, Observer { workInfo: WorkInfo? ->
                 if (workInfo != null) {
                     val progress = workInfo.progress
-                    if (!progress.getBoolean(PROGRESS, false)) return@Observer
 
-                    testModel.updateRadioParameters(if (sessionId.isEmpty()) "-1" else "", this)
+                    if (progress.getBoolean(PROGRESS, false)){
+                        testModel.updateRadioParameters(sessionId, this)
+                    }
+
                 }
             })
     }
@@ -213,8 +227,8 @@ class DashboardActivity : AppCompatActivity() {
         table.labels().fontSize(12.0)
         table.labels().format(
             """function() {
-      return this.getData('product');
-    }"""
+                          return this.getData('product');
+                      }"""
         )
 
         table.padding(10.0, 10.0, 10.0, 20.0)
@@ -229,4 +243,14 @@ class DashboardActivity : AppCompatActivity() {
         tableView.setChart(table)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        finishWorkers()
+    }
+
+    private fun finishWorkers (){
+        workers.forEach {
+            WorkManager.getInstance(QosApp.msWebApi.ctx).cancelWorkById(it.id)
+        }
+    }
 }

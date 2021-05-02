@@ -3,6 +3,7 @@ package com.isel_5gqos.models
 import androidx.lifecycle.LifecycleOwner
 import androidx.work.WorkManager
 import com.isel_5gqos.QosApp
+import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Session
@@ -47,7 +48,7 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         val dateFormatted: String = formatDate(currentDate)
 
         val sessionDto = SessionDto(
-            id = "-1",
+            id = DEFAULT_SESSION_ID,
             sessionName = "Session $dateFormatted",
             username = userName,
             beginDate = Timestamp(System.currentTimeMillis())
@@ -72,7 +73,6 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         val session = value.dtoToDaoMapper()
 
         asyncTask({ QosApp.db.sessionDao().updateSession(session) }) {}
-        WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWorkByTag(WORKER_TAG)
     }
 
     fun updateRadioParameters(id: String = "", lifecycleOwner: LifecycleOwner) {
@@ -102,7 +102,6 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             val session = value
             session.radioParameters.radioParametersDtos = radioParametersDto
             liveData.postValue(session)
-//            value.radioParameters.radioParametersDtos = radioParametersDto
         }
     }
 }

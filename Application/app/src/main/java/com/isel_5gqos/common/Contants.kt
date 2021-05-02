@@ -14,6 +14,7 @@ const val READ_PHONE_STATE_PERMISSION = 4
 /**        TAGS           */
 const val TAG = "5GQosApp"
 const val WORKER_TAG = "WORKER_TAG"
+const val RADIO_PARAMETERS_WORKER_ID = "RAD_PAR_ID"
 
 /**   WORKER INPUT DATA   */
 const val SESSION_ID = "SESSION_ID"
@@ -23,6 +24,7 @@ const val PROGRESS = "PROGRESS"
 /**      VARIABLES        */
 const val K_BIT = 1024
 const val BITS_IN_BYTE = 8
+const val DEFAULT_SESSION_ID = "-1" /**Default sessionId for real time*/
 
 
 /**  RADIO PARAMS CONSTANT VALUES */
@@ -30,3 +32,5 @@ const val MIN_RSSI = -113
 const val MIN_RSRP = -140
 const val MIN_RSRQ = -34
 const val MIN_RSSNR = -20
+
+

@@ -10,7 +10,7 @@ interface RadioParametersDao {
     @Query("Select * from RadioParameters where sessionId = :session")
     fun get(session: String): LiveData<List<RadioParameters>>
 
-    @Query("Select * from RadioParameters where sessionId = :sessionId and isUpToDate = 0 LIMIT 5")
+    @Query("Select * from RadioParameters where sessionId = :sessionId and isUpToDate = 1")
     fun getUpToDateRadioParameters(sessionId: String): LiveData<List<RadioParameters>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

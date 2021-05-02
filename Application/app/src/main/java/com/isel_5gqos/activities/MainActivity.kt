@@ -8,7 +8,9 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
+import androidx.work.WorkManager
 import com.google.android.material.textfield.TextInputEditText
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.factories.QosFactory
@@ -29,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         qosFactory = QosFactory(savedInstanceState)
+
+        cancelWorkers()
 
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
@@ -101,6 +105,10 @@ class MainActivity : AppCompatActivity() {
         else{
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
+    }
+
+    fun cancelWorkers (){
+        WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWork()
     }
 
 }

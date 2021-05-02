@@ -19,6 +19,8 @@ class QosApp : Application() {
         msWebApi = ManagementServiceWebApi(applicationContext)
         db = Room.databaseBuilder(applicationContext, QosDb::class.java, "Qos-Db").build()
     }
+
+
 }
 
 

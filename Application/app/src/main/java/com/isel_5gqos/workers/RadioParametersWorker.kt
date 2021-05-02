@@ -59,12 +59,11 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                 val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val networkOperatorName = telephonyManager.networkOperatorName
 
-
                 val imei = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     Settings.Secure.getString(
                         context.getContentResolver(),
                         Settings.Secure.ANDROID_ID
-                    );
+                    )
                 } else {
                     telephonyManager.imei
                 }
@@ -88,8 +87,10 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                         )
                     )
                 }) {
-                    if (!workInfo.get().progress.getBoolean(PROGRESS, false))
-                        setProgressAsync(workDataOf(PROGRESS to true)) // notify main activity that model isn't up to date anymore
+                    if (workInfo.get()?.progress?.getBoolean(PROGRESS, false) == false)
+                        // notify main activity that model isn't up to date anymore
+                        setProgressAsync(workDataOf(PROGRESS to true))
+
                 }
 
                 Thread.sleep(10000)
@@ -101,6 +102,8 @@ class RadioParametersWorker(private val context: Context, private val workerPara
             }
 
         } while (!workInfo.isCancelled)
+
+        Log.v(TAG,"Finished")
 
         return Result.success()
     }
@@ -186,7 +189,6 @@ class RadioParametersWorker(private val context: Context, private val workerPara
 
     private fun insertInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
         wrapperDto.radioParametersDtos.forEach { radioParametersDto ->
-            Log.v(TAG, "Have Radio")
             val radioParameter = RadioParameters(
                 regId = UUID.randomUUID().toString(),
                 no = radioParametersDto.no,
@@ -239,9 +241,8 @@ fun scheduleRadioParametersBackgroundWork(sessionId: String, saveToDb: Boolean):
 
 
     Log.v(TAG, request.id.toString())
-    GlobalScope.launch {
-        WorkManager.getInstance(QosApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE, request)
-    }
+
+    WorkManager.getInstance(QosApp.msWebApi.ctx).enqueue(request)
 
     return request
 }
