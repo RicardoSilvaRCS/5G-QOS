@@ -2,53 +2,48 @@ package com.isel_5gqos.workers
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.app.job.*
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
+import android.os.PersistableBundle
 import android.provider.Settings
 import android.telephony.*
 import android.util.Log
+import androidx.constraintlayout.motion.widget.Debug.getLocation
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.lifecycle.LifecycleOwner
-import androidx.work.*
+import androidx.core.content.ContextCompat
+import androidx.work.ListenableWorker
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.QosApp.Companion.db
 import com.isel_5gqos.common.*
-import com.isel_5gqos.common.db.WorkerUtils
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.RadioParameters
-import com.isel_5gqos.common.db.entities.Worker
 import com.isel_5gqos.dtos.LocationDto
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.utils.Errors.Exceptions
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.*
 
-class RadioParametersWorker(private val context: Context, private val workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
-
-    var finished :Boolean = false
-
-    override suspend fun doWork(): Result {
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return Result.failure()
-        }
-        db.workerDao().getWorkersByTag(this.tags.firstOrNull()?:"").observe(context as LifecycleOwner){
-            it.forEach { worker ->
-                Log.v(TAG,worker.toString())
+class RadioParametersJobWorkItem : JobService() {
+    private val context = QosApp.msWebApi.ctx
+    private var jobCancelled = false;
+    override fun onStartJob(params: JobParameters?): Boolean {
+        fun work():Boolean {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return false
             }
-        }
 
-        val workInfo = WorkManager.getInstance(context).getWorkInfoById(this.id)
-        val saveToDb = inputData.getBoolean(DB_SAVE, false)
-        val sessionId = if (saveToDb) inputData.getString(SESSION_ID).toString() else "-1"
+//        val workInfo = WorkManager.getInstance(context).getWorkInfoById(this.id)
+        val saveToDb = params?.extras?.getBoolean(DB_SAVE) ?: false
+        val sessionId = if (saveToDb) params?.extras?.getString(SESSION_ID).toString() else "-1"
 
-        val telephonyManager = getSystemService(context, TelephonyManager::class.java)
+        val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         do {
@@ -62,7 +57,6 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                     }
                 }
 
-                val servingCell = getServingCell(cellInfoList)
                 //Network Operator Info
                 val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val networkOperatorName = telephonyManager.networkOperatorName
@@ -85,7 +79,6 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                         sessionId,
                         WrapperDto(
                             radioParametersDtos = cellInfoList,
-                            servingCell = servingCell,
                             /*locationDto = LocationDto(
                                   networkOperatorName = networkOperatorName,
                                   latitude = 1.0,//latLon.first,
@@ -94,30 +87,28 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                             locationDto = getLocation(telephonyManager)
                         )
                     )
-                }) {
-                    if (workInfo.get()?.progress?.getBoolean(PROGRESS, false) == false)
-                        // notify main activity that model isn't up to date anymore
-                        setProgressAsync(workDataOf(PROGRESS to true))
+                }) {}
 
-                }
-
-                Thread.sleep(10000)
+                Thread.sleep(1000)
 
             } catch (ex: Exception) {
                 Exceptions(ex)
-                if (workInfo.isCancelled)
-                    return Result.failure()
             }
+        } while (!jobCancelled)
 
-        } while (!finished)
+        Log.v(TAG, "Finished work ascvacnwegdbujoscv adckhijoascjvschjkl dfbvgshdcklsddjbfvh aefjlk jhaskfdyjbdvg")
 
-        Log.v(TAG,"Finished work ascvacnwegdbujoscv adckhijoascjvschjkl dfbvgshdcklsddjbfvh aefjlk jhaskfdyjbdvg")
-
-        return Result.success()
+        return true
+    }
+        asyncTask({work()}){}
+        return true
     }
 
-    private fun getServingCell(cellInfoList: MutableList<RadioParametersDto>) =
-        cellInfoList.find { it.isServingCell } ?: cellInfoList[0]
+    override fun onStopJob(params: JobParameters?): Boolean {
+        jobCancelled = true;
+        return true
+    }
+
 
     private fun convertCellInfoToRadioParameter(index: Int, cellInfo: CellInfo): RadioParametersDto? {
         if (cellInfo is CellInfoGsm) {
@@ -216,8 +207,8 @@ class RadioParametersWorker(private val context: Context, private val workerPara
                 isUpToDate = true
             )
 
-            asyncTask({ db.radioParametersDao().invalidateRadioParameters(radioParameter.sessionId) }) {
-                asyncTask({ db.radioParametersDao().insert(radioParameter)}) {}
+            asyncTask({ QosApp.db.radioParametersDao().invalidateRadioParameters(radioParameter.sessionId) }) {
+                asyncTask({ QosApp.db.radioParametersDao().insert(radioParameter)}) {}
             }
         }
 
@@ -235,22 +226,14 @@ class RadioParametersWorker(private val context: Context, private val workerPara
     }
 }
 
-fun scheduleRadioParametersBackgroundWork(sessionId: String, saveToDb: Boolean): OneTimeWorkRequest {
-    val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
-    val inputData = workDataOf(SESSION_ID to sessionId, DB_SAVE to saveToDb)
-
-    val request: OneTimeWorkRequest = OneTimeWorkRequest.Builder(RadioParametersWorker::class.java)
-        .setInputData(inputData)
-        .addTag(WORKER_TAG)
-        .setConstraints(constraints)
-        .build()
-
-    WorkerUtils.addWorkerToDb(Worker(request.id.toString(), WORKER_TAG,false))
-
-    Log.v(TAG, request.id.toString())
-
-    WorkManager.getInstance(QosApp.msWebApi.ctx).enqueue(request)
-
-    return request
+fun scheduleRadioParametersJob(sessionId: String,saveToDb:Boolean):JobInfo {
+    val builder = JobInfo.Builder(0, ComponentName(QosApp.msWebApi.ctx,RadioParametersJobWorkItem::class.java))
+    val extras = PersistableBundle(2)
+    extras.putString(SESSION_ID,sessionId)
+    extras.putBoolean(DB_SAVE, saveToDb)
+    builder.setExtras(extras)
+    val job = builder.build()
+    QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).schedule(job)
+    return job
 }

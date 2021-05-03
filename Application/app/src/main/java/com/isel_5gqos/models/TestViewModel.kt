@@ -15,6 +15,10 @@ import java.util.*
 
 class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
+    fun signalWorkerToEnd(workerTag:String) {
+        QosApp.db.workerDao().signalWorkerByTagToFinish(workerTag)
+    }
+
     fun startSession(userName: String) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
 
@@ -65,14 +69,17 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         asyncTask({ QosApp.db.sessionDao().insert(session) }) { liveData.postValue(sessionDto) }
     }
 
-    fun endSession() {
+    fun endSession(workerTag: String) {
         val endDate = Timestamp(System.currentTimeMillis())
 
         value.endDate = endDate
 
         val session = value.dtoToDaoMapper()
 
-        asyncTask({ QosApp.db.sessionDao().updateSession(session) }) {}
+        asyncTask({
+            QosApp.db.sessionDao().updateSession(session)
+            QosApp.db.workerDao().signalWorkerByTagToFinish(workerTag)
+        }) {}
     }
 
     fun updateRadioParameters(id: String = "", lifecycleOwner: LifecycleOwner) {

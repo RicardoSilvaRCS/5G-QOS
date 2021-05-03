@@ -32,8 +32,6 @@ class MainActivity : AppCompatActivity() {
 
         qosFactory = QosFactory(savedInstanceState)
 
-        cancelWorkers()
-
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
 
@@ -105,10 +103,6 @@ class MainActivity : AppCompatActivity() {
         else{
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
-    }
-
-    fun cancelWorkers (){
-        WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWork()
     }
 
 }

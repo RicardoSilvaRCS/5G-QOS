@@ -6,12 +6,14 @@ import com.isel_5gqos.common.db.QosDb
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class QosApp : Application() {
     companion object {
         lateinit var msWebApi: ManagementServiceWebApi
         lateinit var db: QosDb
         val sessionId = UUID.randomUUID().toString()
+        val workersAvailable = ConcurrentLinkedQueue<String>()
     }
 
     override fun onCreate() {

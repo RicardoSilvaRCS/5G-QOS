@@ -46,5 +46,8 @@ class WrapperDto(
             locationDto = LocationDto()
         )
 
+        private fun getServingCell(cellInfoList: MutableList<RadioParametersDto>) =
+            if(cellInfoList.isEmpty()) RadioParametersDto()
+            else cellInfoList.find { it.isServingCell } ?: cellInfoList[0]
     }
 }

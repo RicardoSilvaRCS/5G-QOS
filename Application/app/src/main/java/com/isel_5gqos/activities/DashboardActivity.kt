@@ -1,6 +1,7 @@
 package com.isel_5gqos.activities
 
 import android.app.ActionBar
+import android.app.job.JobScheduler
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -26,6 +27,7 @@ import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.anyChartUtils.customTreeDataEntry
 import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
+import com.isel_5gqos.workers.scheduleRadioParametersJob
 import com.isel_5gqos.workers.scheduleThroughPutBackgroundWork
 
 
@@ -45,6 +47,8 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
 
+        val job = scheduleRadioParametersJob(DEFAULT_SESSION_ID, false)
+
         val username = intent.getStringExtra(USER)?.toString() ?: ""
 
         /**Create new Session*/
@@ -53,23 +57,29 @@ class DashboardActivity : AppCompatActivity() {
         val deleteButton = findViewById<Button>(R.id.endSession)
 
         createButton.setOnClickListener {
-            finishWorkers()
-            testModel.startSession(username)
+            finishThreads()
+//            asyncTask({testModel.signalWorkerToEnd(WORKER_TAG)}){
+                testModel.startSession(username)
 
-            scheduleThroughPutBackgroundWork(sessionId = testModel.value.id )
-            setupRadioParametersBackgroundWorker(sessionId = testModel.value.id, saveToDb = true)
+                scheduleThroughPutBackgroundWork(sessionId = testModel.value.id )
+                setupRadioParametersBackgroundWorker(sessionId = testModel.value.id, saveToDb = true)
 
-            Log.v(TAG, "Started session")
+                Log.v(TAG, "Started session")
+//            }
         }
 
         deleteButton.setOnClickListener {
-            testModel.endSession()
+           /* finishThreads()
+            testModel.endSession(WORKER_TAG)
+
 
             Log.v(TAG, "Finished session")
 
-            finishWorkers()
-            setupRadioParametersBackgroundWorker(DEFAULT_SESSION_ID, false)
+            setupRadioParametersBackgroundWorker(DEFAULT_SESSION_ID, false)*/
+
+            QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).cancel(job.id)
         }
+
 
         val tries = findViewById<TextView>(R.id.tries)
 
@@ -193,8 +203,6 @@ class DashboardActivity : AppCompatActivity() {
             })
     }
 
-
-
     private fun updateGraph(wrapperDto: WrapperDto) {
         val tableView = findViewById<AnyChartView>(R.id.graph)
         val table = AnyChart.treeMap()
@@ -245,12 +253,11 @@ class DashboardActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        finishWorkers()
+        testModel.signalWorkerToEnd(WORKER_TAG)
     }
 
-    private fun finishWorkers (){
-        workers.forEach {
-            WorkManager.getInstance(QosApp.msWebApi.ctx).cancelWorkById(it.id)
-        }
+    fun finishThreads() {
+        Log.v(TAG,workers.size.toString())
+        WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWork()
     }
 }
