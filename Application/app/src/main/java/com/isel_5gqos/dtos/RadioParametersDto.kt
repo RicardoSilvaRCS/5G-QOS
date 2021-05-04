@@ -1,10 +1,10 @@
 package com.isel_5gqos.dtos
 
 import com.isel_5gqos.common.NetworkDataTypesEnum
-import java.sql.Timestamp
+import com.isel_5gqos.common.db.entities.RadioParameters
 
 class RadioParametersDto(
-    val no : Int=-1,
+    val no: Int = -1,
     val tech: String? = null,
     val arfcn: Int? = null,  //Absolute Radio-Frequency Channel Number
     val rssi: Int? = null,   //Received signal strength indication
@@ -15,10 +15,30 @@ class RadioParametersDto(
     val rssnr: Int? = null,  //Reference Signal Signal-to-noise Ratio
     val rsrq: Int? = null,   //Reference Signal Received Quality
     val netDataType: NetworkDataTypesEnum = NetworkDataTypesEnum.LTE,
-    val isServingCell : Boolean = false
+    val isServingCell: Boolean = false
 ) {
 
-    fun getCellId() = when(netDataType) {
+    companion object {
+        fun convertRadioParametersToDto(radioParams: List<RadioParameters>) = radioParams.map { convertRadioParametersToDto(it) }
+
+        fun convertRadioParametersToDto(radioParameter: RadioParameters) = RadioParametersDto(
+            no = radioParameter.no,
+            tech = radioParameter.tech,
+            arfcn = radioParameter.arfcn,
+            rssi = radioParameter.rssi,
+            rsrp = radioParameter.rsrp,
+            cId = radioParameter.cId,
+            psc = radioParameter.psc,
+            pci = radioParameter.pci,
+            rssnr = radioParameter.rssnr,
+            rsrq = radioParameter.rsrq,
+            netDataType = NetworkDataTypesEnum.valueOf(radioParameter.netDataType.toUpperCase()),
+            isServingCell = radioParameter.isServingCell,
+        )
+
+    }
+
+    fun getCellId() = when (netDataType) {
         NetworkDataTypesEnum.LTE -> pci.toString()
         NetworkDataTypesEnum.GSM -> cId.toString()
         NetworkDataTypesEnum.UMTS -> psc.toString()
@@ -27,16 +47,16 @@ class RadioParametersDto(
 }
 
 class LocationDto(
-    val networkOperatorName:String? = null,
-    val latitude:Double? = null,
-    val longitude:Double? = null
+    val networkOperatorName: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
 class WrapperDto(
     var radioParametersDtos: List<RadioParametersDto>,
     var servingCell: RadioParametersDto = RadioParametersDto(),
     var locationDto: LocationDto
-){
+) {
     override fun toString(): String = "$locationDto\n$servingCell\n$radioParametersDtos"
 
     companion object {
@@ -47,7 +67,7 @@ class WrapperDto(
         )
 
         private fun getServingCell(cellInfoList: MutableList<RadioParametersDto>) =
-            if(cellInfoList.isEmpty()) RadioParametersDto()
+            if (cellInfoList.isEmpty()) RadioParametersDto()
             else cellInfoList.find { it.isServingCell } ?: cellInfoList[0]
     }
 }

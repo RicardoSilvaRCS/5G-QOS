@@ -4,5 +4,5 @@ enum class NetworkDataTypesEnum {
     LTE,
     GSM,
     UMTS,
-    FiveG
+    FIVEG
 }

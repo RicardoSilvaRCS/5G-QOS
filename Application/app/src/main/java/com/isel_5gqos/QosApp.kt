@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.room.Room
 import com.isel_5gqos.common.db.QosDb
 import com.isel_5gqos.common.services.ManagementServiceWebApi
-import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 

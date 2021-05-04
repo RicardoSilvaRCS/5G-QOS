@@ -1,12 +1,13 @@
 package com.isel_5gqos.models
 
 import androidx.lifecycle.LifecycleOwner
-import androidx.work.WorkManager
+import androidx.lifecycle.LiveData
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
-import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
+import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
@@ -14,10 +15,6 @@ import java.sql.Timestamp
 import java.util.*
 
 class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
-
-    fun signalWorkerToEnd(workerTag:String) {
-        QosApp.db.workerDao().signalWorkerByTagToFinish(workerTag)
-    }
 
     fun startSession(userName: String) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
@@ -43,9 +40,11 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         asyncTask({ QosApp.db.sessionDao().insert(session) }) {}
 
         liveData.postValue(sessionDto)
-
-        //scheduleThroughPutBackgroundWork(sessionId = session.id)
     }
+
+    fun registerRadioParametersChanges (sessionId : String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
+
+    fun registerThroughPutChanges (sessionId : String) = QosApp.db.throughPutDao().get(sessionId)
 
     fun startDefaultSession(userName: String) {
         val currentDate = Date(System.currentTimeMillis())
@@ -78,7 +77,6 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
         asyncTask({
             QosApp.db.sessionDao().updateSession(session)
-            QosApp.db.workerDao().signalWorkerByTagToFinish(workerTag)
         }) {}
     }
 
@@ -111,4 +109,5 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             liveData.postValue(session)
         }
     }
+
 }

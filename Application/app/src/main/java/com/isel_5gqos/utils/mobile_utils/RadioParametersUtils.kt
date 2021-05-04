@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.MobileUtils
+package com.isel_5gqos.utils.mobile_utils
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -17,7 +17,7 @@ class RadioParametersUtils {
 
             val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
 
-            telephonyManager?.allCellInfo?.forEachIndexed { index, cellInfo ->
+            telephonyManager.allCellInfo?.forEachIndexed { index, cellInfo ->
                 val currentCell = convertCellInfoToRadioParameter(index, cellInfo)
                 if (currentCell != null) {
                     cellInfoList.add(currentCell)
@@ -68,7 +68,7 @@ class RadioParametersUtils {
                     no = index + 1,
                     tech = "5G${cellInfo.cellIdentity}",
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
-                    netDataType = NetworkDataTypesEnum.FiveG,
+                    netDataType = NetworkDataTypesEnum.FIVEG,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING
                 )
             }

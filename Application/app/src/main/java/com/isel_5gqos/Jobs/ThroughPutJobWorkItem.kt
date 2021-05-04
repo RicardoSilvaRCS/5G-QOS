@@ -10,14 +10,12 @@ import android.os.PersistableBundle
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.common.db.entities.Location
-import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.ThroughPut
-import com.isel_5gqos.dtos.WrapperDto
-import com.isel_5gqos.utils.Errors.Exceptions
+import com.isel_5gqos.utils.errors.Exceptions
 import java.util.*
 
 class ThroughPutJobWorkItem : JobService() {
+
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
 

@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.anyChartUtils
+package com.isel_5gqos.utils.any_chart_utils
 
 import com.anychart.chart.common.dataentry.TreeDataEntry
 
