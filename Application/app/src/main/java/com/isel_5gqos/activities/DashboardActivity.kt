@@ -1,6 +1,7 @@
 package com.isel_5gqos.activities
 
 import android.app.ActionBar
+import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +19,8 @@ import com.anychart.AnyChartView
 import com.anychart.chart.common.dataentry.DataEntry
 import com.anychart.enums.SelectionMode
 import com.anychart.enums.TreeFillingMethod
+import com.isel_5gqos.Jobs.scheduleRadioParametersJob
+import com.isel_5gqos.Jobs.scheduleThroughPutJob
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
@@ -27,11 +30,11 @@ import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.anyChartUtils.customTreeDataEntry
 import com.isel_5gqos.workers.scheduleRadioParametersBackgroundWork
-import com.isel_5gqos.workers.scheduleRadioParametersJob
 import com.isel_5gqos.workers.scheduleThroughPutBackgroundWork
 
 
 class DashboardActivity : AppCompatActivity() {
+
     private val model by lazy {
         ViewModelProviders.of(this)[InternetViewModel::class.java]
     }
@@ -41,13 +44,12 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     var nrOfTests = 0
-    val workers = mutableListOf<WorkRequest>()
+
+    private val jobs = mutableListOf<JobInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
-
-        val job = scheduleRadioParametersJob(DEFAULT_SESSION_ID, false)
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
 
@@ -57,27 +59,22 @@ class DashboardActivity : AppCompatActivity() {
         val deleteButton = findViewById<Button>(R.id.endSession)
 
         createButton.setOnClickListener {
-            finishThreads()
-//            asyncTask({testModel.signalWorkerToEnd(WORKER_TAG)}){
-                testModel.startSession(username)
+            cancelAllJobs()
 
-                scheduleThroughPutBackgroundWork(sessionId = testModel.value.id )
-                setupRadioParametersBackgroundWorker(sessionId = testModel.value.id, saveToDb = true)
+            testModel.startSession(username)
 
-                Log.v(TAG, "Started session")
-//            }
+            jobs.add(scheduleThroughPutJob(sessionId = testModel.value.id))
+            jobs.add(scheduleRadioParametersJob(sessionId = testModel.value.id, true ))
+
+            Log.v(TAG, "Started session")
         }
 
         deleteButton.setOnClickListener {
-           /* finishThreads()
             testModel.endSession(WORKER_TAG)
 
+            cancelAllJobs()
 
-            Log.v(TAG, "Finished session")
-
-            setupRadioParametersBackgroundWorker(DEFAULT_SESSION_ID, false)*/
-
-            QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).cancel(job.id)
+            jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
         }
 
 
@@ -165,7 +162,7 @@ class DashboardActivity : AppCompatActivity() {
 
         /**Start real Time Session*/
         startDefaultSession(username)
-
+        jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
 
         testModel.observe(this) {
 
@@ -179,28 +176,19 @@ class DashboardActivity : AppCompatActivity() {
         person.text = username
     }
 
-    private fun startDefaultSession(username: String) {
-        asyncTask({testModel.startDefaultSession(username)}){
-           setupRadioParametersBackgroundWorker(DEFAULT_SESSION_ID, false)
+    private fun cancelAllJobs() {
+
+        jobs.forEach{
+            QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).cancel(it.id)
         }
+
+        jobs.clear()
     }
 
-    private fun setupRadioParametersBackgroundWorker(sessionId: String, saveToDb: Boolean = false) {
-        val request = scheduleRadioParametersBackgroundWork(sessionId, saveToDb)
-        workers.add(request)
-        WorkManager.getInstance(QosApp.msWebApi.ctx)
-            // requestId is the WorkRequest id
-            .getWorkInfoByIdLiveData(request.id)
-            .observe(this, Observer { workInfo: WorkInfo? ->
-                if (workInfo != null) {
-                    val progress = workInfo.progress
-
-                    if (progress.getBoolean(PROGRESS, false)){
-                        testModel.updateRadioParameters(sessionId, this)
-                    }
-
-                }
-            })
+    private fun startDefaultSession(username: String) {
+        asyncTask({testModel.startDefaultSession(username)}){
+            scheduleRadioParametersJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false )
+        }
     }
 
     private fun updateGraph(wrapperDto: WrapperDto) {
@@ -251,13 +239,4 @@ class DashboardActivity : AppCompatActivity() {
         tableView.setChart(table)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        testModel.signalWorkerToEnd(WORKER_TAG)
-    }
-
-    fun finishThreads() {
-        Log.v(TAG,workers.size.toString())
-        WorkManager.getInstance(QosApp.msWebApi.ctx).cancelAllWork()
-    }
 }
