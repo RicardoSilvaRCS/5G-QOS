@@ -1,4 +1,4 @@
-package com.isel_5gqos.Jobs
+package com.isel_5gqos.jobs
 
 import android.app.job.JobInfo
 import android.app.job.JobParameters

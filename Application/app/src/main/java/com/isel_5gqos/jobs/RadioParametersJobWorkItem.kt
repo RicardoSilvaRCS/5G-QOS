@@ -1,17 +1,22 @@
-package com.isel_5gqos.Jobs
+package com.isel_5gqos.jobs
 
 import android.Manifest
-import android.app.job.*
+import android.app.job.JobInfo
+import android.app.job.JobParameters
+import android.app.job.JobScheduler
+import android.app.job.JobService
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.PersistableBundle
-import android.telephony.*
+import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.QosApp.Companion.db
-import com.isel_5gqos.common.*
+import com.isel_5gqos.common.DB_SAVE
+import com.isel_5gqos.common.SESSION_ID
+import com.isel_5gqos.common.TAG
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.common.db.entities.RadioParameters
@@ -119,8 +124,7 @@ class RadioParametersJobWorkItem : JobService() {
             timestamp = System.currentTimeMillis(),
         )
 
-        asyncTask({ db.locationDao().insert(location) }) {}
-
+        db.locationDao().insert(location)
     }
 }
 
