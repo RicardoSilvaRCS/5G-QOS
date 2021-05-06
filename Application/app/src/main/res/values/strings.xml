@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">5GQos</string>
+    <string name="rx_kbits_s">RX kbits/s</string>
+    <string name="tx_kbits_s">TX kbits/s</string>
 </resources>
