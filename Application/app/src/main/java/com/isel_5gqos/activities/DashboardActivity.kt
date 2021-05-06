@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
+import com.github.mikephil.charting.charts.Chart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend.LegendForm
 import com.github.mikephil.charting.components.LimitLine
@@ -32,6 +33,7 @@ import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.ThroughPutDto
 import com.isel_5gqos.jobs.scheduleRadioParametersJob
+import com.isel_5gqos.jobs.scheduleThroughPutJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 
@@ -49,15 +51,20 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     private val jobs = mutableListOf<JobInfo>()
 
     /**ThroughPut Ui elements**/
-    private var chart: LineChart = findViewById(R.id.chart1)
-    private var seekBarX: SeekBar = findViewById(R.id.seekBar1)
-    private var seekBarY: SeekBar = findViewById(R.id.seekBar2)
-    private var tvX: TextView = findViewById(R.id.tvXMax)
-    private var tvY: TextView = findViewById(R.id.tvYMax)
-
+    private lateinit var chart: LineChart
+    private lateinit var seekBarX: SeekBar
+    private lateinit var seekBarY: SeekBar
+    private lateinit var tvX: TextView
+    private lateinit var tvY: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
+
+        chart = findViewById(R.id.chart1)
+        seekBarX = findViewById(R.id.seekBar1)
+        seekBarY = findViewById(R.id.seekBar2)
+        tvX = findViewById(R.id.tvXMax)
+        tvY = findViewById(R.id.tvYMax)
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
 
@@ -86,13 +93,15 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         deleteButton.setOnClickListener {
             cancelAllJobs()
 
-            jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
+//            jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
+            jobs.add(scheduleThroughPutJob(DEFAULT_SESSION_ID))
         }
 
 
         /**Start real Time Session*/
         startDefaultSession(username)
-        jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
+        jobs.add(scheduleThroughPutJob(sessionId = DEFAULT_SESSION_ID))
+//        jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
 
 
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
@@ -101,11 +110,18 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
             val throughPuts = ThroughPutDto.convertThroughPutToDto(it)
+            val list = throughPuts.mapIndexed { index, throughput ->
+                Pair(index,throughput.rxResult.toInt())
+//                seekBarX.setProgress(index,false)
+//                seekBarY.setProgress(throughput.rxResult.toInt(),false)
+            }
+
+            setData(throughPuts)
+            chart.invalidate()
         }
 
         val person = findViewById<TextView>(R.id.person)
         person.text = username
-
 
         initializethroughPutCharRepresentation()
 
@@ -196,28 +212,32 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         tvX.text = seekBarX.progress.toString()
         tvY.text = seekBarY.progress.toString()
 
-        setData(seekBarX.progress, seekBarY.progress)
+//        setData(seekBarX.progress, seekBarY.progress);
 
         chart.invalidate();
     }
 
-    private fun setData( throughPuts : List<ThroughPutDto>) {
+    private fun setData(throughPutDtos: List<ThroughPutDto>) {
 
         val rxValues = mutableListOf<Entry>()
         val txValues = mutableListOf<Entry>()
 
-       throughPuts.forEachIndexed { index, throughPutDto ->
-           rxValues.add(Entry(index.toFloat(),throughPutDto.rxResult.toFloat()))
-           txValues.add(Entry(index.toFloat(),throughPutDto.txResult.toFloat()))
-       }
+        throughPutDtos.forEachIndexed { index, throughPutDto ->
+            rxValues.add(Entry(index.toFloat(),throughPutDto.rxResult.toFloat()))
+            txValues.add(Entry(index.toFloat(),throughPutDto.txResult.toFloat()))
+        }
 
         val set1: LineDataSet
+        val set2: LineDataSet
         if (chart.data != null &&
             chart.data.dataSetCount > 0
         ) {
             set1 = chart.data.getDataSetByIndex(0) as LineDataSet
             set1.values = rxValues
             set1.notifyDataSetChanged()
+//            set2 = chart.data.getDataSetByIndex(0) as LineDataSet
+//            set2.values = rxValues
+//            set2.notifyDataSetChanged()
             chart.data.notifyDataChanged()
             chart.notifyDataSetChanged()
         } else {

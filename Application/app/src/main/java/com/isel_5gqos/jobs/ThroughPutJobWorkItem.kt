@@ -7,6 +7,7 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.net.TrafficStats
 import android.os.PersistableBundle
+import android.util.Log
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
@@ -18,6 +19,7 @@ class ThroughPutJobWorkItem : JobService() {
 
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
+    private val jobTimeOut = 1000L
 
     override fun onStartJob(params: JobParameters?): Boolean {
 
@@ -30,7 +32,7 @@ class ThroughPutJobWorkItem : JobService() {
                     val oldCountRX = TrafficStats.getMobileRxBytes()
                     val oldCountTX = TrafficStats.getMobileTxBytes()
 
-                    Thread.sleep(1000)
+                    Thread.sleep(jobTimeOut)
 
                     val newCountRx = TrafficStats.getMobileRxBytes()
                     val newCountTx = TrafficStats.getMobileTxBytes()
@@ -38,10 +40,13 @@ class ThroughPutJobWorkItem : JobService() {
                     val mobileTxPackets = TrafficStats.getMobileTxPackets()
 
                     insertInfoInDb(
-                        rxResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / K_BIT,
-                        txResult = (newCountRx - oldCountRX) * BITS_IN_BYTE / K_BIT,
+                        rxResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / (K_BIT * (jobTimeOut / 1000).toDouble()).toLong(),
+                        txResult = (newCountRx - oldCountRX) * BITS_IN_BYTE / (K_BIT * (jobTimeOut / 1000).toDouble()).toLong(),
                         sessionId = sessionId
                     )
+
+                    Log.v(TAG,"RX = ${newCountRx-oldCountRX}")
+                    Log.v(TAG,"TX = ${newCountTx-oldCountTX}")
 
                 } catch (ex: Exception) {
 
@@ -73,7 +78,7 @@ class ThroughPutJobWorkItem : JobService() {
             timestamp = System.currentTimeMillis()
         )
 
-        asyncTask({QosApp.db.throughPutDao().insert(throughPut)}){}
+        QosApp.db.throughPutDao().insert(throughPut)
 
     }
 
@@ -82,7 +87,7 @@ class ThroughPutJobWorkItem : JobService() {
 
 fun scheduleThroughPutJob (sessionId: String): JobInfo {
 
-    val builder = JobInfo.Builder(0, ComponentName(QosApp.msWebApi.ctx,RadioParametersJobWorkItem::class.java))
+    val builder = JobInfo.Builder(0, ComponentName(QosApp.msWebApi.ctx,ThroughPutJobWorkItem::class.java))
 
     val extras = PersistableBundle(2)
     extras.putString(SESSION_ID,sessionId)
