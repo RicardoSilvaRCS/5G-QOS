@@ -142,5 +142,6 @@ fun scheduleRadioParametersJob(sessionId: String, saveToDb: Boolean): JobInfo {
         .build()
 
     QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).schedule(job)
+
     return job
 }

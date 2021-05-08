@@ -2,17 +2,16 @@ package com.isel_5gqos.activities
 
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
+import android.content.Context
 import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.SeekBar
-import android.widget.TextView
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
-import com.github.mikephil.charting.charts.Chart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend.LegendForm
 import com.github.mikephil.charting.components.LimitLine
@@ -24,7 +23,7 @@ import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
-import com.github.mikephil.charting.utils.Utils
+import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
@@ -36,6 +35,8 @@ import com.isel_5gqos.jobs.scheduleRadioParametersJob
 import com.isel_5gqos.jobs.scheduleThroughPutJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.mp_android_chart_utils.ChartItem
+import com.isel_5gqos.utils.mp_android_chart_utils.LineChartItem
 
 
 class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, OnChartValueSelectedListener {
@@ -56,15 +57,17 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     private lateinit var seekBarY: SeekBar
     private lateinit var tvX: TextView
     private lateinit var tvY: TextView
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
 
-        chart = findViewById(R.id.chart1)
-        seekBarX = findViewById(R.id.seekBar1)
-        seekBarY = findViewById(R.id.seekBar2)
-        tvX = findViewById(R.id.tvXMax)
-        tvY = findViewById(R.id.tvYMax)
+//        chart = findViewById(R.id.chart1)
+//        seekBarX = findViewById(R.id.seekBar1)
+//        seekBarY = findViewById(R.id.seekBar2)
+//        tvX = findViewById(R.id.tvXMax)
+//        tvY = findViewById(R.id.tvYMax)
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
 
@@ -100,31 +103,61 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
         /**Start real Time Session*/
         startDefaultSession(username)
-        jobs.add(scheduleThroughPutJob(sessionId = DEFAULT_SESSION_ID))
-//        jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
-
 
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
             val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
         }
 
-        testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
-            val throughPuts = ThroughPutDto.convertThroughPutToDto(it)
-            val list = throughPuts.mapIndexed { index, throughput ->
-                Pair(index,throughput.rxResult.toInt())
-//                seekBarX.setProgress(index,false)
-//                seekBarY.setProgress(throughput.rxResult.toInt(),false)
-            }
 
-            setData(throughPuts)
-            chart.invalidate()
+        //initializethroughPutCharRepresentation()
+
+        val lv = findViewById<ListView>(R.id.layoutListView)
+        val list: ArrayList<ChartItem> = ArrayList()
+
+
+
+        var throughPutChart = LineChartItem(generateDataLine(mutableListOf()),QosApp.msWebApi.ctx)
+        list.add(throughPutChart)
+        var cda = ChartDataAdapter(QosApp.msWebApi.ctx,list)
+
+        lv.adapter = cda
+        testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
+
+            val throughPuts = ThroughPutDto.convertThroughPutToDto(it)
+
+            throughPutChart.setmChartData(generateDataLine(throughPuts))
+            cda.notifyDataSetInvalidated()
+            lv.invalidate()
+//            cda = ChartDataAdapter(QosApp.msWebApi.ctx,list)
+//            lv.adapter = cda
+//            lv.invalidate()
+
+//            val list = throughPuts.mapIndexed { index, throughput ->
+//                  Pair(index,throughput.rxResult.toInt())
+////                seekBarX.setProgress(index,false)
+////                seekBarY.setProgress(throughput.rxResult.toInt(),false)
+//            }
+
+//            setData(throughPuts)
+//            chart.invalidate()
         }
 
-        val person = findViewById<TextView>(R.id.person)
-        person.text = username
+    }
 
-        initializethroughPutCharRepresentation()
+    private fun cancelAllJobs() {
 
+        jobs.forEach {
+            QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).cancel(it.id)
+        }
+
+        jobs.clear()
+    }
+
+    private fun startDefaultSession(username: String) {
+        asyncTask({ testModel.startDefaultSession(username) }) {
+            jobs.add(scheduleRadioParametersJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false))
+            jobs.add(scheduleThroughPutJob(sessionId = DEFAULT_SESSION_ID))
+        }
     }
 
     /**Initializing UI ThroughPut graphic**/
@@ -191,21 +224,6 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         val l = chart.legend
         l.form = LegendForm.LINE
 
-    }
-
-    private fun cancelAllJobs() {
-
-        jobs.forEach {
-            QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).cancel(it.id)
-        }
-
-        jobs.clear()
-    }
-
-    private fun startDefaultSession(username: String) {
-        asyncTask({ testModel.startDefaultSession(username) }) {
-            scheduleRadioParametersJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false)
-        }
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -299,4 +317,77 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     }
 
     override fun onNothingSelected() {}
+
+    /**END**/
+
+
+    /**Multiple chart layout**/
+
+    /**
+     * generates a random ChartData object with just one DataSet
+     *
+     * @return Line data
+     */
+        private fun generateDataLine(throughPutDtos: List<ThroughPutDto>): LineData? {
+
+            val rxValues = java.util.ArrayList<Entry>()
+            val txValues = java.util.ArrayList<Entry>()
+
+
+            if(throughPutDtos.isEmpty()) {
+                rxValues.add(Entry(0f,0f))
+                txValues.add(Entry(0f,0f))
+            }
+            else {
+
+                throughPutDtos.forEachIndexed { index, throughPutDto ->
+
+                    rxValues.add(Entry(index.toFloat(),throughPutDto.rxResult.toFloat()))
+                    txValues.add(Entry(index.toFloat(),throughPutDto.txResult.toFloat()))
+
+                }
+            }
+
+            val rx = LineDataSet(rxValues, "RX Kbit/s")
+            rx.lineWidth = 2.5f
+            rx.circleRadius = 1f
+            rx.highLightColor = Color.rgb(244, 117, 117)
+            rx.setDrawValues(false)
+
+            val tx = LineDataSet(txValues, "TX Kbit/s")
+            tx.lineWidth = 2.5f
+            tx.circleRadius = 1f
+            tx.highLightColor = Color.rgb(244, 117, 117)
+            tx.color = ColorTemplate.VORDIPLOM_COLORS[0]
+            tx.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+            tx.setDrawValues(false)
+        
+        
+            val sets = java.util.ArrayList<ILineDataSet>()
+            sets.add(rx)
+            sets.add(tx)
+
+            return LineData(sets)
+        }
+
+        /** adapter that supports 3 different item types  */
+        private class ChartDataAdapter internal constructor(context: Context?, objects: List<ChartItem?>?) :
+            ArrayAdapter<ChartItem?>(context!!, 0, objects!!) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                return getItem(position)!!.getView(position, convertView, context)
+            }
+
+            override fun getItemViewType(position: Int): Int {
+                // return the views type
+                val ci = getItem(position)
+                return ci?.itemType ?: 0
+            }
+
+            override fun getViewTypeCount(): Int {
+                return 3 // we have 3 different item-types
+            }
+        }
+    /**END**/
+
+
 }

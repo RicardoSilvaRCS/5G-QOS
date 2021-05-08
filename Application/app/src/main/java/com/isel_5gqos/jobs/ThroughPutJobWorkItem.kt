@@ -19,7 +19,7 @@ class ThroughPutJobWorkItem : JobService() {
 
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
-    private val jobTimeOut = 1000L
+    private val jobTimeOut = 2000L
 
     override fun onStartJob(params: JobParameters?): Boolean {
 

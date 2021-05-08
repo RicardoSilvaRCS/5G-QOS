@@ -71,83 +71,70 @@
             tools:layout_editor_absoluteX="167dp" />
     </HorizontalScrollView>
 
-    <TextView
-        android:id="@+id/Welcome"
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--        <com.github.mikephil.charting.charts.LineChart-->
+<!--            android:id="@+id/chart1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_above="@+id/seekBar1" />-->
+
+<!--        <SeekBar-->
+<!--            android:id="@+id/seekBar2"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentLeft="true"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:layout_margin="8dp"-->
+<!--            android:layout_marginRight="5dp"-->
+<!--            android:layout_toLeftOf="@+id/tvYMax"-->
+<!--            android:max="150"-->
+<!--            android:paddingBottom="12dp" />-->
+
+<!--        <SeekBar-->
+<!--            android:id="@+id/seekBar1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_above="@+id/seekBar2"-->
+<!--            android:layout_margin="8dp"-->
+<!--            android:layout_marginRight="5dp"-->
+<!--            android:layout_marginBottom="35dp"-->
+<!--            android:layout_toLeftOf="@+id/tvXMax"-->
+<!--            android:max="500"-->
+<!--            android:paddingBottom="12dp" />-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/tvXMax"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignBottom="@+id/seekBar1"-->
+<!--            android:layout_alignParentRight="true"-->
+<!--            android:layout_marginRight="10dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:gravity="right"-->
+<!--            android:text="@string/rx_kbits_s"-->
+<!--            android:textAppearance="?android:attr/textAppearanceMedium" />-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/tvYMax"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignBottom="@+id/seekBar2"-->
+<!--            android:layout_alignParentRight="true"-->
+<!--            android:layout_marginRight="10dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:gravity="right"-->
+<!--            android:text="@string/tx_kbits_s"-->
+<!--            android:textAppearance="?android:attr/textAppearanceMedium" />-->
+
+<!--    </RelativeLayout>-->
+
+    <ListView
+        android:id="@+id/layoutListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Welcome"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="78dp" />
-
-    <TextView
-        android:id="@+id/person"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/Welcome"
-        tools:layout_editor_absoluteY="78dp" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/chart1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/seekBar1" />
-
-        <SeekBar
-            android:id="@+id/seekBar2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="8dp"
-            android:layout_marginRight="5dp"
-            android:layout_toLeftOf="@+id/tvYMax"
-            android:max="150"
-            android:paddingBottom="12dp" />
-
-        <SeekBar
-            android:id="@+id/seekBar1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/seekBar2"
-            android:layout_margin="8dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginBottom="35dp"
-            android:layout_toLeftOf="@+id/tvXMax"
-            android:max="500"
-            android:paddingBottom="12dp" />
-
-        <TextView
-            android:id="@+id/tvXMax"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/seekBar1"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_marginBottom="15dp"
-            android:gravity="right"
-            android:text="@string/rx_kbits_s"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/tvYMax"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/seekBar2"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_marginBottom="15dp"
-            android:gravity="right"
-            android:text="@string/tx_kbits_s"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    </RelativeLayout>
+        android:layout_height="match_parent" >
+    </ListView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
