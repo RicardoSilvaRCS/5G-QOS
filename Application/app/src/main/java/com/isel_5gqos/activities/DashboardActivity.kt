@@ -14,8 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend.LegendForm
-import com.github.mikephil.charting.components.LimitLine
-import com.github.mikephil.charting.components.LimitLine.LimitLabelPosition
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -36,7 +34,8 @@ import com.isel_5gqos.jobs.scheduleThroughPutJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.mp_android_chart_utils.ChartItem
-import com.isel_5gqos.utils.mp_android_chart_utils.LineChartItem
+import kotlinx.coroutines.runBlocking
+import kotlin.math.max
 
 
 class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, OnChartValueSelectedListener {
@@ -52,28 +51,24 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     private val jobs = mutableListOf<JobInfo>()
 
     /**ThroughPut Ui elements**/
-    private lateinit var chart: LineChart
+    private val chart: LineChart by lazy {
+        findViewById(R.id.chart)
+    }
+
     private lateinit var seekBarX: SeekBar
     private lateinit var seekBarY: SeekBar
     private lateinit var tvX: TextView
     private lateinit var tvY: TextView
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
-
-//        chart = findViewById(R.id.chart1)
-//        seekBarX = findViewById(R.id.seekBar1)
-//        seekBarY = findViewById(R.id.seekBar2)
-//        tvX = findViewById(R.id.tvXMax)
-//        tvY = findViewById(R.id.tvYMax)
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
 
         /**Create new Session*/
 
-        val createButton = findViewById<Button>(R.id.createSession)
+        /*val createButton = findViewById<Button>(R.id.createSession)
         val deleteButton = findViewById<Button>(R.id.endSession)
 
         createButton.setOnClickListener {
@@ -98,8 +93,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
 //            jobs.add(scheduleRadioParametersJob(DEFAULT_SESSION_ID, false))
             jobs.add(scheduleThroughPutJob(DEFAULT_SESSION_ID))
-        }
-
+        }*/
 
         /**Start real Time Session*/
         startDefaultSession(username)
@@ -109,37 +103,45 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         }
 
 
-        //initializethroughPutCharRepresentation()
+        initializeThroughputCharRepresentation()
 
-        val lv = findViewById<ListView>(R.id.layoutListView)
-        val list: ArrayList<ChartItem> = ArrayList()
+//        val listView = findViewById<ListView>(R.id.layoutListView)
+//        val list: ArrayList<ChartItem> = ArrayList()
 
 
+//        val throughPutChart = LineChartItem(initThroughputDataLine(), QosApp.msWebApi.ctx)
 
-        var throughPutChart = LineChartItem(generateDataLine(mutableListOf()),QosApp.msWebApi.ctx)
-        list.add(throughPutChart)
-        var cda = ChartDataAdapter(QosApp.msWebApi.ctx,list)
+//        chart.setOnChartValueSelectedListener(this)
 
-        lv.adapter = cda
+
+//        list.add(throughPutChart)
+//        val chartDataAdapter = ChartDataAdapter(QosApp.msWebApi.ctx, list)
+//        listView.adapter = chartDataAdapter
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
+            if(it == null) return@observe
+            val data = chart.data ?: return@observe
 
-            val throughPuts = ThroughPutDto.convertThroughPutToDto(it)
+            val throughPut = ThroughPutDto.convertThroughPutToDto(it)
 
-            throughPutChart.setmChartData(generateDataLine(throughPuts))
-            cda.notifyDataSetInvalidated()
-            lv.invalidate()
-//            cda = ChartDataAdapter(QosApp.msWebApi.ctx,list)
-//            lv.adapter = cda
-//            lv.invalidate()
+            val rxdataSet = data.dataSets[0]
+            val txDataSet = data.dataSets[1]
+            data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), 0)
+            data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), 1)
 
-//            val list = throughPuts.mapIndexed { index, throughput ->
-//                  Pair(index,throughput.rxResult.toInt())
-////                seekBarX.setProgress(index,false)
-////                seekBarY.setProgress(throughput.rxResult.toInt(),false)
-//            }
+            if(chart.axisLeft.axisMaximum < throughPut.rxResult || chart.axisLeft.axisMaximum < throughPut.txResult)
+                chart.axisLeft.axisMaximum = max(throughPut.rxResult,throughPut.txResult).toFloat()
 
-//            setData(throughPuts)
-//            chart.invalidate()
+            // enable touch gestures
+            chart.setTouchEnabled(true)
+
+            // limit the number of visible entries
+            chart.setVisibleXRangeMaximum(10f)
+
+            // move to the latest entry
+            // chart.moveViewToX(chart.data.entryCount.toFloat())
+
+            chart.data.notifyDataChanged()
+            chart.notifyDataSetChanged()
         }
 
     }
@@ -147,7 +149,11 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     private fun cancelAllJobs() {
 
         jobs.forEach {
-            QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).cancel(it.id)
+            val systemService = QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java)
+
+            it.extras.get("args")
+            systemService
+                .cancel(it.id)
         }
 
         jobs.clear()
@@ -161,69 +167,75 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     }
 
     /**Initializing UI ThroughPut graphic**/
-    private fun initializethroughPutCharRepresentation() {
+    private fun initializeThroughputCharRepresentation() {
 
-        seekBarX.setOnSeekBarChangeListener(this)
-
-        seekBarY.max = 180;
-        seekBarY.setOnSeekBarChangeListener(this)
+//        seekBarX.setOnSeekBarChangeListener(this)
+//
+//        seekBarY.max = 180;
+//        seekBarY.setOnSeekBarChangeListener(this)
 
         chart.setBackgroundColor(Color.WHITE)
         // disable description text
         chart.description.isEnabled = false
-        // enable touch gestures
-        chart.setTouchEnabled(true)
-        chart.setOnChartValueSelectedListener(this)
-        chart.setDrawGridBackground(false)
+
+        // enable scaling and dragging
         chart.isDragEnabled = true
         chart.setScaleEnabled(true)
+        chart.setDrawGridBackground(false)
+
+        // if disabled, scaling can be done on x- and y-axis separately
         chart.setPinchZoom(true)
 
-
         val xAxis = chart.xAxis
-        xAxis.enableGridDashedLine(10f, 10f, 0f)
-
+//        xAxis.enableGridDashedLine(10f, 10f, 0f)
+        xAxis.setDrawGridLines(false)
+        xAxis.setAvoidFirstLastClipping(true)
+        xAxis.isEnabled = true
 
         val yAxis = chart.axisLeft
+        yAxis.setDrawGridLines(true)
+//        yAxis.enableGridDashedLine(10f, 10f, 0f)
+        yAxis.axisMaximum = 10f
+        yAxis.axisMinimum = 0f
+
         chart.axisRight.isEnabled = false
-        yAxis.enableGridDashedLine(10f, 10f, 0f)
-        yAxis.axisMaximum = 200f
-        yAxis.axisMinimum = -50f
+//
+//        // // Create Limit Lines // //
+//        val llXAxis = LimitLine(9f, "Index 10")
+//        llXAxis.lineWidth = 4f
+//        llXAxis.enableDashedLine(10f, 10f, 0f)
+//        llXAxis.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
+//        llXAxis.textSize = 10f
+//        //llXAxis.typeface = tfRegular
+//
+//        val ll1 = LimitLine(150f, "Upper Limit")
+//        ll1.lineWidth = 4f
+//        ll1.enableDashedLine(10f, 10f, 0f)
+//        ll1.labelPosition = LimitLabelPosition.RIGHT_TOP
+//        ll1.textSize = 10f
+//        //ll1.typeface = tfRegular
+//
+//        val ll2 = LimitLine(-30f, "Lower Limit")
+//        ll2.lineWidth = 4f
+//        ll2.enableDashedLine(10f, 10f, 0f)
+//        ll2.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
+//        ll2.textSize = 10f
+//        //ll2.typeface = tfRegular
 
-        // // Create Limit Lines // //
-        val llXAxis = LimitLine(9f, "Index 10")
-        llXAxis.lineWidth = 4f
-        llXAxis.enableDashedLine(10f, 10f, 0f)
-        llXAxis.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-        llXAxis.textSize = 10f
-        //llXAxis.typeface = tfRegular
+//        yAxis.setDrawLimitLinesBehindData(true)
+//        xAxis.setDrawLimitLinesBehindData(true)
+//
+//
+//        yAxis.addLimitLine(ll1)
+//        yAxis.addLimitLine(ll2)
 
-        val ll1 = LimitLine(150f, "Upper Limit")
-        ll1.lineWidth = 4f
-        ll1.enableDashedLine(10f, 10f, 0f)
-        ll1.labelPosition = LimitLabelPosition.RIGHT_TOP
-        ll1.textSize = 10f
-        //ll1.typeface = tfRegular
+        // add empty data
+        chart.data = initThroughputDataLine()
 
-        val ll2 = LimitLine(-30f, "Lower Limit")
-        ll2.lineWidth = 4f
-        ll2.enableDashedLine(10f, 10f, 0f)
-        ll2.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-        ll2.textSize = 10f
-        //ll2.typeface = tfRegular
+//        chart.animateX(1500)
 
-        yAxis.setDrawLimitLinesBehindData(true)
-        xAxis.setDrawLimitLinesBehindData(true)
-
-
-        yAxis.addLimitLine(ll1)
-        yAxis.addLimitLine(ll2)
-
-        chart.animateX(1500)
-
-        val l = chart.legend
-        l.form = LegendForm.LINE
-
+//        val l = chart.legend
+//        l.form = LegendForm.LINE
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -241,8 +253,8 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         val txValues = mutableListOf<Entry>()
 
         throughPutDtos.forEachIndexed { index, throughPutDto ->
-            rxValues.add(Entry(index.toFloat(),throughPutDto.rxResult.toFloat()))
-            txValues.add(Entry(index.toFloat(),throughPutDto.txResult.toFloat()))
+            rxValues.add(Entry(index.toFloat(), throughPutDto.rxResult.toFloat()))
+            txValues.add(Entry(index.toFloat(), throughPutDto.txResult.toFloat()))
         }
 
         val set1: LineDataSet
@@ -328,65 +340,53 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
      *
      * @return Line data
      */
-        private fun generateDataLine(throughPutDtos: List<ThroughPutDto>): LineData? {
+    private fun initThroughputDataLine(): LineData? {
 
-            val rxValues = java.util.ArrayList<Entry>()
-            val txValues = java.util.ArrayList<Entry>()
+        val rxValues = java.util.ArrayList<Entry>()
+        val txValues = java.util.ArrayList<Entry>()
+
+        rxValues.add(Entry(0f, 0f))
+        txValues.add(Entry(0f, 0f))
+
+        val rx = LineDataSet(rxValues, "RX Kbit/s")
+        rx.lineWidth = 2.5f
+        rx.circleRadius = 1f
+        rx.highLightColor = Color.rgb(244, 117, 117)
+        rx.setDrawValues(false)
+
+        val tx = LineDataSet(txValues, "TX Kbit/s")
+        tx.lineWidth = 2.5f
+        tx.circleRadius = 1f
+        tx.highLightColor = Color.rgb(244, 117, 117)
+        tx.color = ColorTemplate.VORDIPLOM_COLORS[0]
+        tx.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        tx.setDrawValues(false)
 
 
-            if(throughPutDtos.isEmpty()) {
-                rxValues.add(Entry(0f,0f))
-                txValues.add(Entry(0f,0f))
-            }
-            else {
+        val sets = java.util.ArrayList<ILineDataSet>()
+        sets.add(rx)
+        sets.add(tx)
 
-                throughPutDtos.forEachIndexed { index, throughPutDto ->
+        return LineData(sets)
+    }
 
-                    rxValues.add(Entry(index.toFloat(),throughPutDto.rxResult.toFloat()))
-                    txValues.add(Entry(index.toFloat(),throughPutDto.txResult.toFloat()))
-
-                }
-            }
-
-            val rx = LineDataSet(rxValues, "RX Kbit/s")
-            rx.lineWidth = 2.5f
-            rx.circleRadius = 1f
-            rx.highLightColor = Color.rgb(244, 117, 117)
-            rx.setDrawValues(false)
-
-            val tx = LineDataSet(txValues, "TX Kbit/s")
-            tx.lineWidth = 2.5f
-            tx.circleRadius = 1f
-            tx.highLightColor = Color.rgb(244, 117, 117)
-            tx.color = ColorTemplate.VORDIPLOM_COLORS[0]
-            tx.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
-            tx.setDrawValues(false)
-        
-        
-            val sets = java.util.ArrayList<ILineDataSet>()
-            sets.add(rx)
-            sets.add(tx)
-
-            return LineData(sets)
+    /** adapter that supports 3 different item types  */
+    private class ChartDataAdapter internal constructor(context: Context?, objects: List<ChartItem?>?) :
+        ArrayAdapter<ChartItem?>(context!!, 0, objects!!) {
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            return getItem(position)!!.getView(position, convertView, context)
         }
 
-        /** adapter that supports 3 different item types  */
-        private class ChartDataAdapter internal constructor(context: Context?, objects: List<ChartItem?>?) :
-            ArrayAdapter<ChartItem?>(context!!, 0, objects!!) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                return getItem(position)!!.getView(position, convertView, context)
-            }
-
-            override fun getItemViewType(position: Int): Int {
-                // return the views type
-                val ci = getItem(position)
-                return ci?.itemType ?: 0
-            }
-
-            override fun getViewTypeCount(): Int {
-                return 3 // we have 3 different item-types
-            }
+        override fun getItemViewType(position: Int): Int {
+            // return the views type
+            val ci = getItem(position)
+            return ci?.itemType ?: 0
         }
+
+        override fun getViewTypeCount(): Int {
+            return 3 // we have 3 different item-types
+        }
+    }
     /**END**/
 
 

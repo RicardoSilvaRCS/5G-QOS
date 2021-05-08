@@ -28,4 +28,5 @@ public abstract class ChartItem {
     public abstract View getView(int position, View convertView, Context c);
 
     public abstract void setmChartData (ChartData<?> chartData);
+    public abstract ChartData<?> getmChartData ();
 }

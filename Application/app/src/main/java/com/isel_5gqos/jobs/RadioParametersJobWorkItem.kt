@@ -1,11 +1,9 @@
 package com.isel_5gqos.jobs
 
 import android.Manifest
-import android.app.job.JobInfo
-import android.app.job.JobParameters
-import android.app.job.JobScheduler
-import android.app.job.JobService
+import android.app.job.*
 import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.PersistableBundle
 import android.telephony.TelephonyManager
@@ -35,6 +33,8 @@ class RadioParametersJobWorkItem : JobService() {
     override fun onStartJob(params: JobParameters?): Boolean {
 
         fun work(): Boolean {
+            val dequeueWork = params!!.dequeueWork() as JobWorkItem
+            val stringExtra = dequeueWork.intent.getStringExtra("args") //stringExtra
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return false
@@ -56,7 +56,6 @@ class RadioParametersJobWorkItem : JobService() {
                     Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
                     Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
                     Log.v(TAG, "${imei ?: ""} IMEI")
-
 
                     insertInfoInDb(
                         sessionId,
@@ -137,11 +136,15 @@ fun scheduleRadioParametersJob(sessionId: String, saveToDb: Boolean): JobInfo {
     extras.putString(SESSION_ID, sessionId)
     extras.putBoolean(DB_SAVE, saveToDb)
 
-    val job = builder.setExtras(extras)
+    val job = builder
+        .setExtras(extras)
         .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
         .build()
 
-    QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).schedule(job)
+//    QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).schedule(job)
+    val intent = Intent()
+    intent.putExtra("args","radioParameters")
+    QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).enqueue(job, JobWorkItem(intent))
 
     return job
 }

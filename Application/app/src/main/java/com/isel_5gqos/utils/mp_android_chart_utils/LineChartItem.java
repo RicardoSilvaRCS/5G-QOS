@@ -86,6 +86,11 @@ public class LineChartItem extends ChartItem {
         this.mChartData = chartData;
     }
 
+    @Override
+    public ChartData<?> getmChartData() {
+        return mChartData;
+    }
+
     private static class ViewHolder {
         LineChart chart;
     }

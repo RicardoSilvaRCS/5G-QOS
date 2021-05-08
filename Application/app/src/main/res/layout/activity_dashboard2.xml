@@ -71,6 +71,14 @@
             tools:layout_editor_absoluteX="167dp" />
     </HorizontalScrollView>
 
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="30dp"
+        />
+
 <!--    <RelativeLayout-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="match_parent">-->
@@ -131,10 +139,11 @@
 
 <!--    </RelativeLayout>-->
 
-    <ListView
+<!--    <ListView
         android:id="@+id/layoutListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-    </ListView>
+
+    </ListView>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
