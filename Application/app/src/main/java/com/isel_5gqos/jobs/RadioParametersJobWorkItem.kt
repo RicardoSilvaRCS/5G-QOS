@@ -29,7 +29,9 @@ class RadioParametersJobWorkItem : JobService() {
 
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
-
+    private val functionsMap = mapOf(
+        "radioParameters" to JobsWorkFunctions::radioParametersWork
+    )
     override fun onStartJob(params: JobParameters?): Boolean {
 
         fun work(): Boolean {
@@ -46,31 +48,7 @@ class RadioParametersJobWorkItem : JobService() {
             val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
 
             do {
-                try {
-
-                    val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager!!)
-
-                    val imei = MobileInfoUtils.getImei(context, telephonyManager)
-
-                    //TODO CAN get this info only once
-                    Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
-                    Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
-                    Log.v(TAG, "${imei ?: ""} IMEI")
-
-                    insertInfoInDb(
-                        sessionId,
-                        WrapperDto(
-                            radioParametersDtos = cellInfoList,
-                            locationDto = LocationUtils.getLocation(telephonyManager, context)
-                        )
-                    )
-
-                    Thread.sleep(1000)
-
-                } catch (ex: Exception) {
-                    Exceptions(ex)
-                }
-
+                functionsMap[stringExtra!!]?.let { it(telephonyManager!!,sessionId,context) }
             } while (!jobCancelled)
 
             Log.v(TAG, "Finished work ascvacnwegdbujoscv adckhijoascjvschjkl dfbvgshdcklsddjbfvh aefjlk jhaskfdyjbdvg")
@@ -86,45 +64,6 @@ class RadioParametersJobWorkItem : JobService() {
         return true
     }
 
-    private fun insertInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
-
-        db.radioParametersDao().invalidateRadioParameters(sessionId)
-
-        val radioParams = wrapperDto.radioParametersDtos.map { radioParametersDto ->
-
-            RadioParameters(
-                regId = UUID.randomUUID().toString(),
-                no = radioParametersDto.no,
-                tech = radioParametersDto.tech ?: "",
-                arfcn = radioParametersDto.arfcn ?: -1,
-                rssi = radioParametersDto.rssi ?: -1,
-                rsrp = radioParametersDto.rsrp ?: -1,
-                cId = radioParametersDto.cId ?: -1,
-                psc = radioParametersDto.psc ?: -1,
-                pci = radioParametersDto.pci ?: -1,
-                rssnr = radioParametersDto.pci ?: -1,
-                rsrq = radioParametersDto.pci ?: -1,
-                netDataType = radioParametersDto.netDataType.toString(),
-                isServingCell = radioParametersDto.isServingCell,
-                sessionId = sessionId,
-                timestamp = System.currentTimeMillis(),
-                isUpToDate = true
-            )
-        }.toTypedArray()
-
-        db.radioParametersDao().insert(*radioParams)
-
-//        val location = Location(
-//            regId = UUID.randomUUID().toString(),
-//            networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
-//            latitude = wrapperDto.locationDto.latitude!!,
-//            longitude = wrapperDto.locationDto.longitude!!,
-//            sessionId = sessionId,
-//            timestamp = System.currentTimeMillis(),
-//        )
-//
-//        db.locationDao().insert(location)
-    }
 }
 
 

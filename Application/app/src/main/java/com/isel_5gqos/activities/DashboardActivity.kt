@@ -18,13 +18,11 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.common.DEFAULT_SESSION_ID
-import com.isel_5gqos.common.TAG
+import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.ThroughPutDto
 import com.isel_5gqos.jobs.scheduleRadioParametersJob
-import com.isel_5gqos.jobs.scheduleThroughPutJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 import kotlin.math.max
@@ -104,10 +102,10 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
             val throughPut = ThroughPutDto.convertThroughPutToDto(it)
 
-            val rxdataSet = data.dataSets[0]
-            val txDataSet = data.dataSets[1]
-            data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), 0)
-            data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), 1)
+            val rxdataSet = data.dataSets[ThroughputIndex.RX]
+            val txDataSet = data.dataSets[ThroughputIndex.TX]
+            data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), ThroughputIndex.RX)
+            data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), ThroughputIndex.TX)
 
             if(chart.axisLeft.axisMaximum < throughPut.rxResult || chart.axisLeft.axisMaximum < throughPut.txResult)
                 chart.axisLeft.axisMaximum = max(throughPut.rxResult,throughPut.txResult).toFloat()
@@ -119,37 +117,36 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             chart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-            chart.moveViewToX(chart.data.entryCount.toFloat())
+//            chart.moveViewToX(chart.data.entryCount.toFloat())
 
             chart.data.notifyDataChanged()
             chart.notifyDataSetChanged()
         }
 
-        initLineChart(servingCellChart,initServingCellData())
+        initLineChart(servingCellChart,lineInitData = initServingCellData(),isNegative = true)
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
-            if(it == null) return@observe
+            if(it == null || it.isEmpty()) return@observe
+            val data = servingCellChart.data ?: return@observe
 
             val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
 
-            if(radioParametersDto.isEmpty()) return@observe
-
-            val data = servingCellChart.data ?: return@observe
-
-            val rssiDataSet = data.dataSets[0]
-            val rsrpDataSet = data.dataSets[1]
-            val rsqrDataSet = data.dataSets[2]
-            val rssnrDataSet = data.dataSets[3]
+            val rssiDataSet = data.dataSets[ServingCellIndex.RSSI]
+            val rsrpDataSet = data.dataSets[ServingCellIndex.RSRP]
+            val rsqrDataSet = data.dataSets[ServingCellIndex.RSQR]
+            val rssnrDataSet = data.dataSets[ServingCellIndex.RSSNR]
 
             val servingCell = radioParametersDto.find { current ->  current.isServingCell || current.no == 1 }
 
-            data.addEntry(Entry(rssiDataSet.entryCount.toFloat(), servingCell!!.rssi!!.toFloat()), 0)
-            data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), 1)
-            data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), 2)
-            data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), 3)
+            data.addEntry(Entry(rssiDataSet.entryCount.toFloat(), servingCell!!.rssi!!.toFloat()), ServingCellIndex.RSSI)
+            data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
+            data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
+            data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
 
             val minimumValue = min(min(min(servingCell.rssi!!,servingCell.rsrp),servingCell.rsrq),servingCell.rssnr)
-
-            if(servingCellChart.axisLeft.axisMaximum > minimumValue)
+            val maximumValue = max(max(max(servingCell.rssi!!,servingCell.rsrp),servingCell.rsrq),servingCell.rssnr)
+            if(servingCellChart.axisLeft.axisMaximum < maximumValue)
+                servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat()
+            if(servingCellChart.axisLeft.axisMinimum > minimumValue)
                 servingCellChart.axisLeft.axisMaximum = minimumValue.toFloat()
 
             // enable touch gestures
@@ -160,7 +157,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             servingCellChart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
+//            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
 
             servingCellChart.data.notifyDataChanged()
             servingCellChart.notifyDataSetChanged()
@@ -281,7 +278,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
 
     /**Initializing UI graphics**/
-    private fun initLineChart(lineChart: LineChart, lineInitData: LineData) {
+    private fun initLineChart(lineChart: LineChart, lineInitData: LineData,isNegative:Boolean = false) {
 
         lineChart.setBackgroundColor(Color.WHITE)
         // disable description text
@@ -302,8 +299,8 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
         val yAxis = lineChart.axisLeft
         yAxis.setDrawGridLines(true)
-        yAxis.axisMaximum = 10f
-        yAxis.axisMinimum = 0f
+        yAxis.axisMaximum = if(isNegative) 0f else 10f
+        yAxis.axisMinimum = if(isNegative) -10f else 0f
 
         lineChart.axisRight.isEnabled = false
 
