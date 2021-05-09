@@ -1,5 +1,5 @@
 package com.isel_5gqos.jobs
-
+/*
 import android.Manifest
 import android.app.job.*
 import android.content.ComponentName
@@ -11,44 +11,43 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.QosApp.Companion.db
-import com.isel_5gqos.common.DB_SAVE
-import com.isel_5gqos.common.SESSION_ID
-import com.isel_5gqos.common.TAG
+import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.common.db.entities.Location
-import com.isel_5gqos.common.db.entities.RadioParameters
-import com.isel_5gqos.dtos.WrapperDto
-import com.isel_5gqos.utils.errors.Exceptions
-import com.isel_5gqos.utils.mobile_utils.LocationUtils
-import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils
-import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
-import java.util.*
 
 class RadioParametersJobWorkItem : JobService() {
 
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
+    private val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
+    private lateinit var allParamsMap:Map<String,Any?>
     private val functionsMap = mapOf(
-        "radioParameters" to JobsWorkFunctions::radioParametersWork
+        RADIO_PARAMS_TYPE to JobsWorkFunctions::radioParametersWork
     )
+
     override fun onStartJob(params: JobParameters?): Boolean {
 
         fun work(): Boolean {
-            val dequeueWork = params!!.dequeueWork() as JobWorkItem
-            val stringExtra = dequeueWork.intent.getStringExtra("args") //stringExtra
-
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return false
             }
 
+            val dequeueWork = params!!.dequeueWork() as JobWorkItem
+            val stringExtra = dequeueWork.intent.getStringExtra("args") //stringExtra
+
             val saveToDb = params?.extras?.getBoolean(DB_SAVE) ?: false
             val sessionId = if (saveToDb) params?.extras?.getString(SESSION_ID).toString() else "-1"
 
-            val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
+            allParamsMap = mapOf(
+                "telephonyManager" to telephonyManager,
+                "sessionId" to sessionId,
+                "context" to context
+            )
+
+            val paramsList: Array<Any?> = WorkTypes[stringExtra?:""]!!.map { allParamsMap[it] }.toTypedArray()
 
             do {
-                functionsMap[stringExtra!!]?.let { it(telephonyManager!!,sessionId,context) }
+                functionsMap[stringExtra!!]?.let { it(JobsWorkFunctions.createWorkerParams(stringExtra,*paramsList)) }
+
             } while (!jobCancelled)
 
             Log.v(TAG, "Finished work ascvacnwegdbujoscv adckhijoascjvschjkl dfbvgshdcklsddjbfvh aefjlk jhaskfdyjbdvg")
@@ -67,6 +66,8 @@ class RadioParametersJobWorkItem : JobService() {
 }
 
 
+*/
+/*
 fun scheduleRadioParametersJob(sessionId: String, saveToDb: Boolean): JobInfo {
 
     val builder = JobInfo.Builder(0, ComponentName(QosApp.msWebApi.ctx, RadioParametersJobWorkItem::class.java))
@@ -82,8 +83,9 @@ fun scheduleRadioParametersJob(sessionId: String, saveToDb: Boolean): JobInfo {
 
 //    QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).schedule(job)
     val intent = Intent()
-    intent.putExtra("args","radioParameters")
+    intent.putExtra("args", RADIO_PARAMS_TYPE)
     QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).enqueue(job, JobWorkItem(intent))
 
     return job
-}
+}*/
+

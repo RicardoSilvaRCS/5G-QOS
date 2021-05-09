@@ -22,6 +22,26 @@ const val SESSION_ID = "SESSION_ID"
 const val DB_SAVE = "DB_SAVE"
 const val PROGRESS = "PROGRESS"
 
+const val RADIO_PARAMS_TYPE = "RADIO_PARAMS_TYPE"
+const val THROUGHPUT_TYPE = "THROUGHPUT_TYPE"
+
+object WorkTypes {
+    operator fun get(workType: String) = types[workType]
+
+    val types = mapOf(
+        RADIO_PARAMS_TYPE to arrayOf("telephonyManager","sessionId","context"),
+        THROUGHPUT_TYPE to arrayOf("sessionId"),
+        "" to arrayOf()
+    )
+    val timeouts = mapOf(
+        RADIO_PARAMS_TYPE to 5000L,
+        THROUGHPUT_TYPE to 1000L,
+        "" to 0L
+    )
+}
+
+const val JOB_TYPE = "JOB_TYPE"
+
 /**      VARIABLES        **/
 const val K_BIT = 1024
 const val BITS_IN_BYTE = 8
@@ -47,4 +67,7 @@ object ServingCellIndex {
     const val RSQR: Int = 2
     const val RSSNR: Int = 3
 }
+
+
+
 

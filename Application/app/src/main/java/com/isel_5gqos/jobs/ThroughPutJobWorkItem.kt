@@ -1,4 +1,5 @@
 package com.isel_5gqos.jobs
+/*
 
 import android.app.job.JobInfo
 import android.app.job.JobParameters
@@ -19,7 +20,7 @@ class ThroughPutJobWorkItem : JobService() {
 
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
-    private val jobTimeOut = 2000L
+
 
     override fun onStartJob(params: JobParameters?): Boolean {
 
@@ -28,31 +29,6 @@ class ThroughPutJobWorkItem : JobService() {
             val sessionId = params?.extras?.getString(SESSION_ID).toString()
 
             do {
-                try {
-                    val oldCountRX = TrafficStats.getMobileRxBytes()
-                    val oldCountTX = TrafficStats.getMobileTxBytes()
-
-                    Thread.sleep(jobTimeOut)
-
-                    val newCountRx = TrafficStats.getMobileRxBytes()
-                    val newCountTx = TrafficStats.getMobileTxBytes()
-
-                    val mobileTxPackets = TrafficStats.getMobileTxPackets()
-
-                    insertInfoInDb(
-                        rxResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / (K_BIT * (jobTimeOut / 1000).toDouble()).toLong(),
-                        txResult = (newCountRx - oldCountRX) * BITS_IN_BYTE / (K_BIT * (jobTimeOut / 1000).toDouble()).toLong(),
-                        sessionId = sessionId
-                    )
-
-                    Log.v(TAG,"RX = ${newCountRx-oldCountRX}")
-                    Log.v(TAG,"TX = ${newCountTx-oldCountTX}")
-
-                } catch (ex: Exception) {
-
-                    Exceptions(ex)
-
-                }
 
             } while (!jobCancelled)
 
@@ -66,20 +42,6 @@ class ThroughPutJobWorkItem : JobService() {
     override fun onStopJob(params: JobParameters?): Boolean {
         jobCancelled = true;
         return true
-    }
-
-    private fun insertInfoInDb(rxResult : Long , txResult : Long, sessionId: String) {
-
-        val throughPut = ThroughPut(
-            regId = UUID.randomUUID().toString(),
-            txResult = txResult,
-            rxResult = rxResult,
-            sessionId = sessionId,
-            timestamp = System.currentTimeMillis()
-        )
-
-        QosApp.db.throughPutDao().insert(throughPut)
-
     }
 
 }
@@ -100,3 +62,4 @@ fun scheduleThroughPutJob (sessionId: String): JobInfo {
     QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java).schedule(job)
     return job
 }
+*/

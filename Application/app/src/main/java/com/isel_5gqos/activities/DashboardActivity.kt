@@ -22,7 +22,7 @@ import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.ThroughPutDto
-import com.isel_5gqos.jobs.scheduleRadioParametersJob
+import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 import kotlin.math.max
@@ -95,9 +95,9 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         /**Start real Time Session*/
         startDefaultSession(username)
 
-        initLineChart(chart,initThroughputDataLine())
+        initLineChart(chart, initThroughputDataLine(),granularity = (1/(WorkTypes.timeouts[THROUGHPUT_TYPE]!!/1000)).toFloat())
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
-            if(it == null) return@observe
+            if (it == null) return@observe
             val data = chart.data ?: return@observe
 
             val throughPut = ThroughPutDto.convertThroughPutToDto(it)
@@ -107,8 +107,8 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), ThroughputIndex.RX)
             data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), ThroughputIndex.TX)
 
-            if(chart.axisLeft.axisMaximum < throughPut.rxResult || chart.axisLeft.axisMaximum < throughPut.txResult)
-                chart.axisLeft.axisMaximum = max(throughPut.rxResult,throughPut.txResult).toFloat()
+            if (chart.axisLeft.axisMaximum < throughPut.rxResult || chart.axisLeft.axisMaximum < throughPut.txResult)
+                chart.axisLeft.axisMaximum = max(throughPut.rxResult, throughPut.txResult).toFloat() + 10f
 
             // enable touch gestures
             chart.setTouchEnabled(true)
@@ -117,15 +117,15 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             chart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-//            chart.moveViewToX(chart.data.entryCount.toFloat())
+            chart.moveViewToX(chart.data.entryCount.toFloat())
 
             chart.data.notifyDataChanged()
             chart.notifyDataSetChanged()
         }
 
-        initLineChart(servingCellChart,lineInitData = initServingCellData(),isNegative = true)
+        initLineChart(servingCellChart, lineInitData = initServingCellData(), isNegative = true,granularity = (1/(WorkTypes.timeouts[RADIO_PARAMS_TYPE]!!/1000)).toFloat())
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
-            if(it == null || it.isEmpty()) return@observe
+            if (it == null || it.isEmpty()) return@observe
             val data = servingCellChart.data ?: return@observe
 
             val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
@@ -135,19 +135,21 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             val rsqrDataSet = data.dataSets[ServingCellIndex.RSQR]
             val rssnrDataSet = data.dataSets[ServingCellIndex.RSSNR]
 
-            val servingCell = radioParametersDto.find { current ->  current.isServingCell || current.no == 1 }
+            val servingCell = radioParametersDto.find { current -> current.isServingCell || current.no == 1 }
 
             data.addEntry(Entry(rssiDataSet.entryCount.toFloat(), servingCell!!.rssi!!.toFloat()), ServingCellIndex.RSSI)
             data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
             data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
             data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
+            Log.v("aaa","rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
 
-            val minimumValue = min(min(min(servingCell.rssi!!,servingCell.rsrp),servingCell.rsrq),servingCell.rssnr)
-            val maximumValue = max(max(max(servingCell.rssi!!,servingCell.rsrp),servingCell.rsrq),servingCell.rssnr)
-            if(servingCellChart.axisLeft.axisMaximum < maximumValue)
-                servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat()
-            if(servingCellChart.axisLeft.axisMinimum > minimumValue)
-                servingCellChart.axisLeft.axisMaximum = minimumValue.toFloat()
+            val minimumValue = min(min(min(servingCell.rssi!!, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+            val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+
+            if (servingCellChart.axisLeft.axisMaximum < maximumValue)
+                servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
+            if (servingCellChart.axisLeft.axisMinimum > minimumValue)
+                servingCellChart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
 
             // enable touch gestures
             servingCellChart.setTouchEnabled(true)
@@ -157,7 +159,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             servingCellChart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-//            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
+            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
 
             servingCellChart.data.notifyDataChanged()
             servingCellChart.notifyDataSetChanged()
@@ -180,11 +182,9 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
     private fun startDefaultSession(username: String) {
         asyncTask({ testModel.startDefaultSession(username) }) {
-            jobs.add(scheduleRadioParametersJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false))
-            //jobs.add(scheduleThroughPutJob(sessionId = DEFAULT_SESSION_ID))
+            jobs.add(scheduleJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false, jobTypes = arrayListOf(RADIO_PARAMS_TYPE, THROUGHPUT_TYPE)))
         }
     }
-
 
     /**Initializing ThroughPut graphic info**/
 
@@ -229,7 +229,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         val rssi = LineDataSet(rssiValue, "RSSI")
         rssi.lineWidth = 2.5f
         rssi.circleRadius = 1f
-        rssi.highLightColor = Color.rgb(244, 117, 117)
+        rssi.highLightColor = Color.rgb(163, 145, 3)
         rssi.setDrawValues(false)
 
 
@@ -238,9 +238,9 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         val rsrp = LineDataSet(rsrpValue, "RSRP")
         rsrp.lineWidth = 2.5f
         rsrp.circleRadius = 1f
-        rsrp.highLightColor = Color.rgb(244, 117, 117)
-        rsrp.color = ColorTemplate.VORDIPLOM_COLORS[0]
-        rsrp.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        rsrp.highLightColor = Color.rgb(0, 255, 0)
+        rsrp.color = ColorTemplate.VORDIPLOM_COLORS[1]
+        rsrp.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[1])
         rsrp.setDrawValues(false)
 
         val rsqrValue = java.util.ArrayList<Entry>()
@@ -248,9 +248,9 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         val rsqr = LineDataSet(rsqrValue, "RSQR")
         rsqr.lineWidth = 2.5f
         rsqr.circleRadius = 1f
-        rsqr.highLightColor = Color.rgb(244, 117, 117)
-        rsqr.color = ColorTemplate.VORDIPLOM_COLORS[0]
-        rsqr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        rsqr.highLightColor = Color.rgb(0, 0, 255)
+        rsqr.color = ColorTemplate.VORDIPLOM_COLORS[2]
+        rsqr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[2])
         rsqr.setDrawValues(false)
 
 
@@ -259,7 +259,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         val rssnr = LineDataSet(rssnrValue, "RSSNR")
         rssnr.lineWidth = 2.5f
         rssnr.circleRadius = 1f
-        rssnr.highLightColor = Color.rgb(244, 117, 117)
+        rssnr.highLightColor = Color.rgb(255, 0, 0)
         rssnr.color = ColorTemplate.VORDIPLOM_COLORS[0]
         rssnr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
         rssnr.setDrawValues(false)
@@ -278,7 +278,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
 
     /**Initializing UI graphics**/
-    private fun initLineChart(lineChart: LineChart, lineInitData: LineData,isNegative:Boolean = false) {
+    private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false,granularity:Float = 1f) {
 
         lineChart.setBackgroundColor(Color.WHITE)
         // disable description text
@@ -296,11 +296,12 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         xAxis.setDrawGridLines(false)
         xAxis.setAvoidFirstLastClipping(true)
         xAxis.isEnabled = true
+        xAxis.granularity = granularity
 
         val yAxis = lineChart.axisLeft
         yAxis.setDrawGridLines(true)
-        yAxis.axisMaximum = if(isNegative) 0f else 10f
-        yAxis.axisMinimum = if(isNegative) -10f else 0f
+        yAxis.axisMaximum = if (isNegative) 0f else 10f
+        yAxis.axisMinimum = if (isNegative) -10f else 0f
 
         lineChart.axisRight.isEnabled = false
 

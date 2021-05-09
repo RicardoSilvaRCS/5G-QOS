@@ -74,7 +74,7 @@
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/chart"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="200dp"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="30dp"
         />
@@ -82,7 +82,7 @@
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/servingCellChart"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="200dp"
         app:layout_constraintTop_toBottomOf="@id/chart"
         android:layout_marginTop="30dp"
         />
