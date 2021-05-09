@@ -2,22 +2,16 @@ package com.isel_5gqos.activities
 
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
-import android.content.Context
 import android.graphics.Color
-import android.graphics.DashPathEffect
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend.LegendForm
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
@@ -33,9 +27,8 @@ import com.isel_5gqos.jobs.scheduleRadioParametersJob
 import com.isel_5gqos.jobs.scheduleThroughPutJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
-import com.isel_5gqos.utils.mp_android_chart_utils.ChartItem
-import kotlinx.coroutines.runBlocking
 import kotlin.math.max
+import kotlin.math.min
 
 
 class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, OnChartValueSelectedListener {
@@ -50,15 +43,21 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
     private val jobs = mutableListOf<JobInfo>()
 
-    /**ThroughPut Ui elements**/
+    /**INIT UI ELEMENTS**/
     private val chart: LineChart by lazy {
         findViewById(R.id.chart)
+    }
+
+    private val servingCellChart: LineChart by lazy {
+        findViewById(R.id.servingCellChart)
     }
 
     private lateinit var seekBarX: SeekBar
     private lateinit var seekBarY: SeekBar
     private lateinit var tvX: TextView
     private lateinit var tvY: TextView
+
+    /**END**/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,25 +97,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         /**Start real Time Session*/
         startDefaultSession(username)
 
-        testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
-            val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
-        }
-
-
-        initializeThroughputCharRepresentation()
-
-//        val listView = findViewById<ListView>(R.id.layoutListView)
-//        val list: ArrayList<ChartItem> = ArrayList()
-
-
-//        val throughPutChart = LineChartItem(initThroughputDataLine(), QosApp.msWebApi.ctx)
-
-//        chart.setOnChartValueSelectedListener(this)
-
-
-//        list.add(throughPutChart)
-//        val chartDataAdapter = ChartDataAdapter(QosApp.msWebApi.ctx, list)
-//        listView.adapter = chartDataAdapter
+        initLineChart(chart,initThroughputDataLine())
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
             if(it == null) return@observe
             val data = chart.data ?: return@observe
@@ -138,10 +119,51 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             chart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-            // chart.moveViewToX(chart.data.entryCount.toFloat())
+            chart.moveViewToX(chart.data.entryCount.toFloat())
 
             chart.data.notifyDataChanged()
             chart.notifyDataSetChanged()
+        }
+
+        initLineChart(servingCellChart,initServingCellData())
+        testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
+            if(it == null) return@observe
+
+            val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
+
+            if(radioParametersDto.isEmpty()) return@observe
+
+            val data = servingCellChart.data ?: return@observe
+
+            val rssiDataSet = data.dataSets[0]
+            val rsrpDataSet = data.dataSets[1]
+            val rsqrDataSet = data.dataSets[2]
+            val rssnrDataSet = data.dataSets[3]
+
+            val servingCell = radioParametersDto.find { current ->  current.isServingCell || current.no == 1 }
+
+            data.addEntry(Entry(rssiDataSet.entryCount.toFloat(), servingCell!!.rssi!!.toFloat()), 0)
+            data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), 1)
+            data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), 2)
+            data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), 3)
+
+            val minimumValue = min(min(min(servingCell.rssi!!,servingCell.rsrp),servingCell.rsrq),servingCell.rssnr)
+
+            if(servingCellChart.axisLeft.axisMaximum > minimumValue)
+                servingCellChart.axisLeft.axisMaximum = minimumValue.toFloat()
+
+            // enable touch gestures
+            servingCellChart.setTouchEnabled(true)
+
+
+            // limit the number of visible entries
+            servingCellChart.setVisibleXRangeMaximum(10f)
+
+            // move to the latest entry
+            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
+
+            servingCellChart.data.notifyDataChanged()
+            servingCellChart.notifyDataSetChanged()
         }
 
     }
@@ -162,185 +184,14 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     private fun startDefaultSession(username: String) {
         asyncTask({ testModel.startDefaultSession(username) }) {
             jobs.add(scheduleRadioParametersJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false))
-            jobs.add(scheduleThroughPutJob(sessionId = DEFAULT_SESSION_ID))
+            //jobs.add(scheduleThroughPutJob(sessionId = DEFAULT_SESSION_ID))
         }
     }
 
-    /**Initializing UI ThroughPut graphic**/
-    private fun initializeThroughputCharRepresentation() {
 
-//        seekBarX.setOnSeekBarChangeListener(this)
-//
-//        seekBarY.max = 180;
-//        seekBarY.setOnSeekBarChangeListener(this)
+    /**Initializing ThroughPut graphic info**/
 
-        chart.setBackgroundColor(Color.WHITE)
-        // disable description text
-        chart.description.isEnabled = false
-
-        // enable scaling and dragging
-        chart.isDragEnabled = true
-        chart.setScaleEnabled(true)
-        chart.setDrawGridBackground(false)
-
-        // if disabled, scaling can be done on x- and y-axis separately
-        chart.setPinchZoom(true)
-
-        val xAxis = chart.xAxis
-//        xAxis.enableGridDashedLine(10f, 10f, 0f)
-        xAxis.setDrawGridLines(false)
-        xAxis.setAvoidFirstLastClipping(true)
-        xAxis.isEnabled = true
-
-        val yAxis = chart.axisLeft
-        yAxis.setDrawGridLines(true)
-//        yAxis.enableGridDashedLine(10f, 10f, 0f)
-        yAxis.axisMaximum = 10f
-        yAxis.axisMinimum = 0f
-
-        chart.axisRight.isEnabled = false
-//
-//        // // Create Limit Lines // //
-//        val llXAxis = LimitLine(9f, "Index 10")
-//        llXAxis.lineWidth = 4f
-//        llXAxis.enableDashedLine(10f, 10f, 0f)
-//        llXAxis.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-//        llXAxis.textSize = 10f
-//        //llXAxis.typeface = tfRegular
-//
-//        val ll1 = LimitLine(150f, "Upper Limit")
-//        ll1.lineWidth = 4f
-//        ll1.enableDashedLine(10f, 10f, 0f)
-//        ll1.labelPosition = LimitLabelPosition.RIGHT_TOP
-//        ll1.textSize = 10f
-//        //ll1.typeface = tfRegular
-//
-//        val ll2 = LimitLine(-30f, "Lower Limit")
-//        ll2.lineWidth = 4f
-//        ll2.enableDashedLine(10f, 10f, 0f)
-//        ll2.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-//        ll2.textSize = 10f
-//        //ll2.typeface = tfRegular
-
-//        yAxis.setDrawLimitLinesBehindData(true)
-//        xAxis.setDrawLimitLinesBehindData(true)
-//
-//
-//        yAxis.addLimitLine(ll1)
-//        yAxis.addLimitLine(ll2)
-
-        // add empty data
-        chart.data = initThroughputDataLine()
-
-//        chart.animateX(1500)
-
-//        val l = chart.legend
-//        l.form = LegendForm.LINE
-    }
-
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        tvX.text = seekBarX.progress.toString()
-        tvY.text = seekBarY.progress.toString()
-
-//        setData(seekBarX.progress, seekBarY.progress);
-
-        chart.invalidate();
-    }
-
-    private fun setData(throughPutDtos: List<ThroughPutDto>) {
-
-        val rxValues = mutableListOf<Entry>()
-        val txValues = mutableListOf<Entry>()
-
-        throughPutDtos.forEachIndexed { index, throughPutDto ->
-            rxValues.add(Entry(index.toFloat(), throughPutDto.rxResult.toFloat()))
-            txValues.add(Entry(index.toFloat(), throughPutDto.txResult.toFloat()))
-        }
-
-        val set1: LineDataSet
-        val set2: LineDataSet
-        if (chart.data != null &&
-            chart.data.dataSetCount > 0
-        ) {
-            set1 = chart.data.getDataSetByIndex(0) as LineDataSet
-            set1.values = rxValues
-            set1.notifyDataSetChanged()
-//            set2 = chart.data.getDataSetByIndex(0) as LineDataSet
-//            set2.values = rxValues
-//            set2.notifyDataSetChanged()
-            chart.data.notifyDataChanged()
-            chart.notifyDataSetChanged()
-        } else {
-            // create a dataset and give it a type
-            set1 = LineDataSet(rxValues, "Rx")
-            set1.setDrawIcons(false)
-
-            // draw dashed line
-            set1.enableDashedLine(10f, 5f, 0f)
-
-            // black lines and points
-            set1.color = Color.BLACK
-            set1.setCircleColor(Color.BLACK)
-
-            // line thickness and point size
-            set1.lineWidth = 1f
-            set1.circleRadius = 3f
-
-            // draw points as solid circles
-            set1.setDrawCircleHole(false)
-
-            // customize legend entry
-            set1.formLineWidth = 1f
-            set1.formLineDashEffect = DashPathEffect(floatArrayOf(10f, 5f), 0f)
-            set1.formSize = 15f
-
-            // text size of values
-            set1.valueTextSize = 9f
-
-            // draw selection line as dashed
-            set1.enableDashedHighlightLine(10f, 5f, 0f)
-
-            // set the filled area
-            set1.setDrawFilled(true)
-            set1.fillFormatter = IFillFormatter { dataSet, dataProvider -> chart.axisLeft.axisMinimum }
-
-
-            set1.fillColor = Color.BLACK
-
-            val dataSets: ArrayList<ILineDataSet> = ArrayList()
-            dataSets.add(set1) // add the data sets
-
-            // create a data object with the data sets
-            val data = LineData(dataSets)
-
-            // set data
-            chart.data = data
-        }
-    }
-
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onValueSelected(e: Entry?, h: Highlight?) {
-        Log.i(TAG, e.toString());
-        Log.i(TAG, "low: " + chart.lowestVisibleX + ", high: " + chart.highestVisibleX);
-        Log.i(TAG, "xMin: " + chart.xChartMin + ", xMax: " + chart.xChartMax + ", yMin: " + chart.yChartMin + ", yMax: " + chart.yChartMax);
-    }
-
-    override fun onNothingSelected() {}
-
-    /**END**/
-
-
-    /**Multiple chart layout**/
-
-    /**
-     * generates a random ChartData object with just one DataSet
-     *
-     * @return Line data
-     */
-    private fun initThroughputDataLine(): LineData? {
+    private fun initThroughputDataLine(): LineData {
 
         val rxValues = java.util.ArrayList<Entry>()
         val txValues = java.util.ArrayList<Entry>()
@@ -370,23 +221,114 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         return LineData(sets)
     }
 
-    /** adapter that supports 3 different item types  */
-    private class ChartDataAdapter internal constructor(context: Context?, objects: List<ChartItem?>?) :
-        ArrayAdapter<ChartItem?>(context!!, 0, objects!!) {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            return getItem(position)!!.getView(position, convertView, context)
-        }
+    /**END**/
 
-        override fun getItemViewType(position: Int): Int {
-            // return the views type
-            val ci = getItem(position)
-            return ci?.itemType ?: 0
-        }
+    /**Initializing UI ServingCell graphic**/
 
-        override fun getViewTypeCount(): Int {
-            return 3 // we have 3 different item-types
-        }
+    private fun initServingCellData(): LineData {
+
+        val rssiValue = java.util.ArrayList<Entry>()
+        rssiValue.add(Entry(0f, 0f))
+        val rssi = LineDataSet(rssiValue, "RSSI")
+        rssi.lineWidth = 2.5f
+        rssi.circleRadius = 1f
+        rssi.highLightColor = Color.rgb(244, 117, 117)
+        rssi.setDrawValues(false)
+
+
+        val rsrpValue = java.util.ArrayList<Entry>()
+        rsrpValue.add(Entry(0f, 0f))
+        val rsrp = LineDataSet(rsrpValue, "RSRP")
+        rsrp.lineWidth = 2.5f
+        rsrp.circleRadius = 1f
+        rsrp.highLightColor = Color.rgb(244, 117, 117)
+        rsrp.color = ColorTemplate.VORDIPLOM_COLORS[0]
+        rsrp.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        rsrp.setDrawValues(false)
+
+        val rsqrValue = java.util.ArrayList<Entry>()
+        rsqrValue.add(Entry(0f, 0f))
+        val rsqr = LineDataSet(rsqrValue, "RSQR")
+        rsqr.lineWidth = 2.5f
+        rsqr.circleRadius = 1f
+        rsqr.highLightColor = Color.rgb(244, 117, 117)
+        rsqr.color = ColorTemplate.VORDIPLOM_COLORS[0]
+        rsqr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        rsqr.setDrawValues(false)
+
+
+        val rssnrValue = java.util.ArrayList<Entry>()
+        rssnrValue.add(Entry(0f, 0f))
+        val rssnr = LineDataSet(rssnrValue, "RSSNR")
+        rssnr.lineWidth = 2.5f
+        rssnr.circleRadius = 1f
+        rssnr.highLightColor = Color.rgb(244, 117, 117)
+        rssnr.color = ColorTemplate.VORDIPLOM_COLORS[0]
+        rssnr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        rssnr.setDrawValues(false)
+
+
+        val sets = java.util.ArrayList<ILineDataSet>()
+        sets.add(rssi)
+        sets.add(rsrp)
+        sets.add(rsqr)
+        sets.add(rssnr)
+
+        return LineData(sets)
     }
+
+    /**END**/
+
+
+    /**Initializing UI graphics**/
+    private fun initLineChart(lineChart: LineChart, lineInitData: LineData) {
+
+        lineChart.setBackgroundColor(Color.WHITE)
+        // disable description text
+        lineChart.description.isEnabled = false
+
+        // enable scaling and dragging
+        lineChart.isDragEnabled = true
+        lineChart.setScaleEnabled(true)
+        lineChart.setDrawGridBackground(false)
+
+        // if disabled, scaling can be done on x- and y-axis separately
+        lineChart.setPinchZoom(true)
+
+        val xAxis = lineChart.xAxis
+        xAxis.setDrawGridLines(false)
+        xAxis.setAvoidFirstLastClipping(true)
+        xAxis.isEnabled = true
+
+        val yAxis = lineChart.axisLeft
+        yAxis.setDrawGridLines(true)
+        yAxis.axisMaximum = 10f
+        yAxis.axisMinimum = 0f
+
+        lineChart.axisRight.isEnabled = false
+
+        lineChart.data = lineInitData
+    }
+
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        tvX.text = seekBarX.progress.toString()
+        tvY.text = seekBarY.progress.toString()
+
+        chart.invalidate();
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+
+    override fun onValueSelected(e: Entry?, h: Highlight?) {
+        Log.i(TAG, e.toString());
+        Log.i(TAG, "low: " + chart.lowestVisibleX + ", high: " + chart.highestVisibleX);
+        Log.i(TAG, "xMin: " + chart.xChartMin + ", xMax: " + chart.xChartMax + ", yMin: " + chart.yChartMin + ", yMax: " + chart.yChartMax);
+    }
+
+    override fun onNothingSelected() {}
+
     /**END**/
 
 

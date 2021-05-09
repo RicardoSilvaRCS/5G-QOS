@@ -65,7 +65,7 @@ class RadioParametersJobWorkItem : JobService() {
                         )
                     )
 
-                    Thread.sleep(10000)
+                    Thread.sleep(1000)
 
                 } catch (ex: Exception) {
                     Exceptions(ex)
@@ -114,16 +114,16 @@ class RadioParametersJobWorkItem : JobService() {
 
         db.radioParametersDao().insert(*radioParams)
 
-        val location = Location(
-            regId = UUID.randomUUID().toString(),
-            networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
-            latitude = wrapperDto.locationDto.latitude!!,
-            longitude = wrapperDto.locationDto.longitude!!,
-            sessionId = sessionId,
-            timestamp = System.currentTimeMillis(),
-        )
-
-        db.locationDao().insert(location)
+//        val location = Location(
+//            regId = UUID.randomUUID().toString(),
+//            networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
+//            latitude = wrapperDto.locationDto.latitude!!,
+//            longitude = wrapperDto.locationDto.longitude!!,
+//            sessionId = sessionId,
+//            timestamp = System.currentTimeMillis(),
+//        )
+//
+//        db.locationDao().insert(location)
     }
 }
 
