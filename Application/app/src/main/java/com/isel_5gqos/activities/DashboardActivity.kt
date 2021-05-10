@@ -22,6 +22,7 @@ import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.ThroughPutDto
+import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
@@ -95,7 +96,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         /**Start real Time Session*/
         startDefaultSession(username)
 
-        initLineChart(chart, initThroughputDataLine(),granularity = (1/(WorkTypes.timeouts[THROUGHPUT_TYPE]!!/1000)).toFloat())
+        initLineChart(chart, initThroughputDataLine())
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(this) {
             if (it == null) return@observe
             val data = chart.data ?: return@observe
@@ -123,7 +124,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             chart.notifyDataSetChanged()
         }
 
-        initLineChart(servingCellChart, lineInitData = initServingCellData(), isNegative = true,granularity = (1/(WorkTypes.timeouts[RADIO_PARAMS_TYPE]!!/1000)).toFloat())
+        initLineChart(servingCellChart, lineInitData = initServingCellData(), isNegative = true)
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(this) {
             if (it == null || it.isEmpty()) return@observe
             val data = servingCellChart.data ?: return@observe
@@ -141,7 +142,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
             data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
             data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
-            Log.v("aaa","rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
+            Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
 
             val minimumValue = min(min(min(servingCell.rssi!!, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
             val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
@@ -180,7 +181,13 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
     private fun startDefaultSession(username: String) {
         asyncTask({ testModel.startDefaultSession(username) }) {
-            jobs.add(scheduleJob(sessionId = DEFAULT_SESSION_ID, saveToDb = false, jobTypes = arrayListOf(RADIO_PARAMS_TYPE, THROUGHPUT_TYPE)))
+            jobs.add(
+                scheduleJob(
+                    sessionId = DEFAULT_SESSION_ID,
+                    saveToDb = false,
+                    jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
+                )
+            )
         }
     }
 
@@ -276,7 +283,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
 
     /**Initializing UI graphics**/
-    private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false,granularity:Float = 1f) {
+    private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
 
         lineChart.setBackgroundColor(Color.WHITE)
         // disable description text

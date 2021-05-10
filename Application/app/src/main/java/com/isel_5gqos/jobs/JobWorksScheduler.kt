@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.jobs.works.IWorks
 
 class JobWorksScheduler : JobService() {
 
@@ -20,10 +21,6 @@ class JobWorksScheduler : JobService() {
     private var jobCancelled = false;
     private val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
     private lateinit var allParamsMap: Map<String, Any?>
-    private val jobsMap = mapOf(
-        RADIO_PARAMS_TYPE to JobsWorkFunctions::radioParametersWork,
-        THROUGHPUT_TYPE to JobsWorkFunctions::throughputWork
-    )
 
     override fun onStartJob(params: JobParameters?): Boolean {
 
@@ -48,14 +45,16 @@ class JobWorksScheduler : JobService() {
             do {
                 jobsList.forEachIndexed { index, jobType ->
 
-                    if (System.currentTimeMillis() > (lastRuns[index] + WorkTypes.timeouts[jobType]!!)) {
+                    val work =  WorksMap.worksMap[jobType]
+
+                    if (System.currentTimeMillis() > (lastRuns[index] + work!!.getWorkTimeout())) {
                         lastRuns[index] = System.currentTimeMillis()
 
-                        val paramsList: Array<Any?> = WorkTypes[jobType]!!.map { allParamsMap[it] }.toTypedArray()
+                        val paramsList: Array<Any?> = work.getWorkParameters().map { allParamsMap[it] }.toTypedArray()
 
                         asyncTask({
 
-                            WorksMap.worksMap[jobType]!!.work(createWorkerParams(jobType, paramsList))
+                            work.work(createWorkerParams(work))
 
                         }) {}
 
@@ -78,13 +77,10 @@ class JobWorksScheduler : JobService() {
         return true
     }
 
-    private fun createWorkerParams(workType: String, vararg paramPairs: Any?): Map<String, Any?> {
-        val paramsMap = mutableMapOf<String, Any?>()
-        paramPairs.forEachIndexed { index, param ->
-            paramsMap[WorkTypes[workType]?.get(index)!!] = param
-        }
-        return paramsMap
-    }
+    private fun createWorkerParams(work: IWorks): Map<String, Any?> = work.getWorkParameters().map {
+        it to allParamsMap[it]
+    }.toMap()
+
 }
 
 fun scheduleJob(sessionId: String, saveToDb: Boolean, jobTypes: ArrayList<String> = arrayListOf()): JobInfo {

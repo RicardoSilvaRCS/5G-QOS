@@ -21,7 +21,7 @@ class ThroughPutWork : IWorks {
             val oldCountRX = TrafficStats.getMobileRxBytes()
             val oldCountTX = TrafficStats.getMobileTxBytes()
 
-            Thread.sleep(WorkTypes.timeouts[THROUGHPUT_TYPE]!!)
+            Thread.sleep(getWorkTimeout())
 
             val newCountRx = TrafficStats.getMobileRxBytes()
             val newCountTx = TrafficStats.getMobileTxBytes()
