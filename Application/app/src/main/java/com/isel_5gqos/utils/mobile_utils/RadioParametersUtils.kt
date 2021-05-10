@@ -46,7 +46,7 @@ class RadioParametersUtils {
                     rssi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) cellInfo.cellSignalStrength.rssi else MIN_RSSI,
                     rsrp = cellInfo.cellSignalStrength.rsrp,
                     pci = cellInfo.cellIdentity.pci,
-                    rssnr = cellInfo.cellSignalStrength.rssnr,
+                    rssnr = 14,//cellInfo.cellSignalStrength.rssnr, //corrigir isto quando não é válido o gráfico fica muito grande
                     rsrq = cellInfo.cellSignalStrength.rsrq,
                     netDataType = NetworkDataTypesEnum.LTE,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING

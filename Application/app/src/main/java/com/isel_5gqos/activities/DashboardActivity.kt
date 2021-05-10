@@ -146,10 +146,8 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             val minimumValue = min(min(min(servingCell.rssi!!, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
             val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
 
-            if (servingCellChart.axisLeft.axisMaximum < maximumValue)
-                servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
-            if (servingCellChart.axisLeft.axisMinimum > minimumValue)
-                servingCellChart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+            servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
+            servingCellChart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
 
             // enable touch gestures
             servingCellChart.setTouchEnabled(true)

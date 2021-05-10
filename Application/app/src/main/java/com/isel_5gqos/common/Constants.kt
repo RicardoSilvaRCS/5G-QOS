@@ -34,7 +34,7 @@ object WorkTypes {
         "" to arrayOf()
     )
     val timeouts = mapOf(
-        RADIO_PARAMS_TYPE to 5000L,
+        RADIO_PARAMS_TYPE to 1000L,
         THROUGHPUT_TYPE to 1000L,
         "" to 0L
     )
