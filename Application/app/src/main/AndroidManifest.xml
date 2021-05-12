@@ -18,7 +18,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/logo_launcher_foreground"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Isel_5GQos">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        >
         <activity android:name=".activities.DashboardActivity" />
         <activity
             android:name=".activities.MainActivity"

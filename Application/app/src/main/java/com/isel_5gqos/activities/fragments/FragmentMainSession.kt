@@ -1,27 +1,27 @@
-package com.isel_5gqos.activities
+package com.isel_5gqos.activities.fragments
 
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.viewpager.widget.ViewPager
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
-import com.google.android.material.tabs.TabLayout
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.activities.adapters.DashboardActivitViewPagerAdapter
-import com.isel_5gqos.common.*
+import com.isel_5gqos.activities.USER
+import com.isel_5gqos.common.DEFAULT_SESSION_ID
+import com.isel_5gqos.common.ServingCellIndex
+import com.isel_5gqos.common.ThroughputIndex
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.ThroughPutDto
@@ -29,64 +29,98 @@ import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
-import kotlin.math.max
-import kotlin.math.min
+import kotlinx.android.synthetic.main.fragment_main_session.*
+import java.lang.Integer.max
+import java.lang.Integer.min
+import java.lang.Long.max
 
+class FragmentMainSession : Fragment() {
 
-class DashboardActivity : BaseTabLayoutActivityHolder() {
+    /**INIT UI ELEMENTS**/
 
     private val model by lazy {
         ViewModelProviders.of(this)[InternetViewModel::class.java]
     }
-
+    private val jobs = mutableListOf<JobInfo>()
     private val testModel by lazy {
         ViewModelProviders.of(this)[TestViewModel::class.java]
     }
 
-    private val dashboardActivitViewPagerAdapter by lazy {
-        DashboardActivitViewPagerAdapter(supportFragmentManager)
-    }
-    private val dashboardActivitViewPager by lazy<ViewPager> {
-        findViewById(R.id.dashboard_activity_viewPager)
-    }
-    private val dashboardActivityTabLayout by lazy<TabLayout> {
-        findViewById(R.id.dashboard_tabs)
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_main_session, container, false)
 
-    private val jobs = mutableListOf<JobInfo>()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-    /**INIT UI ELEMENTS**/
-    private val chart: LineChart by lazy {
-        findViewById(R.id.chart)
-    }
+        val username = activity!!.intent.getStringExtra(USER)?.toString() ?: ""
+        startDefaultSession(username)
 
-    private val servingCellChart: LineChart by lazy {
-        findViewById(R.id.servingCellChart)
-    }
+        initLineChart(chart, initThroughputDataLine())
+        testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
+            if (it == null) return@observe
+            val data = chart.data ?: return@observe
 
-    private lateinit var seekBarX: SeekBar
-    private lateinit var seekBarY: SeekBar
-    private lateinit var tvX: TextView
-    private lateinit var tvY: TextView
+            val throughPut = ThroughPutDto.convertThroughPutToDto(it)
 
-    /**END**/
+            val rxdataSet = data.dataSets[ThroughputIndex.RX]
+            val txDataSet = data.dataSets[ThroughputIndex.TX]
+            data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), ThroughputIndex.RX)
+            data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), ThroughputIndex.TX)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_dashboard2)
+            if (chart.axisLeft.axisMaximum < throughPut.rxResult || chart.axisLeft.axisMaximum < throughPut.txResult)
+                chart.axisLeft.axisMaximum = max(throughPut.rxResult, throughPut.txResult).toFloat() + 10f
 
-        dashboardActivitViewPager.adapter = dashboardActivitViewPagerAdapter
+            // enable touch gestures
+            chart.setTouchEnabled(true)
 
-        tabLayout = dashboardActivityTabLayout.apply {
-            setupWithViewPager(dashboardActivitViewPager)
-            addOnTabSelectedListener(this@DashboardActivity)
+            // limit the number of visible entries
+            chart.setVisibleXRangeMaximum(10f)
+
+            // move to the latest entry
+            chart.moveViewToX(chart.data.entryCount.toFloat())
+
+            chart.data.notifyDataChanged()
+            chart.notifyDataSetChanged()
         }
 
-//        val username = intent.getStringExtra(USER)?.toString() ?: ""
+        initLineChart(servingCellChart, lineInitData = initServingCellData(), isNegative = true)
+        testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
+            if (it == null || it.isEmpty()) return@observe
+            val data = servingCellChart.data ?: return@observe
 
-        /**Create new Session*/
+            val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
+
+            val rssiDataSet = data.dataSets[ServingCellIndex.RSSI]
+            val rsrpDataSet = data.dataSets[ServingCellIndex.RSRP]
+            val rsqrDataSet = data.dataSets[ServingCellIndex.RSQR]
+            val rssnrDataSet = data.dataSets[ServingCellIndex.RSSNR]
+
+            val servingCell = radioParametersDto.find { current -> current.isServingCell || current.no == 1 }
+
+            data.addEntry(Entry(rssiDataSet.entryCount.toFloat(), servingCell!!.rssi!!.toFloat()), ServingCellIndex.RSSI)
+            data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
+            data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
+            data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
+            Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
+
+            val minimumValue = min(min(min(servingCell.rssi!!, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+            val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+
+            servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
+            servingCellChart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+
+            // enable touch gestures
+            servingCellChart.setTouchEnabled(true)
 
 
+            // limit the number of visible entries
+            servingCellChart.setVisibleXRangeMaximum(10f)
+
+            // move to the latest entry
+            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
+
+            servingCellChart.data.notifyDataChanged()
+            servingCellChart.notifyDataSetChanged()
+        }
     }
 
     private fun cancelAllJobs() {
@@ -235,6 +269,4 @@ class DashboardActivity : BaseTabLayoutActivityHolder() {
 
         lineChart.data = lineInitData
     }
-    /**END**/
-
 }
