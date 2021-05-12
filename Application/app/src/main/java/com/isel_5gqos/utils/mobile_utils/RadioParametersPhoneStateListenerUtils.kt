@@ -1,34 +1,35 @@
 package com.isel_5gqos.utils.mobile_utils
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.telephony.*
+import android.util.Log
 import com.isel_5gqos.common.MIN_RSSI
 import com.isel_5gqos.common.NetworkDataTypesEnum
+import com.isel_5gqos.common.TAG
 import com.isel_5gqos.dtos.RadioParametersDto
 
 
-class RadioParametersUtils {
+class RadioParametersPhoneStateListenerUtils() : PhoneStateListener() {
 
+    var radioParametersDto = mutableListOf<RadioParametersDto>()
 
-    companion object{
+    override fun onCellInfoChanged(cellInfo: MutableList<CellInfo>?) {
+        Log.v(TAG,"Is Working")
 
-        //Using Telephony Manager
-        @SuppressLint("MissingPermission")
-        fun getRadioParameters (telephonyManager: TelephonyManager) : List<RadioParametersDto> {
+        radioParametersDto.clear()
 
-            val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
-
-            telephonyManager.allCellInfo?.forEachIndexed { index, cellInfo ->
-                val currentCell = convertCellInfoToRadioParameter(index, cellInfo)
-                if (currentCell != null) {
-                    cellInfoList.add(currentCell)
-                }
+        cellInfo?.forEachIndexed { index, cell ->
+            val currentCell = convertCellInfoToRadioParameter(index, cell)
+            if (currentCell != null) {
+                radioParametersDto.add(currentCell)
             }
-
-            return cellInfoList
         }
 
+        super.onCellInfoChanged(cellInfo)
+    }
+
+
+    companion object {
         private fun convertCellInfoToRadioParameter(index: Int, cellInfo: CellInfo): RadioParametersDto? {
             if (cellInfo is CellInfoGsm) {
                 return RadioParametersDto(
@@ -48,7 +49,7 @@ class RadioParametersUtils {
                     rssi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) cellInfo.cellSignalStrength.rssi else MIN_RSSI,
                     rsrp = cellInfo.cellSignalStrength.rsrp,
                     pci = cellInfo.cellIdentity.pci,
-                    rssnr = (MIN_RSSI+cellInfo.cellSignalStrength.rsrq)/cellInfo.cellSignalStrength.rsrp,//cellInfo.cellSignalStrength.rssnr, //corrigir isto quando não é válido o gráfico fica muito grande
+                    rssnr = (MIN_RSSI + cellInfo.cellSignalStrength.rsrq) / cellInfo.cellSignalStrength.rsrp,//cellInfo.cellSignalStrength.rssnr, //corrigir isto quando não é válido o gráfico fica muito grande
                     rsrq = cellInfo.cellSignalStrength.rsrq,
                     netDataType = NetworkDataTypesEnum.LTE,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING
@@ -77,7 +78,5 @@ class RadioParametersUtils {
 
             return null
         }
-
     }
-
 }

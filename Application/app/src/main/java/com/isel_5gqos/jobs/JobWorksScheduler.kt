@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.PersistableBundle
+import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
@@ -14,12 +15,14 @@ import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.jobs.works.IWorks
+import com.isel_5gqos.utils.mobile_utils.RadioParametersPhoneStateListenerUtils
 
 class JobWorksScheduler : JobService() {
 
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
-    private val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
+    private val telephonyManager = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+    private val phoneStateListener = RadioParametersPhoneStateListenerUtils()
     private lateinit var allParamsMap: Map<String, Any?>
 
     override fun onStartJob(params: JobParameters?): Boolean {
@@ -33,9 +36,11 @@ class JobWorksScheduler : JobService() {
             val sessionId = if (saveToDb) params.extras.getString(SESSION_ID).toString() else "-1"
             val dequeueWork = params.dequeueWork() as JobWorkItem
             val jobsList = dequeueWork.intent.getStringArrayListExtra(JOB_TYPE) ?: arrayListOf()
+            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CELL_INFO)
 
             allParamsMap = mapOf(
                 "telephonyManager" to telephonyManager,
+                "phoneState" to phoneStateListener,
                 "sessionId" to sessionId,
                 "context" to context
             )

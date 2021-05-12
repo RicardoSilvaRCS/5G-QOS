@@ -10,6 +10,7 @@ import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.utils.errors.Exceptions
 import com.isel_5gqos.utils.mobile_utils.LocationUtils
 import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils
+import com.isel_5gqos.utils.mobile_utils.RadioParametersPhoneStateListenerUtils
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import java.util.*
 
@@ -18,11 +19,13 @@ class RadioParametersWork : IWorks {
     override fun work (params: Map<String, Any?>) {
         Log.v("jobType","RadioParams----------------------------------")
         val telephonyManager: TelephonyManager = params["telephonyManager"] as TelephonyManager
+        val phoneStateListener: RadioParametersPhoneStateListenerUtils = params["phoneState"] as RadioParametersPhoneStateListenerUtils
         val sessionId: String = params["sessionId"] as String
         val context: Context = params["context"] as Context
         try {
 
-            val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager)
+            //val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager)
+            val cellInfoList = phoneStateListener.radioParametersDto
 
             val imei = MobileInfoUtils.getImei(context, telephonyManager)
 
@@ -47,31 +50,34 @@ class RadioParametersWork : IWorks {
 
     private fun insertRadioParametersInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
 
-        QosApp.db.radioParametersDao().invalidateRadioParameters(sessionId)
+        if(wrapperDto.radioParametersDtos.isNotEmpty()) {
 
-        val radioParams = wrapperDto.radioParametersDtos.map { radioParametersDto ->
+            QosApp.db.radioParametersDao().invalidateRadioParameters(sessionId)
 
-            RadioParameters(
-                regId = UUID.randomUUID().toString(),
-                no = radioParametersDto.no,
-                tech = radioParametersDto.tech ?: "",
-                arfcn = radioParametersDto.arfcn ?: -1,
-                rssi = radioParametersDto.rssi ?: -1,
-                rsrp = radioParametersDto.rsrp ?: -1,
-                cId = radioParametersDto.cId ?: -1,
-                psc = radioParametersDto.psc ?: -1,
-                pci = radioParametersDto.pci ?: -1,
-                rssnr = radioParametersDto.rssnr ?: -1,
-                rsrq = radioParametersDto.rsrq ?: -1,
-                netDataType = radioParametersDto.netDataType.toString(),
-                isServingCell = radioParametersDto.isServingCell,
-                sessionId = sessionId,
-                timestamp = System.currentTimeMillis(),
-                isUpToDate = true
-            )
-        }.toTypedArray()
+            val radioParams = wrapperDto.radioParametersDtos.map { radioParametersDto ->
 
-        QosApp.db.radioParametersDao().insert(*radioParams)
+                RadioParameters(
+                    regId = UUID.randomUUID().toString(),
+                    no = radioParametersDto.no,
+                    tech = radioParametersDto.tech ?: "",
+                    arfcn = radioParametersDto.arfcn ?: -1,
+                    rssi = radioParametersDto.rssi ?: -1,
+                    rsrp = radioParametersDto.rsrp ?: -1,
+                    cId = radioParametersDto.cId ?: -1,
+                    psc = radioParametersDto.psc ?: -1,
+                    pci = radioParametersDto.pci ?: -1,
+                    rssnr = radioParametersDto.rssnr ?: -1,
+                    rsrq = radioParametersDto.rsrq ?: -1,
+                    netDataType = radioParametersDto.netDataType.toString(),
+                    isServingCell = radioParametersDto.isServingCell,
+                    sessionId = sessionId,
+                    timestamp = System.currentTimeMillis(),
+                    isUpToDate = true
+                )
+            }.toTypedArray()
+
+            QosApp.db.radioParametersDao().insert(*radioParams)
+        }
 
 //        val location = Location(
 //            regId = UUID.randomUUID().toString(),
@@ -87,6 +93,6 @@ class RadioParametersWork : IWorks {
 
     override fun getWorkTimeout() : Long = 1000L
 
-    override fun getWorkParameters() : Array<String> = arrayOf("telephonyManager","sessionId","context")
+    override fun getWorkParameters() : Array<String> = arrayOf("telephonyManager","phoneState","sessionId","context")
 
 }

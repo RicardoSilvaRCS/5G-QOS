@@ -4,6 +4,8 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.graphics.Color
 import android.os.Bundle
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +28,7 @@ import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.mobile_utils.RadioParametersPhoneStateListenerUtils
 import kotlin.math.max
 import kotlin.math.min
 
@@ -163,6 +166,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             servingCellChart.data.notifyDataChanged()
             servingCellChart.notifyDataSetChanged()
         }
+
 
     }
 
