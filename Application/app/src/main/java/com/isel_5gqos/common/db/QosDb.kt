@@ -25,4 +25,5 @@ abstract class QosDb : RoomDatabase() {
     abstract fun pingDao(): PingDao
     abstract fun locationDao(): LocationDao
     abstract fun radioParametersDao():RadioParametersDao
+    abstract fun systemInfoDao():SystemInfoDao
 }

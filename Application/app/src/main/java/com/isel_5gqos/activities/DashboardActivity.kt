@@ -4,18 +4,14 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
 import com.isel_5gqos.QosApp
@@ -23,14 +19,10 @@ import com.isel_5gqos.R
 import com.isel_5gqos.activities.adapters.DashboardActivitViewPagerAdapter
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.dtos.RadioParametersDto
-import com.isel_5gqos.dtos.ThroughPutDto
 import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
-import kotlin.math.max
-import kotlin.math.min
 
 
 class DashboardActivity : BaseTabLayoutActivityHolder() {
@@ -57,11 +49,11 @@ class DashboardActivity : BaseTabLayoutActivityHolder() {
 
     /**INIT UI ELEMENTS**/
     private val chart: LineChart by lazy {
-        findViewById(R.id.chart)
+        findViewById(R.id.throughput_chart)
     }
 
     private val servingCellChart: LineChart by lazy {
-        findViewById(R.id.servingCellChart)
+        findViewById(R.id.serving_cell_chart)
     }
 
     private lateinit var seekBarX: SeekBar
@@ -80,12 +72,14 @@ class DashboardActivity : BaseTabLayoutActivityHolder() {
         tabLayout = dashboardActivityTabLayout.apply {
             setupWithViewPager(dashboardActivitViewPager)
             addOnTabSelectedListener(this@DashboardActivity)
+            this.getTabAt(0)?.apply {
+                this.view.background = resources.getDrawable(R.drawable.purple_700_background)
+            }
         }
 
 //        val username = intent.getStringExtra(USER)?.toString() ?: ""
 
         /**Create new Session*/
-
 
     }
 

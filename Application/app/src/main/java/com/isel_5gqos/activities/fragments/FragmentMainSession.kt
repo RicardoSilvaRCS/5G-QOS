@@ -54,10 +54,15 @@ class FragmentMainSession : Fragment() {
         val username = activity!!.intent.getStringExtra(USER)?.toString() ?: ""
         startDefaultSession(username)
 
-        initLineChart(chart, initThroughputDataLine())
+        initLineChart(throughput_chart, initThroughputDataLine())
+
+        initLineChart(g1,initThroughputDataLine())
+        initLineChart(g2,initThroughputDataLine())
+        initLineChart(g3,initThroughputDataLine())
+
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (it == null) return@observe
-            val data = chart.data ?: return@observe
+            if (it == null || throughput_chart == null) return@observe
+            val data = throughput_chart.data ?: return@observe
 
             val throughPut = ThroughPutDto.convertThroughPutToDto(it)
 
@@ -66,26 +71,26 @@ class FragmentMainSession : Fragment() {
             data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), ThroughputIndex.RX)
             data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), ThroughputIndex.TX)
 
-            if (chart.axisLeft.axisMaximum < throughPut.rxResult || chart.axisLeft.axisMaximum < throughPut.txResult)
-                chart.axisLeft.axisMaximum = max(throughPut.rxResult, throughPut.txResult).toFloat() + 10f
+            if (throughput_chart.axisLeft.axisMaximum < throughPut.rxResult || throughput_chart.axisLeft.axisMaximum < throughPut.txResult)
+                throughput_chart.axisLeft.axisMaximum = max(throughPut.rxResult, throughPut.txResult).toFloat() + 10f
 
             // enable touch gestures
-            chart.setTouchEnabled(true)
+            throughput_chart.setTouchEnabled(true)
 
             // limit the number of visible entries
-            chart.setVisibleXRangeMaximum(10f)
+            throughput_chart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-            chart.moveViewToX(chart.data.entryCount.toFloat())
+            throughput_chart.moveViewToX(throughput_chart.data.entryCount.toFloat())
 
-            chart.data.notifyDataChanged()
-            chart.notifyDataSetChanged()
+            throughput_chart.data.notifyDataChanged()
+            throughput_chart.notifyDataSetChanged()
         }
 
-        initLineChart(servingCellChart, lineInitData = initServingCellData(), isNegative = true)
+        initLineChart(serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (it == null || it.isEmpty()) return@observe
-            val data = servingCellChart.data ?: return@observe
+            if (it == null || it.isEmpty() || serving_cell_chart == null) return@observe
+            val data = serving_cell_chart.data ?: return@observe
 
             val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
 
@@ -105,21 +110,21 @@ class FragmentMainSession : Fragment() {
             val minimumValue = min(min(min(servingCell.rssi!!, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
             val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
 
-            servingCellChart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
-            servingCellChart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+            serving_cell_chart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
+            serving_cell_chart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
 
             // enable touch gestures
-            servingCellChart.setTouchEnabled(true)
+            serving_cell_chart.setTouchEnabled(true)
 
 
             // limit the number of visible entries
-            servingCellChart.setVisibleXRangeMaximum(10f)
+            serving_cell_chart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-            servingCellChart.moveViewToX(chart.data.entryCount.toFloat())
+            serving_cell_chart.moveViewToX(throughput_chart.data.entryCount.toFloat())
 
-            servingCellChart.data.notifyDataChanged()
-            servingCellChart.notifyDataSetChanged()
+            serving_cell_chart.data.notifyDataChanged()
+            serving_cell_chart.notifyDataSetChanged()
         }
     }
 

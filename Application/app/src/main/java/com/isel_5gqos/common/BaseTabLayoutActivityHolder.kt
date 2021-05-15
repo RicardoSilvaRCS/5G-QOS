@@ -3,8 +3,10 @@ package com.isel_5gqos.common
 import android.app.Activity
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayout
+import com.isel_5gqos.R
 
 abstract class BaseTabLayoutActivityHolder: AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
@@ -15,9 +17,18 @@ abstract class BaseTabLayoutActivityHolder: AppCompatActivity(), TabLayout.OnTab
         tabLayout!!.getTabAt(1)!!.text = "YaYa"
     }
 
-    override fun onTabSelected(tab: TabLayout.Tab?) {}
+    override fun onTabSelected(tab: TabLayout.Tab?) {
+        tab?.apply{
+            this.view.background = resources.getDrawable(R.drawable.purple_700_background)
+        }
+    }
 
-    override fun onTabUnselected(tab: TabLayout.Tab?) {}
+    override fun onTabUnselected(tab: TabLayout.Tab?) {
+        tab?.apply{
+            this.view.background = resources.getDrawable(R.drawable.purple_500_background)
+        }
+    }
 
     override fun onTabReselected(tab: TabLayout.Tab?) {}
+
 }

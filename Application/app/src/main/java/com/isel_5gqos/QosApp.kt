@@ -2,6 +2,7 @@ package com.isel_5gqos
 
 import android.app.Application
 import androidx.room.Room
+import com.isel_5gqos.common.DATABASE_NAME
 import com.isel_5gqos.common.db.QosDb
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import java.util.*
@@ -18,7 +19,7 @@ class QosApp : Application() {
     override fun onCreate() {
         super.onCreate()
         msWebApi = ManagementServiceWebApi(applicationContext)
-        db = Room.databaseBuilder(applicationContext, QosDb::class.java, "Qos-Db").build()
+        db = Room.databaseBuilder(applicationContext, QosDb::class.java, DATABASE_NAME).build()
     }
 
 

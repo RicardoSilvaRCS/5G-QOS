@@ -50,6 +50,10 @@ object ServingCellIndex {
     const val RSSNR: Int = 3
 }
 
+/** GLOBAL CONSTANTS   **/
+const val DATABASE_NAME = "Qos-Db"
+const val KILOBYTE = 1024
+const val MEGABYTE = KILOBYTE * KILOBYTE
 
 
 

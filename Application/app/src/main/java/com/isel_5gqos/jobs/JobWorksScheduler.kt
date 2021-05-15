@@ -45,16 +45,14 @@ class JobWorksScheduler : JobService() {
             do {
                 jobsList.forEachIndexed { index, jobType ->
 
-                    val work =  WorksMap.worksMap[jobType]
+                    val workInstance = WorksMap.worksMap[jobType]
 
-                    if (System.currentTimeMillis() > (lastRuns[index] + work!!.getWorkTimeout())) {
+                    if (System.currentTimeMillis() > (lastRuns[index] + workInstance!!.getWorkTimeout())) {
                         lastRuns[index] = System.currentTimeMillis()
-
-                        val paramsList: Array<Any?> = work.getWorkParameters().map { allParamsMap[it] }.toTypedArray()
 
                         asyncTask({
 
-                            work.work(createWorkerParams(work))
+                            workInstance.work(createWorkerParams(workInstance))
 
                         }) {}
 
