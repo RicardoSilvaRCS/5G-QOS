@@ -27,7 +27,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:textColor="@color/white"
             android:textSize="12sp"
-            android:text="INFO"
+            android:text="@string/info"
             />
         <TextView
             android:id="@+id/info_main"
@@ -55,7 +55,7 @@
             app:layout_constraintTop_toTopOf="@+id/database_info_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:text="DATABASE INFO"
+            android:text="@string/database_info"
             />
         <LinearLayout
             android:id="@+id/database_info_layout"
@@ -71,45 +71,42 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="File: "/>
+                    android:text="@string/file"/>
                 <TextView
                     android:id="@+id/database_file_path_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Path..."
                     />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginBottom="12dp"
                 >
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Size: "/>
+                    android:text="@string/size"/>
                 <TextView
                     android:id="@+id/database_size_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="112KB"
                     />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 >
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SD card: "/>
+                    android:text="@string/sd_card"/>
                 <TextView
                     android:id="@+id/device_free_storage_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="188 260 MB free space"
                     />
             </LinearLayout>
         </LinearLayout>
@@ -130,7 +127,7 @@
             app:layout_constraintTop_toTopOf="@+id/device_info_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:text="DEVICE INFO"
+            android:text="@string/device_info"
             />
         <LinearLayout
             android:id="@+id/device_info_layout"
@@ -146,46 +143,43 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Name: "/>
+                    android:text="@string/name"/>
                 <TextView
                     android:id="@+id/device_name_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Xiaomi Mi 10...(etc)"
                     />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginBottom="12dp"
                 >
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Android: "/>
+                    android:text="@string/android"/>
                 <TextView
                     android:id="@+id/android_version_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="11"
                     />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginBottom="12dp"
                 >
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="IMEI SW: "/>
+                    android:text="@string/imei_sw"/>
                 <TextView
                     android:id="@+id/android_imei_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="N/A in Android10+"
                     />
             </LinearLayout>
         </LinearLayout>
@@ -205,7 +199,7 @@
             app:layout_constraintTop_toTopOf="@+id/info_sim_info"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:text="SIM INFO"
+            android:text="@string/sim_info"
             />
         <LinearLayout
             android:id="@+id/sim_info_layout"
@@ -221,12 +215,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="IMSI: "/>
+                    android:text="@string/imsi"/>
                 <TextView
                     android:id="@+id/imsi_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="N/A in Android10+"
                     />
             </LinearLayout>
             <LinearLayout
@@ -238,29 +231,28 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Operator: "/>
+                    android:text="@string/operator"/>
                 <TextView
                     android:id="@+id/operator_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NOS"
                     />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginBottom="12dp"
                 >
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="S/N: "/>
+                    android:text="@string/s_n"
+                    />
                 <TextView
                     android:id="@+id/sn_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="N/A in Android10+"
                     />
             </LinearLayout>
         </LinearLayout>
