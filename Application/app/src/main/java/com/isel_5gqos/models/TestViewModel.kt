@@ -44,7 +44,9 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
     fun registerRadioParametersChanges (sessionId : String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 
-    fun registerThroughPutChanges (sessionId : String) = QosApp.db.throughPutDao().getLast(sessionId)
+    fun getServingCell (sessionId : String) = QosApp.db.radioParametersDao().getServingCell(sessionId)
+
+    fun registerThroughPutChanges (sessionId : String) = QosApp.db.throughPutDao().get(sessionId)
 
     fun startDefaultSession(userName: String) {
         val currentDate = Date(System.currentTimeMillis())

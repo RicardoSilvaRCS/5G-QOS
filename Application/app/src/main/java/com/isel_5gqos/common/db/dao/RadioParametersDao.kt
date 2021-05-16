@@ -13,6 +13,9 @@ interface RadioParametersDao {
     @Query("Select * from RadioParameters where sessionId = :sessionId and isUpToDate = 1")
     fun getUpToDateRadioParameters(sessionId: String): LiveData<List<RadioParameters>>
 
+    @Query("Select * from RadioParameters where sessionId = :sessionId and ( isServingCell = 1 or `no` = 1 )")
+    fun getServingCell(sessionId: String): LiveData<List<RadioParameters>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg radioParameter: RadioParameters)
 

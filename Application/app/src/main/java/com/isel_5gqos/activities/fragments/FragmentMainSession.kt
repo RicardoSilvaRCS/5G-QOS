@@ -33,6 +33,7 @@ import kotlinx.android.synthetic.main.fragment_main_session.*
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.lang.Long.max
+import java.time.chrono.MinguoChronology
 
 class FragmentMainSession : Fragment() {
 
@@ -61,18 +62,23 @@ class FragmentMainSession : Fragment() {
         initLineChart(g3,initThroughputDataLine())
 
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (it == null || throughput_chart == null) return@observe
+            if (it == null || it.isEmpty() || throughput_chart == null) return@observe
             val data = throughput_chart.data ?: return@observe
 
             val throughPut = ThroughPutDto.convertThroughPutToDto(it)
 
-            val rxdataSet = data.dataSets[ThroughputIndex.RX]
-            val txDataSet = data.dataSets[ThroughputIndex.TX]
-            data.addEntry(Entry(rxdataSet.entryCount.toFloat(), throughPut.rxResult.toFloat()), ThroughputIndex.RX)
-            data.addEntry(Entry(txDataSet.entryCount.toFloat(), throughPut.txResult.toFloat()), ThroughputIndex.TX)
+            var auxLastUpdatedValue = data.dataSets[ThroughputIndex.RX].entryCount
 
-            if (throughput_chart.axisLeft.axisMaximum < throughPut.rxResult || throughput_chart.axisLeft.axisMaximum < throughPut.txResult)
-                throughput_chart.axisLeft.axisMaximum = max(throughPut.rxResult, throughPut.txResult).toFloat() + 10f
+            throughPut.subList(auxLastUpdatedValue,throughPut.size).forEach {
+
+                data.addEntry(Entry(auxLastUpdatedValue.toFloat(), it.rxResult.toFloat()), ThroughputIndex.RX)
+                data.addEntry(Entry(auxLastUpdatedValue.toFloat(), it.txResult.toFloat()), ThroughputIndex.TX)
+
+                if (throughput_chart.axisLeft.axisMaximum < it.rxResult || throughput_chart.axisLeft.axisMaximum < it.txResult)
+                    throughput_chart.axisLeft.axisMaximum = max(it.rxResult, it.txResult).toFloat() + 10f
+
+                auxLastUpdatedValue++
+            }
 
             // enable touch gestures
             throughput_chart.setTouchEnabled(true)
@@ -88,35 +94,34 @@ class FragmentMainSession : Fragment() {
         }
 
         initLineChart(serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
-        testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
+        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+
             if (it == null || it.isEmpty() || serving_cell_chart == null) return@observe
             val data = serving_cell_chart.data ?: return@observe
 
             val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
 
-            val rssiDataSet = data.dataSets[ServingCellIndex.RSSI]
-            val rsrpDataSet = data.dataSets[ServingCellIndex.RSRP]
-            val rsqrDataSet = data.dataSets[ServingCellIndex.RSQR]
-            val rssnrDataSet = data.dataSets[ServingCellIndex.RSSNR]
+            var auxLastUpdatedIndex = data.dataSets[ServingCellIndex.RSSI].entryCount
 
-            val servingCell = radioParametersDto.find { current -> current.isServingCell || current.no == 1 }
+            radioParametersDto.subList(auxLastUpdatedIndex, radioParametersDto.size).forEach {
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rssi!!.toFloat()), ServingCellIndex.RSSI)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rsrp!!.toFloat()), ServingCellIndex.RSRP)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rsrq!!.toFloat()), ServingCellIndex.RSQR)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
 
-            data.addEntry(Entry(rssiDataSet.entryCount.toFloat(), servingCell!!.rssi!!.toFloat()), ServingCellIndex.RSSI)
-            data.addEntry(Entry(rsrpDataSet.entryCount.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
-            data.addEntry(Entry(rsqrDataSet.entryCount.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
-            data.addEntry(Entry(rssnrDataSet.entryCount.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
-            Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
+                Log.v("aaa", "rssi = ${it.rssi},rsrp = ${it.rsrp}, rsqr = ${it.rsrq}, rssnr = ${it.rssnr}")
 
-            val minimumValue = min(min(min(servingCell.rssi!!, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
-            val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+                val minimumValue = min(min(min(it.rssi!!, it.rsrp), it.rsrq), it.rssnr)
+                val maximumValue = max(max(max(it.rssi, it.rsrp), it.rsrq), it.rssnr)
 
-            serving_cell_chart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
-            serving_cell_chart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+                serving_cell_chart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
+                serving_cell_chart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+
+                auxLastUpdatedIndex++
+            }
 
             // enable touch gestures
             serving_cell_chart.setTouchEnabled(true)
-
-
             // limit the number of visible entries
             serving_cell_chart.setVisibleXRangeMaximum(10f)
 
