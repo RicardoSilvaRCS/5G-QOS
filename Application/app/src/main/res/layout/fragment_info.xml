@@ -2,21 +2,26 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background_gradient_blue_50_blue_200"
+    >
 <ScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="8dp"
+    android:layout_marginTop="24dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
     >
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/fragment_container_view"
+        android:background="@drawable/blue_50_background_round_20"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <View
             android:id="@+id/info_view"
             android:layout_height="24dp"
             android:layout_width="match_parent"
-            android:background="@drawable/purple_200_background"
+            android:background="@drawable/blue_500_background_round_20_top"
             app:layout_constraintTop_toTopOf="@id/fragment_container_view" />
         <TextView
             android:layout_width="wrap_content"
@@ -44,7 +49,7 @@
             android:layout_height="24dp"
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
-            android:background="@drawable/purple_200_background"
+            android:background="@drawable/blue_500_background"
             app:layout_constraintTop_toBottomOf="@id/info_main"
             />
         <TextView
@@ -116,7 +121,7 @@
             android:layout_height="24dp"
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
-            android:background="@drawable/purple_200_background"
+            android:background="@drawable/blue_500_background"
             app:layout_constraintTop_toBottomOf="@id/database_info_layout"
             />
         <TextView
@@ -188,7 +193,7 @@
             android:layout_height="24dp"
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
-            android:background="@drawable/purple_200_background"
+            android:background="@drawable/blue_500_background"
             app:layout_constraintTop_toBottomOf="@id/device_info_layout"
             />
         <TextView

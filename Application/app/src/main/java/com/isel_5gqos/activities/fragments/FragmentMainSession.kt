@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -199,7 +200,7 @@ class FragmentMainSession : Fragment() {
         val rssiValue = java.util.ArrayList<Entry>()
         rssiValue.add(Entry(0f, 0f))
         val rssi = LineDataSet(rssiValue, "RSSI")
-        rssi.lineWidth = 2.5f
+        rssi.lineWidth = 3f
         rssi.circleRadius = 1f
         rssi.highLightColor = Color.rgb(163, 145, 3)
         rssi.setDrawValues(false)
@@ -208,7 +209,7 @@ class FragmentMainSession : Fragment() {
         val rsrpValue = java.util.ArrayList<Entry>()
         rsrpValue.add(Entry(0f, 0f))
         val rsrp = LineDataSet(rsrpValue, "RSRP")
-        rsrp.lineWidth = 2.5f
+        rsrp.lineWidth = 3f
         rsrp.circleRadius = 1f
         rsrp.highLightColor = Color.rgb(0, 255, 0)
         rsrp.color = ColorTemplate.VORDIPLOM_COLORS[1]
@@ -218,7 +219,7 @@ class FragmentMainSession : Fragment() {
         val rsqrValue = java.util.ArrayList<Entry>()
         rsqrValue.add(Entry(0f, 0f))
         val rsqr = LineDataSet(rsqrValue, "RSQR")
-        rsqr.lineWidth = 2.5f
+        rsqr.lineWidth = 3f
         rsqr.circleRadius = 1f
         rsqr.highLightColor = Color.rgb(0, 0, 255)
         rsqr.color = ColorTemplate.VORDIPLOM_COLORS[2]
@@ -229,7 +230,7 @@ class FragmentMainSession : Fragment() {
         val rssnrValue = java.util.ArrayList<Entry>()
         rssnrValue.add(Entry(0f, 0f))
         val rssnr = LineDataSet(rssnrValue, "RSSNR")
-        rssnr.lineWidth = 2.5f
+        rssnr.lineWidth = 3f
         rssnr.circleRadius = 1f
         rssnr.highLightColor = Color.rgb(255, 0, 0)
         rssnr.color = ColorTemplate.VORDIPLOM_COLORS[0]
@@ -252,7 +253,7 @@ class FragmentMainSession : Fragment() {
     /**Initializing UI graphics**/
     private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
 
-        lineChart.setBackgroundColor(Color.WHITE)
+        lineChart.background = resources.getDrawable(R.drawable.white_background_round_20)
         // disable description text
         lineChart.description.isEnabled = false
 
@@ -265,12 +266,15 @@ class FragmentMainSession : Fragment() {
         lineChart.setPinchZoom(true)
 
         val xAxis = lineChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.axisLineWidth=1.5f
         xAxis.setDrawGridLines(false)
         xAxis.setAvoidFirstLastClipping(true)
         xAxis.isEnabled = true
         xAxis.granularity = granularity
 
         val yAxis = lineChart.axisLeft
+        yAxis.axisLineWidth = 1.5f
         yAxis.setDrawGridLines(true)
         yAxis.axisMaximum = if (isNegative) 0f else 10f
         yAxis.axisMinimum = if (isNegative) -10f else 0f

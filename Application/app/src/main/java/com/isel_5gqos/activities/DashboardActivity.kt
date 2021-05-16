@@ -57,10 +57,9 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             setupWithViewPager(dashboardActivitViewPager)
             addOnTabSelectedListener(this@DashboardActivity)
             this.getTabAt(0)?.apply {
-                this.view.background = resources.getDrawable(R.drawable.purple_700_background)
+                this.view.background = resources.getDrawable(R.drawable.blue_500_background)
             }
         }
-
     }
 
     private fun cancelAllJobs() {

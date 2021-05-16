@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/loginPageBackgroundColor"
+    android:background="@drawable/background_gradient_white_blue_200"
     tools:context=".activities.MainActivity">
 
     <LinearLayout
@@ -34,6 +34,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="text"
                 android:maxLines="1"
+                android:background="@drawable/white_background_round_20"
                 android:textColor="@color/black"
                 android:textColorHint="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -50,6 +51,7 @@
                 android:id="@+id/password_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/white_background_round_20"
                 android:inputType="textPassword"
                 android:textColor="@color/black"
                 android:textColorHint="@color/black" />

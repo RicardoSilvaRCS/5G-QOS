@@ -94,7 +94,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="parent"
-                app:tabBackground="@drawable/purple_500_background"
+                app:tabBackground="@drawable/blue_300_background"
                 app:tabGravity="fill"
                 app:tabIndicatorColor="@color/purple_700"
                 app:tabInlineLabel="true"

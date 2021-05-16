@@ -19,13 +19,13 @@ abstract class BaseTabLayoutActivityHolder: AppCompatActivity(), TabLayout.OnTab
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
         tab?.apply{
-            this.view.background = resources.getDrawable(R.drawable.purple_700_background)
+            this.view.background = resources.getDrawable(R.drawable.blue_500_background)
         }
     }
 
     override fun onTabUnselected(tab: TabLayout.Tab?) {
         tab?.apply{
-            this.view.background = resources.getDrawable(R.drawable.purple_500_background)
+            this.view.background = resources.getDrawable(R.drawable.blue_300_background)
         }
     }
 
