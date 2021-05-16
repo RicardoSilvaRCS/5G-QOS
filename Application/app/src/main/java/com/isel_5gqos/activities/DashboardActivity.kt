@@ -25,7 +25,7 @@ import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
 
 
-class DashboardActivity : BaseTabLayoutActivityHolder() {
+open class DashboardActivity : BaseTabLayoutActivityHolder() {
 
     private val model by lazy {
         ViewModelProviders.of(this)[InternetViewModel::class.java]
@@ -45,7 +45,7 @@ class DashboardActivity : BaseTabLayoutActivityHolder() {
         findViewById(R.id.dashboard_tabs)
     }
 
-    private val jobs = mutableListOf<JobInfo>()
+    val jobs = mutableListOf<JobInfo>()
 
     /**INIT UI ELEMENTS**/
     private val chart: LineChart by lazy {

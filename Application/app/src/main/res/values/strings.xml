@@ -2,4 +2,27 @@
     <string name="app_name">5GQos</string>
     <string name="rx_kbits_s">RX kbits/s</string>
     <string name="tx_kbits_s">TX kbits/s</string>
+    <string name="na_in_android_10_plus">N/A in android 10+</string>
+    <string name="na">N/A</string>
+    <string name="mb_of_free_space">%1$d MB free space</string>
+    <string name="device_info">DEVICE INFO</string>
+    <string name="name">Name:</string>
+    <string name="android">Android:</string>
+    <string name="imei_sw">IMEI SW:</string>
+    <string name="sim_info">SIM INFO</string>
+    <string name="imsi">IMSI:</string>
+    <string name="operator">Operator:</string>
+    <string name="s_n">S/N:</string>
+    <string name="sd_card">SD card:</string>
+    <string name="size">Size:</string>
+    <string name="file">File:</string>
+    <string name="database_info">DATABASE INFO</string>
+    <string name="info">INFO</string>
+    <string name="create_session">Create Session</string>
+    <string name="end_session">End Session</string>
+    <string name="ping">Ping</string>
+    <string name="password">Password</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="username">Username</string>
 </resources>

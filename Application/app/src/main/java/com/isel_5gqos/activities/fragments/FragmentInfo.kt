@@ -12,17 +12,28 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.isel_5gqos.R
+import com.isel_5gqos.activities.DashboardActivity
 import com.isel_5gqos.common.DATABASE_NAME
 import com.isel_5gqos.common.MEGABYTE
 import com.isel_5gqos.models.SystemViewModel
+import com.isel_5gqos.models.TestViewModel
 import kotlinx.android.synthetic.main.fragment_info.*
 
 
 class FragmentInfo : Fragment() {
     private val systemInfoModel by lazy {
         ViewModelProviders.of(requireActivity())[SystemViewModel::class.java]
+    }
+
+    private val testModel by lazy {
+        ViewModelProvider(requireParentFragment()).get(TestViewModel::class.java)
+    }
+
+    private val dashboardActivity by lazy {
+        requireActivity() as DashboardActivity
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -40,6 +51,7 @@ class FragmentInfo : Fragment() {
 //    imsi_txt
 //    operator_txt
 //    sn_txt
+
         database_file_path_txt.text = requireContext().getDatabasePath(DATABASE_NAME).toString()
 
         /*systemInfoModel.getDatabaseInfo().observe(requireActivity()) {
@@ -53,10 +65,15 @@ class FragmentInfo : Fragment() {
         val internalFree: Long = internalStatFs.availableBlocksLong * internalStatFs.blockSizeLong / (MEGABYTE)
         val externalFree: Long = externalStatFs.availableBlocksLong * externalStatFs.blockSizeLong / (MEGABYTE)
 
-        device_free_storage_txt.text = "${internalFree + externalFree} MB free space"
+        device_free_storage_txt.text = String.format(getString(R.string.mb_of_free_space), internalFree + externalFree)
 
         device_name_txt.text = Build.MODEL
-        android_version_txt.text = Build.VERSION.BASE_OS
+        android_version_txt.text = Build.VERSION.RELEASE
+
+        android_imei_txt.text = getString(R.string.na_in_android_10_plus)
+        imsi_txt.text = getString(R.string.na_in_android_10_plus)
+        operator_txt.text = getString(R.string.na)
+        sn_txt.text = getString(R.string.na_in_android_10_plus)
 
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java)
@@ -66,11 +83,6 @@ class FragmentInfo : Fragment() {
                 sn_txt.text = telephonyManager.simSerialNumber
             }
             operator_txt.text = telephonyManager.networkOperatorName
-        } else {
-            android_imei_txt.text = "N/A in android 10+"
-            imsi_txt.text = "N/A in android 10+"
-            operator_txt.text = "N/A"
-            sn_txt.text = "N/A in android 10+"
         }
     }
 }
