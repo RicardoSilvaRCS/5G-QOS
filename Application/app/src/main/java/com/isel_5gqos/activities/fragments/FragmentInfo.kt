@@ -14,9 +14,9 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.DashboardActivity
-import com.isel_5gqos.common.DATABASE_NAME
 import com.isel_5gqos.common.MEGABYTE
 import com.isel_5gqos.models.SystemViewModel
 import com.isel_5gqos.models.TestViewModel
@@ -40,23 +40,20 @@ class FragmentInfo : Fragment() {
         inflater.inflate(R.layout.fragment_info, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        database_file_path_txt
-//        database_size_txt
-//        device_free_storage_txt
 
-//    device_name_txt
-//    android_version_txt
-//    android_imei_txt
+        database_file_path_txt.text = QosApp.db.openHelper.readableDatabase.path
 
-//    imsi_txt
-//    operator_txt
-//    sn_txt
+        val pageSize = QosApp.db.openHelper.readableDatabase.pageSize
+        val cursor = QosApp.db.openHelper.readableDatabase.query("Select page_count from pragma_page_count")
+        var pageCount = 0L
 
-        database_file_path_txt.text = requireContext().getDatabasePath(DATABASE_NAME).toString()
+        if (cursor.moveToFirst())
+            pageCount = cursor.getLong(0)
 
-        /*systemInfoModel.getDatabaseInfo().observe(requireActivity()) {
-            database_size_txt.text = "${it.page_size?.times(it.page_count ?: 0) ?: "N/A"}"
-        }*/
+        database_size_txt.text =
+            if (pageCount == 0L) getString(R.string.na)
+            else String.format(getString(R.string.database_size), pageSize * pageCount / 1024)
+
 
         val internalStatFs = StatFs(Environment.getRootDirectory().absolutePath)
 
@@ -64,6 +61,7 @@ class FragmentInfo : Fragment() {
 
         val internalFree: Long = internalStatFs.availableBlocksLong * internalStatFs.blockSizeLong / (MEGABYTE)
         val externalFree: Long = externalStatFs.availableBlocksLong * externalStatFs.blockSizeLong / (MEGABYTE)
+
 
         device_free_storage_txt.text = String.format(getString(R.string.mb_of_free_space), internalFree + externalFree)
 

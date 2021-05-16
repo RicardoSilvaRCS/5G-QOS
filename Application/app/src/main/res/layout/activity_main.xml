@@ -65,16 +65,16 @@
                 android:layout_height="40dp"
                 android:layout_marginEnd="12dp"
                 android:layout_toStartOf="@id/next_button"
-                android:background="@drawable/white_background_purple_200_border_round_20"
+                android:background="@drawable/white_background_blue_600_border_round_20"
                 android:text="@string/cancel"
-                android:textColor="@color/purple_200" />
+                android:textColor="@color/blue_600" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/next_button"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:layout_alignParentEnd="true"
-                android:background="@drawable/background_purple_200_round_20"
+                android:background="@drawable/blue_600_background_round_20"
                 android:text="@string/confirm"
                 android:textColor="@color/white"
                 />
