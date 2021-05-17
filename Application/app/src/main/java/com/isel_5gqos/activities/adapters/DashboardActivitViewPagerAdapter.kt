@@ -5,13 +5,15 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import com.isel_5gqos.activities.fragments.FragmentControlledSession
 import com.isel_5gqos.activities.fragments.FragmentInfo
-import com.isel_5gqos.activities.fragments.FragmentMainSession
+import com.isel_5gqos.activities.fragments.FragmentChartSession
+import com.isel_5gqos.activities.fragments.FragmentTable
 
 class DashboardActivitViewPagerAdapter(fragmentManager: FragmentManager):FragmentPagerAdapter(fragmentManager) {
     private val itemMap = mapOf(
-        0 to Pair(FragmentMainSession(),"Main Session"),
-        1 to Pair(FragmentControlledSession(),"Controlled Session"),
-        2 to Pair(FragmentInfo(),"Info")
+        0 to Pair(FragmentTable(), "Serving Cell"),
+        1 to Pair(FragmentChartSession(),"Main Session"),
+        2 to Pair(FragmentControlledSession(),"Controlled Session"),
+        3 to Pair(FragmentInfo(),"Info")
     )
 
     override fun getCount():Int = itemMap.size

@@ -2,6 +2,7 @@ package com.isel_5gqos.common.db.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.common.db.entities.RadioParameters
 
 @Dao
@@ -15,6 +16,9 @@ interface RadioParametersDao {
 
     @Query("Select * from RadioParameters where sessionId = :sessionId and ( isServingCell = 1 or `no` = 1 )")
     fun getServingCell(sessionId: String): LiveData<List<RadioParameters>>
+
+    @Query("Select * from Locations where sessionId=:sessionId limit(1)")
+    fun getLastLocation(sessionId: String):LiveData<Location>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg radioParameter: RadioParameters)

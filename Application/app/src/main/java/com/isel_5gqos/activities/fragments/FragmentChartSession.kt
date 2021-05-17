@@ -36,7 +36,7 @@ import java.lang.Integer.min
 import java.lang.Long.max
 import java.time.chrono.MinguoChronology
 
-class FragmentMainSession : Fragment() {
+class FragmentChartSession : Fragment() {
 
     /**INIT UI ELEMENTS**/
 
@@ -52,10 +52,6 @@ class FragmentMainSession : Fragment() {
         inflater.inflate(R.layout.fragment_main_session, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        val username = activity!!.intent.getStringExtra(USER)?.toString() ?: ""
-        startDefaultSession(username)
-
         initLineChart(throughput_chart, initThroughputDataLine())
 
         initLineChart(g1,initThroughputDataLine())

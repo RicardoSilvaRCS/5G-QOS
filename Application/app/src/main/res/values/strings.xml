@@ -26,4 +26,19 @@
     <string name="cancel">Cancel</string>
     <string name="username">Username</string>
     <string name="database_size">%1$d KB</string>
+    <string name="rsrp">RSRP:</string>
+    <string name="arfcn">ARFCN:</string>
+    <string name="rsrq">RSRQ:</string>
+    <string name="rssnr">RSSNR:</string>
+    <string name="net_data_type">Net Data Type:</string>
+    <string name="mcc_mnc">MCC MNC</string>
+    <string name="tac">TAC:</string>
+    <string name="enodeb_id">eNodeB Id:</string>
+    <string name="cid">CID:</string>
+    <string name="pci">PCI:</string>
+    <string name="cell_name">Cell Name:</string>
+    <string name="sim_net_operator">SIM/NET Operator</string>
+    <string name="gps_lat_lon">GPS Lat/Lon</string>
+    <string name="distance">Distance:</string>
+    <string name="neighbors">Neighbors</string>
 </resources>

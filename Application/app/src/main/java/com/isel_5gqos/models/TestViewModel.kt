@@ -44,6 +44,8 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
     fun registerRadioParametersChanges (sessionId : String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 
+    fun getLastLocation(sessionId: String) = QosApp.db.radioParametersDao().getLastLocation(sessionId)
+
     fun getServingCell (sessionId : String) = QosApp.db.radioParametersDao().getServingCell(sessionId)
 
     fun registerThroughPutChanges (sessionId : String) = QosApp.db.throughPutDao().get(sessionId)
