@@ -18,5 +18,7 @@ class MobileInfoUtils {
             telephonyManager.imei
         }
 
+
+        fun getDeviceSerialNumber () = Build.getSerial()
     }
 }

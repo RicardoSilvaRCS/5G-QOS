@@ -12,8 +12,8 @@ import com.isel_5gqos.common.db.dao.*
 import com.isel_5gqos.common.db.entities.*
 
 @Database(
-    entities = [Error::class, Ping::class, Session::class, ThroughPut::class, User::class, Location::class , RadioParameters::class],
-    version = 1,
+    entities = [Error::class, Ping::class, Session::class, ThroughPut::class, User::class, Location::class , RadioParameters::class, MobileUnit::class],
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -22,6 +22,7 @@ abstract class QosDb : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
     abstract fun throughPutDao(): ThroughPutDao
     abstract fun userDao(): UserDao
+    abstract fun mobileUnit():MobileUnitDao
     abstract fun pingDao(): PingDao
     abstract fun locationDao(): LocationDao
     abstract fun radioParametersDao():RadioParametersDao

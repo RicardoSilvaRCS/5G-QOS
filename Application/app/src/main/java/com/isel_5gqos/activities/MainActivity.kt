@@ -37,12 +37,6 @@ class MainActivity : AppCompatActivity() {
 
         loginButton.setOnClickListener {
 
-//            val intent = Intent(this, DashboardActivity::class.java)
-//            intent.putExtra(TOKEN, "teste")
-//            intent.putExtra(USER, "ricardo.silva@isel.pt")
-//
-//            startActivity(intent)
-
             val user = username.text.toString()
             val pass = password.text.toString()
 

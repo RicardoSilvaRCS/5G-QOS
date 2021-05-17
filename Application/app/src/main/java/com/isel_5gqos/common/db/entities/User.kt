@@ -4,10 +4,11 @@ import androidx.room.Entity
 
 @Entity(tableName = "Users", primaryKeys = ["username"])
 
-class User(
+class User (
     val regId: String,
     val username: String,
     val token: String,
-    val timestamp: Long
+    val loggedOut : Boolean,
+    val timestamp: Long,
 )
 

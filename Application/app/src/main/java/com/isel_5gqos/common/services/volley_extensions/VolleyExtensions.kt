@@ -23,8 +23,6 @@ class VolleyExtensions {
 
             headers["Content-Type"] = "application/json"
 
-            //TODO change user agent
-//            headers["User-Agent"] = "blablabla"
             return headers
         }
     }

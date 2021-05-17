@@ -19,7 +19,9 @@ class QosApp : Application() {
     override fun onCreate() {
         super.onCreate()
         msWebApi = ManagementServiceWebApi(applicationContext)
-        db = Room.databaseBuilder(applicationContext, QosDb::class.java, DATABASE_NAME).build()
+        db = Room.databaseBuilder(applicationContext, QosDb::class.java, DATABASE_NAME)
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
 

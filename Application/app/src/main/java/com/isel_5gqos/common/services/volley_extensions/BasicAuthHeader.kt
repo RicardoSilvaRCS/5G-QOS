@@ -9,3 +9,11 @@ class BasicAuthHeader(private val userName: String, private val password: String
             "Basic ${Base64.encodeToString("${userName}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")}"
         )
 }
+
+class TokenAuthHeader (private val authenticationToken : String ) : IRequestHeader {
+    override fun convertToRequestHeader(): Pair<String, String> =
+        Pair(
+            "Authorization",
+            authenticationToken
+        )
+}
