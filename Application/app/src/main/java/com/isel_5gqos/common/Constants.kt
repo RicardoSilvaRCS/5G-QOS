@@ -56,4 +56,23 @@ const val KILOBYTE = 1024
 const val MEGABYTE = KILOBYTE * KILOBYTE
 
 
+//TODO FAZER CLASS QUE RECEBE UM ID E UM CONTEXT E VAI BUSCAR AO "R" A STRING ASSOCIADA
+/**Volley Errors Labels**/
+
+/**GENERIC ERRORS**/
+
+const val NO_CONNECTION_ERROR = "Please check your internet connection"
+const val TIMEOUT_ERROR = "There is a problem with the server"
+const val GENERIC_ERROR = "There is a problem please contact the it team!"
+
+/**END**/
+
+/**CREDENTIALS**/
+
+const val INVALID_CREDENTIALS = "There is a problem with the server"
+const val TOKEN_NOT_REFRESHED = "The token wasn't able to be refreshed please insert your credentials"
+
+/****/
+
+
 
