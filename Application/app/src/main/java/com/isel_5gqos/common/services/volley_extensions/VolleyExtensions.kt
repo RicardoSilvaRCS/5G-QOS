@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException
 
 class VolleyExtensions {
     companion object {
+
         fun getHeaders(iRequestHeaders: List<IRequestHeader>): MutableMap<String, String> {
             val headers = mutableMapOf<String, String>()
             iRequestHeaders.forEach {
@@ -25,6 +26,17 @@ class VolleyExtensions {
 
             return headers
         }
+
+        fun getAuthenticationHeader(jsonObject : JSONObject) : String{
+            val headers = jsonObject["headers"] as JSONObject
+            return headers["Authorization"].toString().split(" ")[1]
+        }
+
+        fun getAuthorization (jsonObject : JSONObject) : String{
+            val headers = jsonObject["headers"] as JSONObject
+            return headers["Authorization"].toString()
+        }
+
     }
 }
 

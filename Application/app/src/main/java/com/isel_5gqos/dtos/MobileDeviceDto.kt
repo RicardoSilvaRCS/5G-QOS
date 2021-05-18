@@ -1,7 +1,5 @@
 package com.isel_5gqos.dtos
 
-import android.util.Log
-import com.isel_5gqos.common.TAG
 import org.json.JSONObject
 
 class MobileDeviceDto (

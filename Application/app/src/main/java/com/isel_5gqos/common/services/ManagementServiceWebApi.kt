@@ -2,11 +2,13 @@ package com.isel_5gqos.common.services
 
 import android.content.Context
 import android.os.AsyncTask
+import android.util.Log
 import com.android.volley.Request.Method.POST
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
+import com.isel_5gqos.common.TAG
 import com.isel_5gqos.common.db.entities.MobileUnit
 import com.isel_5gqos.common.services.volley_extensions.BasicAuthHeader
 import com.isel_5gqos.common.services.volley_extensions.TokenAuthHeader
@@ -31,9 +33,12 @@ class ManagementServiceWebApi(val ctx: Context) {
             url = USER_LOGIN_URI,
             jsonBody = null,
             onSuccess = {
+
+                val token = VolleyExtensions.getAuthenticationHeader(it)
+
                 onSuccess(
                     UserDto.jsonObjectToUserDto(
-                        it,
+                        token,
                         username
                     )
                 )
@@ -62,17 +67,31 @@ class ManagementServiceWebApi(val ctx: Context) {
             jsonBody = jsonBody,
             onSuccess = { responseBody ->
 
-                executeAsyncTaskGeneric(
-                    function = {
+                onSuccess(MobileDeviceDto.jsonObjectToMobileDeviceDto(responseBody))
 
-                        MobileDeviceDto.jsonObjectToMobileDeviceDto(it)
+            },
+            onError = onError,
+            getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) }
+        )
 
-                    },
-                    param = responseBody,
-                    onSuccess = { result ->
-                        onSuccess(result)
-                    }
-                )
+        queue.add(requestObjectRequest)
+    }
+
+    fun refreshToken (
+        authenticationToken : String,
+        onSuccess: (String) -> Unit,
+        onError: (VolleyError) -> Unit
+    ) {
+
+        val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
+            method = POST,
+            url = REFRESH_TOKEN,
+            jsonBody = JSONObject(),
+            onSuccess = {
+
+                val token = VolleyExtensions.getAuthorization(it)
+
+                onSuccess(token)
 
             },
             onError = onError,

@@ -59,14 +59,12 @@
 
     <style name="Launcher" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@mipmap/logo_launcher</item>
         <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="WholeApp" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@mipmap/logo_launcher</item>
         <item name="android:statusBarColor">@color/blue_300</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>

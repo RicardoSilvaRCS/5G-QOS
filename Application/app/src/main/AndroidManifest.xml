@@ -7,39 +7,39 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
+    <uses-permission
+        android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
         tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".QosApp"
         android:allowBackup="true"
-        android:usesCleartextTraffic="true"
         android:icon="@mipmap/logo_launcher_foreground"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/logo_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/WholeApp"
-        >
-        <activity android:name=".activities.DashboardActivity" />
-        <activity
-            android:name=".activities.MainActivity"
-            android:theme="@style/Launcher"
-            android:screenOrientation="portrait">
+        android:usesCleartextTraffic="true">
+        <activity android:name=".activities.SplashActivity"
+                  android:screenOrientation="portrait"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-       <!-- <service android:name=".jobs.RadioParametersJobWorkItem"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true"/>-->
-
-        <service android:name=".jobs.JobWorksScheduler"
+        <activity android:name=".activities.DashboardActivity" />
+        <activity android:name=".activities.MainActivity"></activity>
+        <!--
+ <service android:name=".jobs.RadioParametersJobWorkItem"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true"/>
-
+        -->
+        <service
+            android:name=".jobs.JobWorksScheduler"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>
