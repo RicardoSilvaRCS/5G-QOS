@@ -4,7 +4,9 @@ import android.content.Context
 import android.telephony.TelephonyManager
 import android.util.Log
 import com.isel_5gqos.QosApp
+import com.isel_5gqos.QosApp.Companion.db
 import com.isel_5gqos.common.TAG
+import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.dtos.WrapperDto
 import com.isel_5gqos.utils.errors.Exceptions
@@ -15,8 +17,8 @@ import java.util.*
 
 class RadioParametersWork : IWorks {
 
-    override fun work (params: Map<String, Any?>) {
-        Log.v("jobType","RadioParams----------------------------------")
+    override fun work(params: Map<String, Any?>) {
+        Log.v("jobType", "RadioParams----------------------------------")
         val telephonyManager: TelephonyManager = params["telephonyManager"] as TelephonyManager
         val sessionId: String = params["sessionId"] as String
         val context: Context = params["context"] as Context
@@ -30,7 +32,9 @@ class RadioParametersWork : IWorks {
             Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
             Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
             Log.v(TAG, "${imei ?: ""} IMEI")
-
+            cellInfoList.forEach {
+                Log.v("unusedTag", it.toString())
+            }
             insertRadioParametersInfoInDb(
                 sessionId,
                 WrapperDto(
@@ -71,22 +75,25 @@ class RadioParametersWork : IWorks {
             )
         }.toTypedArray()
 
-        QosApp.db.radioParametersDao().insert(*radioParams)
+        db.radioParametersDao().insert(*radioParams)
 
-//        val location = Location(
-//            regId = UUID.randomUUID().toString(),
-//            networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
-//            latitude = wrapperDto.locationDto.latitude!!,
-//            longitude = wrapperDto.locationDto.longitude!!,
-//            sessionId = sessionId,
-//            timestamp = System.currentTimeMillis(),
-//        )
-//
-//        db.locationDao().insert(location)
+        try {
+            val location = Location(
+                regId = UUID.randomUUID().toString(),
+                networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
+                latitude = wrapperDto.locationDto.latitude!!,
+                longitude = wrapperDto.locationDto.longitude!!,
+                sessionId = sessionId,
+                timestamp = System.currentTimeMillis(),
+            )
+            db.locationDao().insert(location)
+        } catch (ex: Exceptions) {
+            Exceptions(ex)
+        }
     }
 
-    override fun getWorkTimeout() : Long = 1000L
+    override fun getWorkTimeout(): Long = 1000L
 
-    override fun getWorkParameters() : Array<String> = arrayOf("telephonyManager","sessionId","context")
+    override fun getWorkParameters(): Array<String> = arrayOf("telephonyManager", "sessionId", "context")
 
 }
