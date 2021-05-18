@@ -45,7 +45,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         findViewById(R.id.dashboard_tabs)
     }
 
-    val jobs = mutableListOf<JobInfo>()
+    private val jobs = mutableListOf<JobInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +60,9 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
                 this.view.background = resources.getDrawable(R.drawable.blue_500_background)
             }
         }
+
+        val username = intent.getStringExtra(USER)?.toString() ?: ""
+        startDefaultSession(username)
     }
 
     private fun cancelAllJobs() {

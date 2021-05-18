@@ -7,8 +7,8 @@ class RadioParametersDto(
     val no: Int = -1,
     val tech: String? = null,
     val arfcn: Int? = null,  //Absolute Radio-Frequency Channel Number
-    val rssi: Int? = null,   //Received signal strength indication
-    val rsrp: Int? = null,   //Reference signal receive power
+    val rssi: Int? = null,   //Received signal strength indication ===> GSM
+    val rsrp: Int? = null,   //Reference signal receive power ===> LTE
     val cId: Int? = null,    //Carrier id GSM
     val psc: Int? = null,    //Primary scrambling controller UMTS
     val pci: Int? = null,    //Primary cell Identity LTE
@@ -43,6 +43,14 @@ class RadioParametersDto(
         NetworkDataTypesEnum.GSM -> cId.toString()
         NetworkDataTypesEnum.UMTS -> psc.toString()
         else -> pci.toString()
+    }
+
+    override fun toString(): String = "No = $no, tech = $tech, arfcn = $arfcn, rssi = $rssi, rsrp = $rsrp, cId = $cId, psc = $psc, pci = $pci, rssnr = $rssnr, rsrq = $rsrq"
+
+    fun getReferenceStrength() = when(netDataType){
+        NetworkDataTypesEnum.LTE -> rsrp
+        NetworkDataTypesEnum.GSM -> rssi
+        else -> rssi
     }
 }
 
