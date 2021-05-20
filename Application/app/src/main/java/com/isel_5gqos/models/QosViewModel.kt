@@ -26,7 +26,59 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
                 asyncTask({ QosApp.db.userDao().insert(user) }) {}
 
+<<<<<<< Updated upstream
                 liveData.postValue(userDto)
+=======
+                asyncTask({
+
+                    QosApp.db.userDao().insert(user)
+
+                })
+                {
+
+                    loginDevice(userDto)
+
+                }
+
+            },
+            onError = {
+                if (it is NoConnectionError) {
+                    AndroidUtils.makeBurnedToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+                }
+                if(it is TimeoutError){
+                    AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
+                }
+                else {
+                    AndroidUtils.makeRawToast(managementSystemApi.ctx, INVALID_CREDENTIALS)
+                }
+            }
+        )
+    }
+
+    private fun loginDevice(user: UserDto) {
+
+        managementSystemApi.registerMobileDevice(
+            mobileSerialNumber = "",//MobileInfoUtils.getDeviceSerialNumber(),
+            authenticationToken = user.userToken,
+            onSuccess = {
+
+                val mobileUnit = MobileUnit(
+                     mobileUnitId = it.mobileUnitId,
+                     password =  it.password,
+                     controlConnectionHref = it.controlConnectionHref,
+                     systemLogHref = it.systemLogHref
+                )
+
+                asyncTask({
+
+                    QosApp.db.mobileUnit().insertMobileUnitSetting(mobileUnit)
+
+                }) {
+                    liveData.postValue(user)
+                }
+
+
+>>>>>>> Stashed changes
             },
             onError = {
                 if (it is NoConnectionError) {

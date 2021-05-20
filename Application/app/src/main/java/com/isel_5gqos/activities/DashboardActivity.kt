@@ -85,6 +85,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
 
         }
 
+<<<<<<< Updated upstream
         deleteButton.setOnClickListener {
             cancelAllJobs()
 
@@ -165,6 +166,10 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
             servingCellChart.notifyDataSetChanged()
         }
 
+=======
+        val username = intent.getStringExtra(USER)?.toString() ?: ""
+        startDefaultSession("username")
+>>>>>>> Stashed changes
     }
 
     private fun cancelAllJobs() {
@@ -186,6 +191,7 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
         }
     }
 
+<<<<<<< Updated upstream
     /**Initializing ThroughPut graphic info**/
 
     private fun initThroughputDataLine(): LineData {
@@ -330,4 +336,26 @@ class DashboardActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener, 
     /**END**/
 
 
+=======
+    override fun onResume() {
+        super.onResume()
+        Log.v("schedulerTest","Activity resumed")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.v("schedulerTest","Activity Restarted")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.v("schedulerTest","Activity Stopped")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.v("schedulerTest","Activity Destroyed")
+    }
+
+>>>>>>> Stashed changes
 }

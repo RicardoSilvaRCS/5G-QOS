@@ -59,6 +59,7 @@ class RadioParametersJobWorkItem : JobService() {
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
+        Log.v("schedulerTest","Scheduler Stopped")
         jobCancelled = true;
         return true
     }
