@@ -23,7 +23,6 @@ class MainActivity : AppCompatActivity() {
         ViewModelProviders.of(this, qosFactory)[QosViewModel::class.java]
     }
 
-    //TODO mudar para login activity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

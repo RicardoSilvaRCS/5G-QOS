@@ -19,6 +19,13 @@ class MobileInfoUtils {
         }
 
 
-        fun getDeviceSerialNumber () = Build.getSerial()
+        fun getDeviceSerialNumber (): String {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+                return "3393182b"
+            }
+
+            return Build.getSerial()
+        }
     }
 }

@@ -18,23 +18,15 @@ import java.util.*
 class RadioParametersWork : IWorks {
 
     override fun work(params: Map<String, Any?>) {
-        Log.v("jobType", "RadioParams----------------------------------")
+
         val telephonyManager: TelephonyManager = params["telephonyManager"] as TelephonyManager
         val sessionId: String = params["sessionId"] as String
         val context: Context = params["context"] as Context
+
         try {
 
             val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager)
 
-            val imei = MobileInfoUtils.getImei(context, telephonyManager)
-
-            //TODO CAN get this info only once
-            Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
-            Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
-            Log.v(TAG, "${imei ?: ""} IMEI")
-            cellInfoList.forEach {
-                Log.v("unusedTag", it.toString())
-            }
             insertRadioParametersInfoInDb(
                 sessionId,
                 WrapperDto(
@@ -47,11 +39,12 @@ class RadioParametersWork : IWorks {
         } catch (ex: Exception) {
             Exceptions(ex)
         }
+
     }
 
     private fun insertRadioParametersInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
 
-        QosApp.db.radioParametersDao().invalidateRadioParameters(sessionId)
+        db.radioParametersDao().invalidateRadioParameters(sessionId)
 
         val radioParams = wrapperDto.radioParametersDtos.map { radioParametersDto ->
 
@@ -78,6 +71,7 @@ class RadioParametersWork : IWorks {
         db.radioParametersDao().insert(*radioParams)
 
         try {
+
             val location = Location(
                 regId = UUID.randomUUID().toString(),
                 networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
@@ -87,6 +81,7 @@ class RadioParametersWork : IWorks {
                 timestamp = System.currentTimeMillis(),
             )
             db.locationDao().insert(location)
+
         } catch (ex: Exceptions) {
             Exceptions(ex)
         }

@@ -62,17 +62,15 @@ class FragmentChartSession : Fragment() {
             if (it == null || it.isEmpty() || throughput_chart == null) return@observe
             val data = throughput_chart.data ?: return@observe
 
-            val throughPut = ThroughPutDto.convertThroughPutToDto(it)
-
             var auxLastUpdatedValue = data.dataSets[ThroughputIndex.RX].entryCount
 
-            throughPut.subList(auxLastUpdatedValue,throughPut.size).forEach {
+            it.subList(auxLastUpdatedValue,it.size).forEach { throughput ->
 
-                data.addEntry(Entry(auxLastUpdatedValue.toFloat(), it.rxResult.toFloat()), ThroughputIndex.RX)
-                data.addEntry(Entry(auxLastUpdatedValue.toFloat(), it.txResult.toFloat()), ThroughputIndex.TX)
+                data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.rxResult.toFloat()), ThroughputIndex.RX)
+                data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.txResult.toFloat()), ThroughputIndex.TX)
 
-                if (throughput_chart.axisLeft.axisMaximum < it.rxResult || throughput_chart.axisLeft.axisMaximum < it.txResult)
-                    throughput_chart.axisLeft.axisMaximum = max(it.rxResult, it.txResult).toFloat() + 10f
+                if (throughput_chart.axisLeft.axisMaximum < throughput.rxResult || throughput_chart.axisLeft.axisMaximum < throughput.txResult)
+                    throughput_chart.axisLeft.axisMaximum = max(throughput.rxResult, throughput.txResult).toFloat() + 10f
 
                 auxLastUpdatedValue++
             }
@@ -96,20 +94,18 @@ class FragmentChartSession : Fragment() {
             if (it == null || it.isEmpty() || serving_cell_chart == null) return@observe
             val data = serving_cell_chart.data ?: return@observe
 
-            val radioParametersDto = RadioParametersDto.convertRadioParametersToDto(it)
+            var auxLastUpdatedIndex = min(data.dataSets[ServingCellIndex.RSSI].entryCount,it.size)
 
-            var auxLastUpdatedIndex = data.dataSets[ServingCellIndex.RSSI].entryCount
+            it.subList(auxLastUpdatedIndex, it.size).forEach { servingCell ->
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi!!.toFloat()), ServingCellIndex.RSSI)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
 
-            radioParametersDto.subList(auxLastUpdatedIndex, radioParametersDto.size).forEach {
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rssi!!.toFloat()), ServingCellIndex.RSSI)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rsrp!!.toFloat()), ServingCellIndex.RSRP)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rsrq!!.toFloat()), ServingCellIndex.RSQR)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), it.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
+                Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
 
-                Log.v("aaa", "rssi = ${it.rssi},rsrp = ${it.rsrp}, rsqr = ${it.rsrq}, rssnr = ${it.rssnr}")
-
-                val minimumValue = min(min(min(it.rssi!!, it.rsrp), it.rsrq), it.rssnr)
-                val maximumValue = max(max(max(it.rssi, it.rsrp), it.rsrq), it.rssnr)
+                val minimumValue = min(min(min(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+                val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
 
                 serving_cell_chart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
                 serving_cell_chart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f

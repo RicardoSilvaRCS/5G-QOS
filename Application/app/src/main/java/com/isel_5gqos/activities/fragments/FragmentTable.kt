@@ -1,5 +1,6 @@
 package com.isel_5gqos.activities.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.view.LayoutInflater
@@ -12,8 +13,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
+import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import kotlinx.android.synthetic.main.fragment_table.*
 
 
@@ -29,19 +32,26 @@ class FragmentTable : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         distance_txt.text = "---"
         testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            val radioParameters = RadioParametersDto.convertRadioParametersToDto(it)
-            val servingCell = radioParameters.find { cell -> cell.isServingCell } ?: radioParameters.find { cell -> cell.no == 1 } ?: return@observe
+
+            val servingCell = it.find { cell -> cell.isServingCell } ?: it.find { cell -> cell.no == 1 } ?: return@observe
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java) as TelephonyManager
             val networkOperator = telephonyManager.networkOperator
+
             serving_cell_tech.text = servingCell.tech
             rsrp_txt.text = servingCell.rsrp.toString()
             arfcn_txt.text = servingCell.arfcn.toString()
             rsrq_txt.text = servingCell.rsrq.toString()
             rssnr_txt.text = servingCell.rssnr.toString()
-            net_data_type_txt.text = servingCell.netDataType.name
+            net_data_type_txt.text = NetworkDataTypesEnum.valueOf(servingCell.netDataType.toUpperCase()).toString()
             mcc_txt.text = "${networkOperator.substring(0, 3)} ${networkOperator.substring(3)}"
-            tac_txt.text = telephonyManager.typeAllocationCode
-            val cellidHex: String = decToHex(servingCell.cId ?: 0) ?: ""
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                tac_txt.text = telephonyManager.typeAllocationCode
+            }else{
+                tac_txt.text = "---"
+            }
+
+            val cellidHex: String = decToHex(servingCell.cId) ?: ""
             val eNBHex = cellidHex.substring(0, cellidHex.length - 2)
             val eNB: Int = hexToDec(eNBHex)
 
@@ -55,23 +65,24 @@ class FragmentTable : Fragment() {
         val layoutInflater = LayoutInflater.from(requireContext())
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
             if (neighbors_table_layout == null) return@observe
-            val radioParameters = RadioParametersDto.convertRadioParametersToDto(it)
 
-            radioParameters
+            it
                 .filter { cell -> cell.no != 1 }
                 .forEachIndexed { index, radioParametersDto ->
-                    val tableRow =
-                        layoutInflater.inflate(R.layout.neighbors_table_row, null).findViewById<TableRow>(R.id.neighbor_row) ?: return@observe
+
+                    val tableRow = layoutInflater.inflate(R.layout.neighbors_table_row, null).findViewById<TableRow>(R.id.neighbor_row) ?: return@observe
                     (tableRow[0] as TextView).text = radioParametersDto.no.toString()
                     (tableRow[2] as TextView).text = radioParametersDto.tech
                     (tableRow[4] as TextView).text = radioParametersDto.arfcn.toString()
-                    (tableRow[6] as TextView).text = radioParametersDto.getReferenceStrength().toString()
-                    (tableRow[8] as TextView).text = radioParametersDto.getCellId()
+                    (tableRow[6] as TextView).text = RadioParametersUtils.getReferenceStrength(radioParametersDto).toString()
+                    (tableRow[8] as TextView).text = RadioParametersUtils.getCellId(radioParametersDto)
+
                     if (neighbors_table_layout.childCount > 1 && neighbors_table_layout.childCount > index + 1)
                         neighbors_table_layout.removeViewAt(index + 1)
                     neighbors_table_layout.addView(tableRow, index + 1)
-                    if (neighbors_table_layout.childCount > radioParameters.size)
-                        neighbors_table_layout.removeViews(radioParameters.size - 1, neighbors_table_layout.childCount - radioParameters.size)
+
+                    if (neighbors_table_layout.childCount > it.size)
+                        neighbors_table_layout.removeViews(it.size - 1, neighbors_table_layout.childCount - it.size)
                 }
         }
 

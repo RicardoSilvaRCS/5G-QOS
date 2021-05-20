@@ -38,20 +38,8 @@ class RadioParametersDto(
 
     }
 
-    fun getCellId() = when (netDataType) {
-        NetworkDataTypesEnum.LTE -> pci.toString()
-        NetworkDataTypesEnum.GSM -> cId.toString()
-        NetworkDataTypesEnum.UMTS -> psc.toString()
-        else -> pci.toString()
-    }
-
     override fun toString(): String = "No = $no, tech = $tech, arfcn = $arfcn, rssi = $rssi, rsrp = $rsrp, cId = $cId, psc = $psc, pci = $pci, rssnr = $rssnr, rsrq = $rsrq"
 
-    fun getReferenceStrength() = when(netDataType){
-        NetworkDataTypesEnum.LTE -> rsrp
-        NetworkDataTypesEnum.GSM -> rssi
-        else -> rssi
-    }
 }
 
 class LocationDto(
