@@ -30,8 +30,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         requestAppPermissions()
-        bypassLoginForDebug(savedInstanceState)
-        /*
+//        bypassLoginForDebug(savedInstanceState)
+
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
 
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
             username.setText("")
             password.setText("")
         }
-*/
+
 
     }
 

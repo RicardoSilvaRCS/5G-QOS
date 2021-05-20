@@ -63,7 +63,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         }
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
-        startDefaultSession("username")
+        startDefaultSession(username)
     }
 
     private fun cancelAllJobs() {
