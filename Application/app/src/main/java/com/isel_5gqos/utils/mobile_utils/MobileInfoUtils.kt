@@ -7,7 +7,7 @@ import android.telephony.TelephonyManager
 
 class MobileInfoUtils {
 
-    companion object{
+    companion object {
 
         fun getImei(context: Context, telephonyManager: TelephonyManager) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             Settings.Secure.getString(
@@ -17,7 +17,6 @@ class MobileInfoUtils {
         } else {
             telephonyManager.imei
         }
-
 
         fun getDeviceSerialNumber (): String {
 

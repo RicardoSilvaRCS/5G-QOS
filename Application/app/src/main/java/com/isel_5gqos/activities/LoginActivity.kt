@@ -8,8 +8,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
+import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
 
@@ -26,9 +29,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        qosFactory = QosFactory(savedInstanceState)
-
+        requestAppPermissions()
+        bypassLoginForDebug(savedInstanceState)
+        /*
         val loginButton = findViewById<Button>(R.id.next_button)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
 
@@ -60,9 +63,28 @@ class MainActivity : AppCompatActivity() {
             username.setText("")
             password.setText("")
         }
+*/
 
-        requestAppPermissions()
+    }
 
+    private fun bypassLoginForDebug(savedInstanceState: Bundle?){
+        qosFactory = QosFactory(savedInstanceState)
+        val user = User(
+            regId = QosApp.sessionId,
+            username = "username",
+            token = "userDto.userToken",
+            timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
+            loggedOut = false
+        )
+
+
+        asyncTask({ QosApp.db.userDao().insert(user) }){}
+        val intent = Intent(this, DashboardActivity::class.java)
+        //TODO: Debate if intent is really needed
+        intent.putExtra(TOKEN, user.token)
+        intent.putExtra(USER, user.username)
+
+        startActivity(intent)
     }
 
     private fun requestAppPermissions () {

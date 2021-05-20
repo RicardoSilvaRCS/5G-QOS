@@ -3,6 +3,7 @@ package com.isel_5gqos.activities.fragments
 import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,7 +48,7 @@ class FragmentTable : Fragment() {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tac_txt.text = telephonyManager.typeAllocationCode
-            }else{
+            } else {
                 tac_txt.text = "---"
             }
 
@@ -70,7 +71,8 @@ class FragmentTable : Fragment() {
                 .filter { cell -> cell.no != 1 }
                 .forEachIndexed { index, radioParametersDto ->
 
-                    val tableRow = layoutInflater.inflate(R.layout.neighbors_table_row, null).findViewById<TableRow>(R.id.neighbor_row) ?: return@observe
+                    val tableRow =
+                        layoutInflater.inflate(R.layout.neighbors_table_row, null).findViewById<TableRow>(R.id.neighbor_row) ?: return@observe
                     (tableRow[0] as TextView).text = radioParametersDto.no.toString()
                     (tableRow[2] as TextView).text = radioParametersDto.tech
                     (tableRow[4] as TextView).text = radioParametersDto.arfcn.toString()
@@ -99,5 +101,6 @@ class FragmentTable : Fragment() {
     private fun hexToDec(hex: String): Int {
         return hex.toInt(16)
     }
+
 }
 

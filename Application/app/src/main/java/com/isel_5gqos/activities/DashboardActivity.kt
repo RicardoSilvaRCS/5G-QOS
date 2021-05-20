@@ -4,6 +4,7 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.widget.*
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
@@ -62,7 +63,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         }
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
-        startDefaultSession(username)
+        startDefaultSession("username")
     }
 
     private fun cancelAllJobs() {
@@ -89,5 +90,4 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             )
         }
     }
-
 }

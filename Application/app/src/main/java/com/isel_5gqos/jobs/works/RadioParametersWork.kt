@@ -27,6 +27,16 @@ class RadioParametersWork : IWorks {
 
             val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager)
 
+            val imei = MobileInfoUtils.getImei(context, telephonyManager)
+
+            //TODO CAN get this info only once
+            Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
+            Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
+            Log.v(TAG, "${imei ?: ""} IMEI")
+            cellInfoList.forEach {
+                Log.v("unusedTag", it.toString())
+            }
+
             insertRadioParametersInfoInDb(
                 sessionId,
                 WrapperDto(
@@ -51,7 +61,7 @@ class RadioParametersWork : IWorks {
             RadioParameters(
                 regId = UUID.randomUUID().toString(),
                 no = radioParametersDto.no,
-                tech = radioParametersDto.tech ?: "",
+                tech = radioParametersDto.tech?: "",
                 arfcn = radioParametersDto.arfcn ?: -1,
                 rssi = radioParametersDto.rssi ?: -1,
                 rsrp = radioParametersDto.rsrp ?: -1,
