@@ -62,7 +62,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
     private fun loginDevice(user: UserDto) {
 
         managementSystemApi.registerMobileDevice(
-            mobileSerialNumber = "",//MobileInfoUtils.getDeviceSerialNumber(),
+            mobileSerialNumber = MobileInfoUtils.getDeviceSerialNumber(),
             authenticationToken = user.userToken,
             onSuccess = {
 
@@ -98,7 +98,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
     }
 
-    fun refreshToken (username : String,token : String)  {
+    fun refreshToken (username : String , token : String)  {
         managementSystemApi.refreshToken (
             authenticationToken = token,
             onSuccess = { refreshedToken ->

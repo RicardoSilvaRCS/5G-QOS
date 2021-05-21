@@ -46,5 +46,9 @@
     <string name="rssi">RSSI</string>
     <string name="rssi_rsrp">RSSI/RSRP</string>
     <string name="cid_psc_pci">CID/PSC/PCI</string>
+    <string name="token_notification_title">Application Token</string>
+    <string name="token_noti_text">Something failed while refreshing the token, please verify your network connection!</string>
+    <string name="active_session_noti">Active Session</string>
+    <string name="active_session_noti_text">There is an active session, please click here to return!</string>
 
 </resources>

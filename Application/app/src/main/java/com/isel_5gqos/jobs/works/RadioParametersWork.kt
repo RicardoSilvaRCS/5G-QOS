@@ -27,16 +27,6 @@ class RadioParametersWork : IWorks {
 
             val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager)
 
-            val imei = MobileInfoUtils.getImei(context, telephonyManager)
-
-            //TODO CAN get this info only once
-            Log.v(TAG, "${telephonyManager.networkOperatorName} Network Operator name")
-            Log.v(TAG, "${telephonyManager.networkOperator} MCC/MNC")
-            Log.v(TAG, "${imei ?: ""} IMEI")
-            cellInfoList.forEach {
-                Log.v("unusedTag", it.toString())
-            }
-
             insertRadioParametersInfoInDb(
                 sessionId,
                 WrapperDto(
@@ -44,7 +34,6 @@ class RadioParametersWork : IWorks {
                     locationDto = LocationUtils.getLocation(telephonyManager, context)
                 )
             )
-
 
         } catch (ex: Exception) {
             Exceptions(ex)
@@ -92,7 +81,8 @@ class RadioParametersWork : IWorks {
             )
             db.locationDao().insert(location)
 
-        } catch (ex: Exceptions) {
+        }
+        catch (ex: Exceptions) {
             Exceptions(ex)
         }
     }

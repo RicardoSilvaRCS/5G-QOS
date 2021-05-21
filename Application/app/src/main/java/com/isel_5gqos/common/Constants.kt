@@ -21,8 +21,15 @@ const val RADIO_PARAMETERS_WORKER_ID = "RAD_PAR_ID"
 const val SESSION_ID = "SESSION_ID"
 const val DB_SAVE = "DB_SAVE"
 const val PROGRESS = "PROGRESS"
+const val TOKEN = "TOKEN"
 
 const val JOB_TYPE = "JOB_TYPE"
+
+/** NOTIFICATION CHANNEL **/
+
+const val CHANNEL_ID = "5G_QOS_NOTIFICATION_CHANNEL"
+
+/** END **/
 
 /**      VARIABLES        **/
 const val K_BIT = 1024

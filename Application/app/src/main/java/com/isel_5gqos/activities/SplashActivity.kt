@@ -4,9 +4,12 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProviders
+import androidx.work.WorkManager
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
+import com.isel_5gqos.workers.scheduleRefreshTokenWorker
 
 class SplashActivity : AppCompatActivity() {
 
@@ -21,6 +24,7 @@ class SplashActivity : AppCompatActivity() {
 
         qosFactory = QosFactory(savedInstanceState)
 
+        WorkManager.getInstance(applicationContext).cancelAllWork()
 
         model.getLoggedUser().observe(this) {
             if(it == null){
@@ -45,12 +49,14 @@ class SplashActivity : AppCompatActivity() {
                 intent.putExtra(TOKEN, it.userToken)
                 intent.putExtra(USER, it.username)
 
+                /**Launch Refresh Token Worker**/
+                scheduleRefreshTokenWorker(it.userToken)
+
                 startActivity(intent)
             }
 
             model.liveData.removeObservers(this)
         }
-
 
     }
 }

@@ -81,7 +81,7 @@ class RadioParametersUtils {
             if (cellInfo is CellInfoGsm) {
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "G900",
+                    tech = "G${getLTEBand(cellInfo.cellIdentity.arfcn)}",
                     arfcn = cellInfo.cellIdentity.arfcn,
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                     cId = cellInfo.cellIdentity.cid,

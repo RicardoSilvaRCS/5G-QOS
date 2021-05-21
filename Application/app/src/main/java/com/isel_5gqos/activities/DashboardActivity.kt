@@ -1,11 +1,15 @@
 package com.isel_5gqos.activities
 
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.github.mikephil.charting.charts.LineChart
@@ -24,6 +28,7 @@ import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.android_utils.AndroidUtils
 
 
 open class DashboardActivity : BaseTabLayoutActivityHolder() {
@@ -90,4 +95,22 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             )
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if(testModel.liveData.value!!.id == DEFAULT_SESSION_ID){
+            cancelAllJobs()
+        }
+        else{
+            AndroidUtils.notifyOnChannel(
+                getString(R.string.active_session_noti),
+                getString(R.string.active_session_noti_text),
+                DashboardActivity::class.java,
+                applicationContext
+            )
+        }
+    }
+
+
 }

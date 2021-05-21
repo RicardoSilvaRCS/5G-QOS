@@ -15,6 +15,7 @@ import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
+import com.isel_5gqos.workers.scheduleRefreshTokenWorker
 
 const val USER = "USER"
 const val TOKEN = "TOKEN"
@@ -30,6 +31,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         requestAppPermissions()
+
+        qosFactory = QosFactory(savedInstanceState)
+
 //        bypassLoginForDebug(savedInstanceState)
 
         val loginButton = findViewById<Button>(R.id.next_button)
@@ -53,6 +57,9 @@ class MainActivity : AppCompatActivity() {
                     intent.putExtra(TOKEN, it.userToken)
                     intent.putExtra(USER, it.username)
 
+                    /**Launch Refresh Token Worker**/
+                    scheduleRefreshTokenWorker(it.userToken)
+
                     startActivity(intent)
                 }
             }
@@ -65,26 +72,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-    }
-
-    private fun bypassLoginForDebug(savedInstanceState: Bundle?){
-        qosFactory = QosFactory(savedInstanceState)
-        val user = User(
-            regId = QosApp.sessionId,
-            username = "username",
-            token = "userDto.userToken",
-            timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
-            loggedOut = false
-        )
-
-
-        asyncTask({ QosApp.db.userDao().insert(user) }){}
-        val intent = Intent(this, DashboardActivity::class.java)
-        //TODO: Debate if intent is really needed
-        intent.putExtra(TOKEN, user.token)
-        intent.putExtra(USER, user.username)
-
-        startActivity(intent)
     }
 
     private fun requestAppPermissions () {
@@ -118,6 +105,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    /**DEBUG TOOLS**/
+
+    private fun bypassLoginForDebug(savedInstanceState: Bundle?){
+        qosFactory = QosFactory(savedInstanceState)
+        val user = User(
+            regId = QosApp.sessionId,
+            username = "username",
+            token = "userDto.userToken",
+            timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
+            loggedOut = false
+        )
+
+
+        asyncTask({ QosApp.db.userDao().insert(user) }){
+
+            val intent = Intent(this, DashboardActivity::class.java)
+
+            intent.putExtra(TOKEN, user.token)
+            intent.putExtra(USER, user.username)
+
+            startActivity(intent)
+        }
+
+    }
+
+    /**END**/
 }
 
 
