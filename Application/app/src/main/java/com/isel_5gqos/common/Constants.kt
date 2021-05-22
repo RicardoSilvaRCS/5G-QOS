@@ -75,7 +75,7 @@ const val GENERIC_ERROR = "There is a problem please contact the it team!"
 /**END**/
 
 /**CREDENTIALS**/
-
+const val AUTH_FAILED_ERROR = "Authentication token is no longer available"
 const val INVALID_CREDENTIALS = "There is a problem with the server"
 const val TOKEN_NOT_REFRESHED = "The token wasn't able to be refreshed please insert your credentials"
 

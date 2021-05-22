@@ -15,9 +15,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.NetworkDataTypesEnum
-import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
+import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_table.*
 
 
@@ -27,13 +27,22 @@ class FragmentTable : Fragment() {
         ViewModelProvider(requireActivity()).get(TestViewModel::class.java)
     }
 
+    //<editor-fold desc="EVENTS">
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_table, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        distance_txt.text = "---"
-        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+        distance_txt?.text = "---"
+        registerObservers()
 
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="AUX FUNCTIONS"
+    private fun registerObservers() {
+        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+            if(!checkIfLayoutsAreAvailable()) return@observe
             val servingCell = it.find { cell -> cell.isServingCell } ?: it.find { cell -> cell.no == 1 } ?: return@observe
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java) as TelephonyManager
             val networkOperator = telephonyManager.networkOperator
@@ -65,7 +74,7 @@ class FragmentTable : Fragment() {
 
         val layoutInflater = LayoutInflater.from(requireContext())
         testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (neighbors_table_layout == null) return@observe
+            if(!checkIfLayoutsAreAvailable() || neighbors_table_layout == null) return@observe
 
             it
                 .filter { cell -> cell.no != 1 }
@@ -89,10 +98,12 @@ class FragmentTable : Fragment() {
         }
 
         testModel.getLastLocation(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (it == null) return@observe
+            if (!checkIfLayoutsAreAvailable() || it == null) return@observe
             lat_lon_txt.text = "${it.latitude}/${it.longitude}"
         }
     }
+
+    private fun checkIfLayoutsAreAvailable():Boolean = this.isResumed
 
     private fun decToHex(dec: Int): String? {
         return String.format("%x", dec)
@@ -101,6 +112,7 @@ class FragmentTable : Fragment() {
     private fun hexToDec(hex: String): Int {
         return hex.toInt(16)
     }
+    //</editor-fold>
 
 }
 

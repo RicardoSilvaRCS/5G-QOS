@@ -19,13 +19,10 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.activities.USER
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.ServingCellIndex
 import com.isel_5gqos.common.ThroughputIndex
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.dtos.RadioParametersDto
-import com.isel_5gqos.dtos.ThroughPutDto
 import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
@@ -34,7 +31,6 @@ import kotlinx.android.synthetic.main.fragment_main_session.*
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.lang.Long.max
-import java.time.chrono.MinguoChronology
 
 class FragmentChartSession : Fragment() {
 
@@ -54,17 +50,27 @@ class FragmentChartSession : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         initLineChart(throughput_chart, initThroughputDataLine())
 
-        initLineChart(g1,initThroughputDataLine())
-        initLineChart(g2,initThroughputDataLine())
-        initLineChart(g3,initThroughputDataLine())
+        initLineChart(g1, initThroughputDataLine())
+        initLineChart(g2, initThroughputDataLine())
+        initLineChart(g3, initThroughputDataLine())
 
+        registerObservers()
+    }
+
+    //<editor-fold name="OBSERVERS"
+    private fun registerObservers(){
+        registerRadioParametersObserver()
+        registerThroughputObserver()
+    }
+
+    private fun registerThroughputObserver(){
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (it == null || it.isEmpty() || throughput_chart == null) return@observe
+            if (!checkIfLayoutsAreAvailable() ||it == null || it.isEmpty() || throughput_chart == null) return@observe
             val data = throughput_chart.data ?: return@observe
 
-            var auxLastUpdatedValue = data.dataSets[ThroughputIndex.RX].entryCount
+            var auxLastUpdatedValue = min(data.dataSets[ThroughputIndex.RX].entryCount, it.size - 1)
 
-            it.subList(auxLastUpdatedValue,it.size).forEach { throughput ->
+            it.subList(auxLastUpdatedValue, it.size).forEach { throughput ->
 
                 data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.rxResult.toFloat()), ThroughputIndex.RX)
                 data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.txResult.toFloat()), ThroughputIndex.TX)
@@ -87,20 +93,21 @@ class FragmentChartSession : Fragment() {
             throughput_chart.data.notifyDataChanged()
             throughput_chart.notifyDataSetChanged()
         }
+    }
 
+    private fun registerRadioParametersObserver(){
         initLineChart(serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
         testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
-
-            if (it == null || it.isEmpty() || serving_cell_chart == null) return@observe
+            if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
             val data = serving_cell_chart.data ?: return@observe
 
-            var auxLastUpdatedIndex = min(data.dataSets[ServingCellIndex.RSSI].entryCount,it.size)
+            var auxLastUpdatedIndex = min(data.dataSets[ServingCellIndex.RSSI].entryCount, it.size - 1)
 
             it.subList(auxLastUpdatedIndex, it.size).forEach { servingCell ->
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi!!.toFloat()), ServingCellIndex.RSSI)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), ServingCellIndex.RSSI)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), ServingCellIndex.RSRP)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq.toFloat()), ServingCellIndex.RSQR)
+                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr.toFloat()), ServingCellIndex.RSSNR)
 
                 Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
 
@@ -125,6 +132,12 @@ class FragmentChartSession : Fragment() {
             serving_cell_chart.notifyDataSetChanged()
         }
     }
+
+    //</editor-fold>
+
+    //<editor-fold name="AUX FUNCTIONS">
+
+    private fun checkIfLayoutsAreAvailable() = this.isResumed
 
     private fun cancelAllJobs() {
 
@@ -151,6 +164,7 @@ class FragmentChartSession : Fragment() {
         }
     }
 
+    //<editor-fold name="CHART FUNCTIONS">
     /**Initializing ThroughPut graphic info**/
 
     private fun initThroughputDataLine(): LineData {
@@ -259,7 +273,7 @@ class FragmentChartSession : Fragment() {
 
         val xAxis = lineChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.axisLineWidth=1.5f
+        xAxis.axisLineWidth = 1.5f
         xAxis.setDrawGridLines(false)
         xAxis.setAvoidFirstLastClipping(true)
         xAxis.isEnabled = true
@@ -275,4 +289,6 @@ class FragmentChartSession : Fragment() {
 
         lineChart.data = lineInitData
     }
+    //</editor-fold>
+    //</editor-fold>
 }

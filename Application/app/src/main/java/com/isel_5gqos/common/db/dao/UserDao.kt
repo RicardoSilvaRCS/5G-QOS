@@ -16,7 +16,7 @@ interface UserDao {
     @Query("Update Users set token = :newToken where token = :oldToken")
     fun updateToken(oldToken : String, newToken: String)
 
-    @Query("Select * from Users where loggedOut = 0")
+    @Query("Select * from Users where loggedOut = 0 order by timestamp desc limit(1)")
     fun getLoggedUser () : LiveData<User>
 
 }

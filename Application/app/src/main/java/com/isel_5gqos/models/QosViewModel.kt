@@ -1,13 +1,10 @@
 package com.isel_5gqos.models
 
-import android.widget.Toast
+import com.android.volley.AuthFailureError
 import com.android.volley.NoConnectionError
 import com.android.volley.TimeoutError
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.common.GENERIC_ERROR
-import com.isel_5gqos.common.INVALID_CREDENTIALS
-import com.isel_5gqos.common.NO_CONNECTION_ERROR
-import com.isel_5gqos.common.TIMEOUT_ERROR
+import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.MobileUnit
 import com.isel_5gqos.common.db.entities.User
@@ -32,7 +29,6 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     loggedOut = false
                 )
 
-
                 asyncTask({
 
                     QosApp.db.userDao().insert(user)
@@ -49,10 +45,9 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                 if (it is NoConnectionError) {
                     AndroidUtils.makeBurnedToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
                 }
-                if(it is TimeoutError){
+                if (it is TimeoutError) {
                     AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
-                }
-                else {
+                } else {
                     AndroidUtils.makeRawToast(managementSystemApi.ctx, INVALID_CREDENTIALS)
                 }
             }
@@ -60,80 +55,93 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
     }
 
     private fun loginDevice(user: UserDto) {
-
+        //TODO: make error handling
         managementSystemApi.registerMobileDevice(
             mobileSerialNumber = MobileInfoUtils.getDeviceSerialNumber(),
             authenticationToken = user.userToken,
             onSuccess = {
 
                 val mobileUnit = MobileUnit(
-                     mobileUnitId = it.mobileUnitId,
-                     password =  it.password,
-                     controlConnectionHref = it.controlConnectionHref,
-                     systemLogHref = it.systemLogHref
+                    mobileUnitId = it.mobileUnitId,
+                    password = it.password,
+                    controlConnectionHref = it.controlConnectionHref,
+                    systemLogHref = it.systemLogHref
                 )
 
-                asyncTask({
+                asyncTask(
+                    doInBackground = {
 
-                    QosApp.db.mobileUnit().insertMobileUnitSetting(mobileUnit)
+                        QosApp.db.mobileUnit().insertMobileUnitSetting(mobileUnit)
 
-                }) {
-                    liveData.postValue(user)
-                }
+                    },
+                    onPostExecute = {
 
+                        liveData.postValue(user)
 
+                    }
+                )
             },
             onError = {
-                if (it is NoConnectionError) {
-                    AndroidUtils.makeBurnedToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+
+                when (it) {
+                    is NoConnectionError -> AndroidUtils.makeRawToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+                    is TimeoutError -> AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
+                    else -> AndroidUtils.makeRawToast(managementSystemApi.ctx, GENERIC_ERROR)
                 }
-                if(it is TimeoutError){
-                    AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
-                }
-                else {
-                    Toast.makeText(managementSystemApi.ctx, GENERIC_ERROR , Toast.LENGTH_LONG).show()
-                }
+
             }
         )
 
     }
 
-    fun refreshToken (username : String , token : String)  {
-        managementSystemApi.refreshToken (
+    fun refreshToken(username: String, token: String) {
+        managementSystemApi.refreshToken(
             authenticationToken = token,
             onSuccess = { refreshedToken ->
 
-                asyncTask({
+                asyncTask(
+                    doInBackground = {
 
-                    QosApp.db.userDao().updateToken(token,refreshedToken)
 
-                }) {
+                        QosApp.db.userDao().updateToken(token, refreshedToken)
 
-                    liveData.postValue(
-                        UserDto(username,refreshedToken)
-                    )
-                }
-                
+
+                    },
+                    onPostExecute = {
+
+
+                        liveData.postValue(
+                            UserDto(username, refreshedToken)
+                        )
+
+
+                    }
+                )
             },
             onError = {
-                if (it is NoConnectionError) {
-                    AndroidUtils.makeBurnedToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
-                }
-                if(it is TimeoutError){
-                    AndroidUtils.makeBurnedToast(managementSystemApi.ctx, TIMEOUT_ERROR)
-                }
-                else {
-                    AndroidUtils.makeBurnedToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+                when (it) {
+                    is NoConnectionError -> {
+                        AndroidUtils.makeRawToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+                    }
+                    is TimeoutError -> {
+                        AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
+                    }
+                    is AuthFailureError -> {
+                        AndroidUtils.makeRawToast(managementSystemApi.ctx, AUTH_FAILED_ERROR)
+                    }
+                    else -> {
+                        AndroidUtils.makeRawToast(managementSystemApi.ctx, GENERIC_ERROR)
+                    }
                 }
 
                 liveData.postValue(
-                    UserDto("","")
+                    UserDto("", "")
                 )
             }
         )
     }
 
 
-    fun getLoggedUser () = QosApp.db.userDao().getLoggedUser()
+    fun getLoggedUser() = QosApp.db.userDao().getLoggedUser()
 
 }

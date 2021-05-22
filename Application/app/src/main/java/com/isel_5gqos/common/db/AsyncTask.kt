@@ -1,12 +1,11 @@
 package com.isel_5gqos.common.db
 
 import android.os.AsyncTask
-import org.json.JSONObject
 
-fun asyncTask(method: () -> Unit, onPostExecute: () -> Unit) {
+fun asyncTask(doInBackground: () -> Unit, onPostExecute: () -> Unit) {
     object : AsyncTask<Unit, Int, Unit>() {
         override fun doInBackground(vararg p0: Unit?) {
-            method()
+            doInBackground()
         }
 
         override fun onPostExecute(result: Unit?) {
