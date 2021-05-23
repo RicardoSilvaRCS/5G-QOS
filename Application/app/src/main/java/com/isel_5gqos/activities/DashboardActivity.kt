@@ -1,32 +1,22 @@
 package com.isel_5gqos.activities
 
-import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
-import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.widget.*
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.adapters.DashboardActivitViewPagerAdapter
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
+import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 
@@ -39,6 +29,11 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
 
     private val testModel by lazy {
         ViewModelProviders.of(this)[TestViewModel::class.java]
+    }
+
+   private lateinit var qosFactory: QosFactory
+    private val qosModel by lazy {
+        ViewModelProviders.of(this,qosFactory)[QosViewModel::class.java]
     }
 
     private val dashboardActivitViewPagerAdapter by lazy {
@@ -58,7 +53,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
-
+        qosFactory = QosFactory(savedInstanceState)
         dashboardActivitViewPager.adapter = dashboardActivitViewPagerAdapter
 
         tabLayout = dashboardActivityTabLayout.apply {
@@ -76,11 +71,22 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     override fun onDestroy() {
         super.onDestroy()
 
-        if(testModel.liveData.value!!.id == DEFAULT_SESSION_ID){
+        if (testModel.liveData.value!!.id == DEFAULT_SESSION_ID) {
             cancelAllJobs()
-            testModel.deleteSessionInfo(DEFAULT_SESSION_ID)
+            asyncTask(doInBackground = { testModel.deleteSessionInfo(DEFAULT_SESSION_ID) }, onPostExecute = {})
+        } else {
+            AndroidUtils.notifyOnChannel(
+                getString(R.string.active_session_noti),
+                getString(R.string.active_session_noti_text),
+                DashboardActivity::class.java,
+                applicationContext
+            )
         }
-        else{
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (testModel.liveData.value!!.id != DEFAULT_SESSION_ID) {
             AndroidUtils.notifyOnChannel(
                 getString(R.string.active_session_noti),
                 getString(R.string.active_session_noti_text),

@@ -7,8 +7,11 @@ import com.isel_5gqos.common.db.entities.Session
 @Dao
 interface SessionDao {
 
-    @Query("Select * from Sessions where id = :session")
-    fun get(session: String): LiveData<List<Session>>
+    @Query("Select * from Sessions where id = :sessionId")
+    fun get(sessionId: String): LiveData<List<Session>>
+
+    @Query("Select * from Sessions order by beginDate desc limit(2)")
+    fun getLastSession():LiveData<List<Session>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg session: Session)

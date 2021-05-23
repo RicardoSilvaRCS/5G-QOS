@@ -20,7 +20,7 @@ import com.isel_5gqos.workers.scheduleRefreshTokenWorker
 const val USER = "USER"
 const val TOKEN = "TOKEN"
 
-class MainActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
 
     private lateinit var qosFactory: QosFactory
     private val model: QosViewModel by lazy {
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
                     intent.putExtra(USER, it.username)
 
                     /**Launch Refresh Token Worker**/
-                    scheduleRefreshTokenWorker(it.userToken)
+                    scheduleRefreshTokenWorker(it.userToken,it.username)
 
                     startActivity(intent)
                 }

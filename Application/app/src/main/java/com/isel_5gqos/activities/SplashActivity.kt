@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
-import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
@@ -28,7 +27,7 @@ class SplashActivity : AppCompatActivity() {
 
         model.getLoggedUser().observe(this) {
             if(it == null){
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
             }
             else{
@@ -38,9 +37,9 @@ class SplashActivity : AppCompatActivity() {
            model.getLoggedUser().removeObservers(this)
         }
 
-        model.liveData.observe(this){
+        model.liveData.observe(this) {
             if(it.userToken.isEmpty()){
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
             }
             else{
@@ -50,7 +49,7 @@ class SplashActivity : AppCompatActivity() {
                 intent.putExtra(USER, it.username)
 
                 /**Launch Refresh Token Worker**/
-                scheduleRefreshTokenWorker(it.userToken)
+                scheduleRefreshTokenWorker(it.userToken,it.username)
 
                 startActivity(intent)
             }

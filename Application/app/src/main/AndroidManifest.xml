@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.DashboardActivity" />
-        <activity android:name=".activities.MainActivity"></activity>
+        <activity android:name=".activities.LoginActivity"></activity>
         <!--
  <service android:name=".jobs.RadioParametersJobWorkItem"
             android:permission="android.permission.BIND_JOB_SERVICE"

@@ -1,5 +1,6 @@
 package com.isel_5gqos.models
 
+import android.util.Base64
 import com.android.volley.AuthFailureError
 import com.android.volley.NoConnectionError
 import com.android.volley.TimeoutError
@@ -23,7 +24,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
                 val user = User(
                     regId = QosApp.sessionId,
-                    username = username,
+                    username = Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", ""),
                     token = userDto.userToken,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
                     loggedOut = false
@@ -142,6 +143,6 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
     }
 
 
-    fun getLoggedUser() = QosApp.db.userDao().getLoggedUser()
+    fun getLoggedUser() = QosApp.db.userDao().getLastLoggedUser()
 
 }

@@ -5,9 +5,7 @@ import androidx.lifecycle.LiveData
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
-import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
@@ -16,7 +14,7 @@ import java.util.*
 
 class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
-    fun startSession(userName: String) {
+    fun startSession(userName: String, onPostExecute:()->Unit = {}) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
 
         val currentDate = Date(System.currentTimeMillis())
@@ -37,12 +35,12 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             endDate = sessionDto.endDate.time
         )
 
-        asyncTask({ QosApp.db.sessionDao().insert(session) }) {}
+        asyncTask({ QosApp.db.sessionDao().insert(session) }) {onPostExecute()}
 
         liveData.postValue(sessionDto)
     }
 
-    fun endSession(workerTag: String) {
+    fun endSessionByTag(workerTag: String) {
         val endDate = Timestamp(System.currentTimeMillis())
 
         value.endDate = endDate
@@ -53,14 +51,38 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             QosApp.db.sessionDao().updateSession(session)
         }) {}
     }
+    fun endSessionById(owner: LifecycleOwner) {
+        val endDate = Timestamp(System.currentTimeMillis())
 
-    fun registerRadioParametersChanges (sessionId : String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
+        value.endDate = endDate
+
+        val session = value.dtoToDaoMapper()
+        if(value.id != ""){
+            asyncTask({
+                QosApp.db.sessionDao().updateSession(session)
+            }) {}
+        } else {
+            QosApp.db.sessionDao().getLastSession().observe(owner) {
+                val controlledSession = it[1]
+                if(controlledSession.endDate != 0L) return@observe
+                controlledSession.endDate = Timestamp(System.currentTimeMillis()).time
+
+                asyncTask({QosApp.db.sessionDao().updateSession(controlledSession)}){
+                    return@asyncTask
+                }
+            }
+        }
+    }
+
+    fun getLastSession() = QosApp.db.sessionDao().getLastSession()
+
+    fun registerRadioParametersChanges(sessionId: String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 
     fun getLastLocation(sessionId: String) = QosApp.db.radioParametersDao().getLastLocation(sessionId)
 
-    fun getServingCell (sessionId : String) = QosApp.db.radioParametersDao().getServingCell(sessionId)
+    fun getServingCell(sessionId: String) = QosApp.db.radioParametersDao().getServingCell(sessionId)
 
-    fun registerThroughPutChanges (sessionId : String) = QosApp.db.throughPutDao().get(sessionId)
+    fun registerThroughPutChanges(sessionId: String) = QosApp.db.throughPutDao().get(sessionId)
 
     fun startDefaultSession(userName: String) {
         val currentDate = Date(System.currentTimeMillis())
@@ -114,7 +136,12 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         }
     }
 
-    fun deleteSessionInfo(sessionId: String){
-        QosApp.db.sessionDao().deleteSession(sessionId)
+    fun deleteSessionInfo(sessionId: String) {
+        asyncTask(
+            doInBackground = {
+                QosApp.db.sessionDao().deleteSession(sessionId)
+            },
+            onPostExecute = {}
+        )
     }
 }

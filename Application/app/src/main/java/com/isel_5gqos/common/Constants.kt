@@ -35,6 +35,7 @@ const val CHANNEL_ID = "5G_QOS_NOTIFICATION_CHANNEL"
 const val K_BIT = 1024
 const val BITS_IN_BYTE = 8
 const val DEFAULT_SESSION_ID = "-1"
+const val SECRET_PASSWORD = "SECRET_PASSWORD"
 /**Default sessionId for real time*/
 
 

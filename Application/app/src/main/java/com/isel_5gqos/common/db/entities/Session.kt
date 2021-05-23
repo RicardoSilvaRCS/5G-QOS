@@ -25,5 +25,5 @@ class Session(
     @ColumnInfo(name = "user", index = true)
     val user: String,
     val beginDate: Long,
-    val endDate: Long
+    var endDate: Long
 )

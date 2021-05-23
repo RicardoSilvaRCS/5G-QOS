@@ -26,7 +26,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/end_ession"
+            android:id="@+id/end_session"
             android:layout_width="180dp"
             android:layout_height="40dp"
             android:layout_marginStart="10dp"
@@ -43,7 +43,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            app:layout_constraintStart_toEndOf="@id/end_ession"
+            app:layout_constraintStart_toEndOf="@id/end_session"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
