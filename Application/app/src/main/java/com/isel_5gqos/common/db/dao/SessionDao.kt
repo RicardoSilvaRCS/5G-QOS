@@ -19,4 +19,6 @@ interface SessionDao {
     @Delete()
     fun delete(session: Session)
 
+    @Query("Delete from Sessions where id = :sessionId")
+    fun deleteSession(sessionId : String)
 }

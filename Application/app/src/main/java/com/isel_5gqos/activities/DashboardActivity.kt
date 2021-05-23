@@ -53,6 +53,8 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
 
     private val jobs = mutableListOf<JobInfo>()
 
+    //<editor-fold desc="EVENTS">
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
@@ -71,6 +73,26 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         startDefaultSession(username)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if(testModel.liveData.value!!.id == DEFAULT_SESSION_ID){
+            cancelAllJobs()
+            testModel.deleteSessionInfo(DEFAULT_SESSION_ID)
+        }
+        else{
+            AndroidUtils.notifyOnChannel(
+                getString(R.string.active_session_noti),
+                getString(R.string.active_session_noti_text),
+                DashboardActivity::class.java,
+                applicationContext
+            )
+        }
+    }
+
+    //</editor-fold>
+
+    //<editor-fold name="AUX FUNCTIONS">
     private fun cancelAllJobs() {
 
         jobs.forEach {
@@ -96,21 +118,6 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        if(testModel.liveData.value!!.id == DEFAULT_SESSION_ID){
-            cancelAllJobs()
-        }
-        else{
-            AndroidUtils.notifyOnChannel(
-                getString(R.string.active_session_noti),
-                getString(R.string.active_session_noti_text),
-                DashboardActivity::class.java,
-                applicationContext
-            )
-        }
-    }
-
+    //</editor-fold>
 
 }

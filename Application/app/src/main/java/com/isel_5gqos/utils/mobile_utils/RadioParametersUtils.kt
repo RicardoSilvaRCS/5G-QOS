@@ -28,7 +28,7 @@ class RadioParametersUtils {
             return cellInfoList
         }
 
-        private val bands = mapOf(
+        private val lteBands = mapOf(
             Pair(0, 599) to "2100",
             Pair(600, 1199) to "1900",
             Pair(1200, 1949) to "1800",
@@ -69,7 +69,25 @@ class RadioParametersUtils {
         )
 
         fun getLTEBand(arfcn: Int): String? {
-            bands.entries.forEach {
+            lteBands.entries.forEach {
+                val (key, value) = it
+                if (arfcn >= key.first && arfcn <= key.second)
+                    return value
+            }
+            return null
+        }
+
+        private val gsmBands = mapOf(
+            Pair(0,124) to "900",
+            Pair(955,1023) to "900",
+            Pair(128,251) to "850",
+            Pair(438,511) to "750",
+            Pair(306,340) to "480",
+            Pair(259,293) to "450",
+        )
+
+        fun getGSMBand(arfcn: Int) : String?{
+            gsmBands.entries.forEach {
                 val (key, value) = it
                 if (arfcn >= key.first && arfcn <= key.second)
                     return value
@@ -81,7 +99,7 @@ class RadioParametersUtils {
             if (cellInfo is CellInfoGsm) {
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "G${getLTEBand(cellInfo.cellIdentity.arfcn)}",
+                    tech = "G${getGSMBand(cellInfo.cellIdentity.arfcn)}",
                     arfcn = cellInfo.cellIdentity.arfcn,
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                     cId = cellInfo.cellIdentity.cid,

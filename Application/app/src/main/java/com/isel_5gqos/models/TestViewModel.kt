@@ -42,6 +42,18 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         liveData.postValue(sessionDto)
     }
 
+    fun endSession(workerTag: String) {
+        val endDate = Timestamp(System.currentTimeMillis())
+
+        value.endDate = endDate
+
+        val session = value.dtoToDaoMapper()
+
+        asyncTask({
+            QosApp.db.sessionDao().updateSession(session)
+        }) {}
+    }
+
     fun registerRadioParametersChanges (sessionId : String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 
     fun getLastLocation(sessionId: String) = QosApp.db.radioParametersDao().getLastLocation(sessionId)
@@ -70,18 +82,6 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         )
 
         asyncTask({ QosApp.db.sessionDao().insert(session) }) { liveData.postValue(sessionDto) }
-    }
-
-    fun endSession(workerTag: String) {
-        val endDate = Timestamp(System.currentTimeMillis())
-
-        value.endDate = endDate
-
-        val session = value.dtoToDaoMapper()
-
-        asyncTask({
-            QosApp.db.sessionDao().updateSession(session)
-        }) {}
     }
 
     fun updateRadioParameters(id: String = "", lifecycleOwner: LifecycleOwner) {
@@ -114,4 +114,7 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         }
     }
 
+    fun deleteSessionInfo(sessionId: String){
+        QosApp.db.sessionDao().deleteSession(sessionId)
+    }
 }
