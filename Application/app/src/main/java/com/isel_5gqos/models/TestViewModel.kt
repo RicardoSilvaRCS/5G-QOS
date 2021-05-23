@@ -63,7 +63,7 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             }) {}
         } else {
             QosApp.db.sessionDao().getLastSession().observe(owner) {
-                val controlledSession = it[1]
+                val controlledSession = it.firstOrNull()?:return@observe
                 if(controlledSession.endDate != 0L) return@observe
                 controlledSession.endDate = Timestamp(System.currentTimeMillis()).time
 

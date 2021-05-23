@@ -32,8 +32,8 @@ class FragmentControlledSession : Fragment() {
         qosFactory = QosFactory(savedInstanceState)
 
         testModel.getLastSession().observe(requireActivity()) {
-            if (!checkIfLayoutIsAvailable() || it.isEmpty() || it.size == 1) return@observe
-            val controlledSession = it[1]
+            if (!checkIfLayoutIsAvailable() || it.isEmpty()) return@observe
+            val controlledSession = it.firstOrNull()?:return@observe
             if (controlledSession.endDate != 0L) return@observe
             create_session.isGone = true
             end_session.visibility = View.VISIBLE
