@@ -36,10 +36,6 @@ class FragmentChartSession : Fragment() {
 
     /**INIT UI ELEMENTS**/
 
-    private val model by lazy {
-        ViewModelProviders.of(this)[InternetViewModel::class.java]
-    }
-    private val jobs = mutableListOf<JobInfo>()
     private val testModel by lazy {
         ViewModelProviders.of(this)[TestViewModel::class.java]
     }
@@ -139,33 +135,7 @@ class FragmentChartSession : Fragment() {
 
     private fun checkIfLayoutsAreAvailable() = this.isResumed
 
-    private fun cancelAllJobs() {
-
-        jobs.forEach {
-            val systemService = QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java)
-
-            it.extras.get("args")
-            systemService
-                .cancel(it.id)
-        }
-
-        jobs.clear()
-    }
-
-    private fun startDefaultSession(username: String) {
-        asyncTask({ testModel.startDefaultSession(username) }) {
-            jobs.add(
-                scheduleJob(
-                    sessionId = DEFAULT_SESSION_ID,
-                    saveToDb = false,
-                    jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
-                )
-            )
-        }
-    }
-
     //<editor-fold name="CHART FUNCTIONS">
-    /**Initializing ThroughPut graphic info**/
 
     private fun initThroughputDataLine(): LineData {
 
@@ -196,10 +166,6 @@ class FragmentChartSession : Fragment() {
 
         return LineData(sets)
     }
-
-    /**END**/
-
-    /**Initializing UI ServingCell graphic**/
 
     private fun initServingCellData(): LineData {
 
@@ -253,10 +219,7 @@ class FragmentChartSession : Fragment() {
         return LineData(sets)
     }
 
-    /**END**/
 
-
-    /**Initializing UI graphics**/
     private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
 
         lineChart.background = resources.getDrawable(R.drawable.white_background_round_20)

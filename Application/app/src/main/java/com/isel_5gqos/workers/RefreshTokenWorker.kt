@@ -6,7 +6,6 @@ import androidx.work.*
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.SplashActivity
-import com.isel_5gqos.activities.USER
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.utils.android_utils.AndroidUtils.Companion.notifyOnChannel
@@ -18,7 +17,8 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
     override fun doWork(): Result {
 
         val token = inputData.getString(TOKEN).toString()
-        val credentials = inputData.getString(USER).toString()
+        val credentials = inputData.getString(CREDENTIALS).toString()
+        val username  = inputData.getString(USER).toString()
 
         QosApp.msWebApi.refreshToken (
             authenticationToken = token,
@@ -26,7 +26,7 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
 
                 asyncTask({
 
-                    QosApp.db.userDao().updateToken(token,refreshedToken)
+                    QosApp.db.userDao().updateToken(username,refreshedToken)
 
                 }) {
 
@@ -35,7 +35,7 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
                         ,SplashActivity::class.java
                         ,applicationContext)
 
-                    scheduleRefreshTokenWorker(refreshedToken,credentials)
+                    scheduleRefreshTokenWorker(username,refreshedToken,credentials)
                 }
             },
             onError = {
@@ -48,7 +48,7 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
 
                         asyncTask({
 
-                            QosApp.db.userDao().updateToken(token,it.userToken)
+                            QosApp.db.userDao().updateToken(username,it.userToken)
 
                         }) {
 
@@ -57,7 +57,7 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
                                 ,SplashActivity::class.java
                                 ,applicationContext)
 
-                            scheduleRefreshTokenWorker(it.userToken,credentials)
+                            scheduleRefreshTokenWorker(username,it.userToken,credentials)
                         }
 
                     },
@@ -77,12 +77,12 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
 
 }
 
-fun scheduleRefreshTokenWorker (token : String,credentials:String) {
+fun scheduleRefreshTokenWorker (username : String, token : String, credentials:String) {
 
-    val inputData = workDataOf(TOKEN to token, USER to credentials)
+    val inputData = workDataOf(TOKEN to token, CREDENTIALS to credentials)
 
     val request = OneTimeWorkRequestBuilder<RefreshTokenWorker>()
-        .setInitialDelay(45,TimeUnit.MINUTES)
+        .setInitialDelay(15,TimeUnit.MINUTES)
         .setInputData(inputData)
         .build()
 

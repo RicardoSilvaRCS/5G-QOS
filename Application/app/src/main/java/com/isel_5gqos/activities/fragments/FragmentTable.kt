@@ -21,7 +21,7 @@ import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_table.*
 
 
-class FragmentTable : Fragment() {
+class FragmentTable : Fragment(){
 
     private val testModel by lazy {
         ViewModelProvider(requireActivity()).get(TestViewModel::class.java)

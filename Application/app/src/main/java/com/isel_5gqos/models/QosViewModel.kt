@@ -24,10 +24,11 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
                 val user = User(
                     regId = QosApp.sessionId,
-                    username = Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", ""),
+                    username = username,
                     token = userDto.userToken,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
-                    loggedOut = false
+                    loggedOut = false,
+                    credentials = Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")
                 )
 
                 asyncTask({

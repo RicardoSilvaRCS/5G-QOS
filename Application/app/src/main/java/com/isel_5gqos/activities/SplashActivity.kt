@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
 import com.isel_5gqos.R
+import com.isel_5gqos.common.TOKEN
+import com.isel_5gqos.common.USER
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
@@ -49,7 +51,7 @@ class SplashActivity : AppCompatActivity() {
                 intent.putExtra(USER, it.username)
 
                 /**Launch Refresh Token Worker**/
-                scheduleRefreshTokenWorker(it.userToken,it.username)
+                scheduleRefreshTokenWorker(it.username,it.userToken,it.username)
 
                 startActivity(intent)
             }

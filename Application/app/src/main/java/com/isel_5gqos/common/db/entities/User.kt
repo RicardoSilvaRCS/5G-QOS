@@ -10,5 +10,6 @@ class User (
     val token: String,
     val loggedOut : Boolean,
     val timestamp: Long,
+    val credentials : String
 )
 

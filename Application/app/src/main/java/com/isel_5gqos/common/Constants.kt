@@ -11,6 +11,9 @@ const val INTERNET_PERMISSION = 2
 const val ACCESS_NETWORK_STATE_PERMISSION = 3
 const val READ_PHONE_STATE_PERMISSION = 4
 
+/**        INTENT VARIABLES           **/
+const val USER = "USER"
+//const val TOKEN = "TOKEN"
 
 /**        TAGS           **/
 const val TAG = "5GQosApp"
@@ -22,6 +25,7 @@ const val SESSION_ID = "SESSION_ID"
 const val DB_SAVE = "DB_SAVE"
 const val PROGRESS = "PROGRESS"
 const val TOKEN = "TOKEN"
+const val CREDENTIALS = "USER_LOGIN_CREDENTIALS"
 
 const val JOB_TYPE = "JOB_TYPE"
 

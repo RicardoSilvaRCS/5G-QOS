@@ -13,8 +13,8 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg throughPutDto: User)
 
-    @Query("Update Users set token = :newToken where token = :oldToken")
-    fun updateToken(oldToken : String, newToken: String)
+    @Query("Update Users set token = :newToken where username = :username")
+    fun updateToken(username : String, newToken: String)
 
     @Query("Select * from Users where loggedOut = 0 order by timestamp desc limit(1)")
     fun getLastLoggedUser () : LiveData<User>

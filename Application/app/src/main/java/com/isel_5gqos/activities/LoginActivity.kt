@@ -3,6 +3,7 @@ package com.isel_5gqos.activities
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Base64
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,9 +17,6 @@ import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
-
-const val USER = "USER"
-const val TOKEN = "TOKEN"
 
 class LoginActivity : AppCompatActivity() {
 
@@ -53,12 +51,13 @@ class LoginActivity : AppCompatActivity() {
                 model.login(user, pass)
                 model.observe(this) {
                     val intent = Intent(this, DashboardActivity::class.java)
+
                     //TODO: Debate if intent is really needed
                     intent.putExtra(TOKEN, it.userToken)
                     intent.putExtra(USER, it.username)
 
                     /**Launch Refresh Token Worker**/
-                    scheduleRefreshTokenWorker(it.userToken,it.username)
+                    scheduleRefreshTokenWorker(it.username,it.userToken,it.username)
 
                     startActivity(intent)
                 }
@@ -115,7 +114,8 @@ class LoginActivity : AppCompatActivity() {
             username = "username",
             token = "userDto.userToken",
             timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
-            loggedOut = false
+            loggedOut = false,
+            credentials = Base64.encodeToString("username:userDto.userToken".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")
         )
 
 
