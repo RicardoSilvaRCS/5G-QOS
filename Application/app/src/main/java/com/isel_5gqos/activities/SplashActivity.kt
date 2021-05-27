@@ -31,18 +31,18 @@ class SplashActivity : AppCompatActivity() {
             if(it == null){
                 val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
+                finish()
             }
             else{
                 model.refreshToken(it.username,it.token)
             }
-
-           model.getLoggedUser().removeObservers(this)
         }
 
         model.liveData.observe(this) {
             if(it.userToken.isEmpty()){
                 val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
+                finish()
             }
             else{
                 val intent = Intent(this, DashboardActivity::class.java)
@@ -54,10 +54,8 @@ class SplashActivity : AppCompatActivity() {
                 scheduleRefreshTokenWorker(it.username,it.userToken,it.username)
 
                 startActivity(intent)
+                finish()
             }
-
-            model.liveData.removeObservers(this)
         }
-
     }
 }

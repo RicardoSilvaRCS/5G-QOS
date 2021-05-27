@@ -60,6 +60,8 @@ class LoginActivity : AppCompatActivity() {
                     scheduleRefreshTokenWorker(it.username,it.userToken,it.username)
 
                     startActivity(intent)
+
+                    finish()
                 }
             }
 
