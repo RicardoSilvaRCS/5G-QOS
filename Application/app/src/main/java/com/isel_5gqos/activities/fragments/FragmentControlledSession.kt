@@ -13,6 +13,7 @@ import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
 import kotlinx.android.synthetic.main.fragment_controlled_session.*
 
+
 class FragmentControlledSession : Fragment() {
 
     private val testModel by lazy {
@@ -54,6 +55,11 @@ class FragmentControlledSession : Fragment() {
             testModel.endSessionById(requireActivity())
             endSessionView.isGone = true
             create_session.visibility = View.VISIBLE
+        }
+
+        btn_ping.setOnClickListener {
+            val fragmentSessionDetailsDialog = FragmentSessionDetailsDialog()
+            fragmentSessionDetailsDialog.show(parentFragmentManager,"taguinha")
         }
     }
 
