@@ -45,6 +45,9 @@ class RadioParametersWork : IWorks {
 
         db.radioParametersDao().invalidateRadioParameters(sessionId)
 
+        val servingCell = wrapperDto.radioParametersDtos.find { cell -> cell.isServingCell } ?: wrapperDto.radioParametersDtos.find { cell -> cell.no == 1 }
+        val numbOfCellsWithSameTechAsServing = wrapperDto.radioParametersDtos.filter { it.tech == servingCell?.tech }
+
         val radioParams = wrapperDto.radioParametersDtos.map { radioParametersDto ->
 
             RadioParameters(
@@ -61,10 +64,12 @@ class RadioParametersWork : IWorks {
                 rsrq = radioParametersDto.rsrq ?: -1,
                 netDataType = radioParametersDto.netDataType.toString(),
                 isServingCell = radioParametersDto.isServingCell,
+                numbOfCellsWithSameTechAsServing = numbOfCellsWithSameTechAsServing.size,
                 sessionId = sessionId,
                 timestamp = System.currentTimeMillis(),
                 isUpToDate = true
             )
+
         }.toTypedArray()
 
         db.radioParametersDao().insert(*radioParams)

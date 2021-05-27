@@ -61,6 +61,12 @@ object ServingCellIndex {
     const val RSQR: Int = 2
     const val RSSNR: Int = 3
 }
+object StrongestNeighborIndex {
+    const val RSSI_GSM: Int = 0
+    const val RSSI_WCDMA: Int = 1
+    const val RSRP_LTE: Int = 2
+    const val NUMBER: Int = 3
+}
 
 /** GLOBAL CONSTANTS   **/
 const val DATABASE_NAME = "Qos-Db"

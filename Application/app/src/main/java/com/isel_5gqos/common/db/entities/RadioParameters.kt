@@ -33,6 +33,7 @@ class RadioParameters (
     val rsrq: Int,
     val netDataType: String,
     val isServingCell : Boolean,
+    val numbOfCellsWithSameTechAsServing : Int,
     @ColumnInfo(name = "sessionId", index = true)
     val sessionId: String,
     val timestamp: Long,

@@ -1,7 +1,5 @@
 package com.isel_5gqos.activities.fragments
 
-import android.app.job.JobInfo
-import android.app.job.JobScheduler
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -17,16 +15,11 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
-import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.common.DEFAULT_SESSION_ID
-import com.isel_5gqos.common.ServingCellIndex
-import com.isel_5gqos.common.ThroughputIndex
-import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.jobs.WorkTypesEnum
-import com.isel_5gqos.jobs.scheduleJob
-import com.isel_5gqos.models.InternetViewModel
+import com.isel_5gqos.common.*
+import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import java.lang.Integer.max
 import java.lang.Integer.min
@@ -45,10 +38,8 @@ class FragmentChartSession : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         initLineChart(throughput_chart, initThroughputDataLine())
-
-        initLineChart(g1, initThroughputDataLine())
-        initLineChart(g2, initThroughputDataLine())
-        initLineChart(g3, initThroughputDataLine())
+        initLineChart(serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
+        initLineChart(strongest_neighbor, lineInitData = initStrongestNeighborData(), isNegative = true)
 
         registerObservers()
     }
@@ -57,6 +48,7 @@ class FragmentChartSession : Fragment() {
     private fun registerObservers(){
         registerRadioParametersObserver()
         registerThroughputObserver()
+        registerStrongestNeighborObserver()
     }
 
     private fun registerThroughputObserver(){
@@ -92,18 +84,21 @@ class FragmentChartSession : Fragment() {
     }
 
     private fun registerRadioParametersObserver(){
-        initLineChart(serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
-        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
-            val data = serving_cell_chart.data ?: return@observe
 
-            var auxLastUpdatedIndex = min(data.dataSets[ServingCellIndex.RSSI].entryCount, it.size - 1)
+        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+
+            if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
+
+            val servingCellData = serving_cell_chart.data ?: return@observe
+
+            var auxLastUpdatedIndex = min(servingCellData.dataSets[ServingCellIndex.RSSI].entryCount, it.size - 1)
 
             it.subList(auxLastUpdatedIndex, it.size).forEach { servingCell ->
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), ServingCellIndex.RSSI)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), ServingCellIndex.RSRP)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq.toFloat()), ServingCellIndex.RSQR)
-                data.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr.toFloat()), ServingCellIndex.RSSNR)
+
+                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), ServingCellIndex.RSSI)
+                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), ServingCellIndex.RSRP)
+                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq.toFloat()), ServingCellIndex.RSQR)
+                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr.toFloat()), ServingCellIndex.RSSNR)
 
                 Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
 
@@ -126,7 +121,58 @@ class FragmentChartSession : Fragment() {
 
             serving_cell_chart.data.notifyDataChanged()
             serving_cell_chart.notifyDataSetChanged()
+
+
         }
+
+    }
+
+    private fun registerStrongestNeighborObserver() {
+
+        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+
+            if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
+
+            val strongestNeighborData = strongest_neighbor.data ?: return@observe
+
+            var auxNumberIndex = min(strongestNeighborData.dataSets[StrongestNeighborIndex.NUMBER].entryCount,it.size - 1 )
+
+            it.subList(auxNumberIndex, it.size).forEach { currCell ->
+
+                val cellDataType = RadioParametersUtils.convertStringToNetworkDataType(currCell.netDataType)
+
+                if( cellDataType == NetworkDataTypesEnum.GSM && currCell.rssi != MIN_RSSI ){
+
+                    strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_GSM)
+                }
+                else if( cellDataType == NetworkDataTypesEnum.UMTS && currCell.rssi != MIN_RSSI ){
+
+                    strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_WCDMA)
+                }
+                else if( cellDataType == NetworkDataTypesEnum.LTE && currCell.rsrp != MIN_RSRP ){
+
+                    strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.rsrp.toFloat()), StrongestNeighborIndex.RSRP_LTE)
+                }
+
+                strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.numbOfCellsWithSameTechAsServing.toFloat()), StrongestNeighborIndex.NUMBER)
+
+                auxNumberIndex++
+            }
+
+
+            // enable touch gestures
+            strongest_neighbor.setTouchEnabled(true)
+            // limit the number of visible entries
+            strongest_neighbor.setVisibleXRangeMaximum(10f)
+
+            // move to the latest entry
+            strongest_neighbor.moveViewToX(throughput_chart.data.entryCount.toFloat())
+
+            strongest_neighbor.data.notifyDataChanged()
+            strongest_neighbor.notifyDataSetChanged()
+
+        }
+
     }
 
     //</editor-fold>
@@ -219,6 +265,57 @@ class FragmentChartSession : Fragment() {
         return LineData(sets)
     }
 
+    private fun initStrongestNeighborData(): LineData {
+
+        val rssiGsmData = java.util.ArrayList<Entry>()
+        rssiGsmData.add(Entry(0f, 0f))
+        val rssiGsm = LineDataSet(rssiGsmData, "RSSI GSM")
+        rssiGsm.lineWidth = 3f
+        rssiGsm.circleRadius = 1f
+        rssiGsm.highLightColor = Color.rgb(163, 145, 3)
+        rssiGsm.setDrawValues(false)
+
+
+        val rssiWcdmaData = java.util.ArrayList<Entry>()
+        rssiWcdmaData.add(Entry(0f, 0f))
+        val rssiWcdma = LineDataSet(rssiWcdmaData, "RSSI WCDMA")
+        rssiWcdma.lineWidth = 3f
+        rssiWcdma.circleRadius = 1f
+        rssiWcdma.highLightColor = Color.rgb(0, 255, 0)
+        rssiWcdma.color = ColorTemplate.VORDIPLOM_COLORS[1]
+        rssiWcdma.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[1])
+        rssiWcdma.setDrawValues(false)
+
+        val rsrpLteData = java.util.ArrayList<Entry>()
+        rsrpLteData.add(Entry(0f, 0f))
+        val rsrpLte = LineDataSet(rsrpLteData, "RSRP LTE")
+        rsrpLte.lineWidth = 3f
+        rsrpLte.circleRadius = 1f
+        rsrpLte.highLightColor = Color.rgb(0, 0, 255)
+        rsrpLte.color = ColorTemplate.VORDIPLOM_COLORS[2]
+        rsrpLte.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[2])
+        rsrpLte.setDrawValues(false)
+
+
+        val servingCellTechNumberData = java.util.ArrayList<Entry>()
+        servingCellTechNumberData.add(Entry(0f, 0f))
+        val servingCellTechNumber = LineDataSet(servingCellTechNumberData, "Number")
+        servingCellTechNumber.lineWidth = 3f
+        servingCellTechNumber.circleRadius = 1f
+        servingCellTechNumber.highLightColor = Color.rgb(255, 0, 0)
+        servingCellTechNumber.color = ColorTemplate.VORDIPLOM_COLORS[0]
+        servingCellTechNumber.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
+        servingCellTechNumber.setDrawValues(false)
+
+
+        val sets = java.util.ArrayList<ILineDataSet>()
+        sets.add(rssiGsm)
+        sets.add(rssiWcdma)
+        sets.add(rsrpLte)
+        sets.add(servingCellTechNumber)
+
+        return LineData(sets)
+    }
 
     private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
 
