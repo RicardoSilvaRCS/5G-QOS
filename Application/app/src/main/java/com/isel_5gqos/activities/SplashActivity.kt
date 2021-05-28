@@ -35,26 +35,27 @@ class SplashActivity : AppCompatActivity() {
             }
             else{
                 model.refreshToken(it.username,it.token)
-            }
-        }
 
-        model.liveData.observe(this) {
-            if(it.userToken.isEmpty()){
-                val intent = Intent(this, LoginActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-            else{
-                val intent = Intent(this, DashboardActivity::class.java)
-                //TODO: Debate if intent is really needed
-                intent.putExtra(TOKEN, it.userToken)
-                intent.putExtra(USER, it.username)
+                model.liveData.observe(this) { user ->
 
-                /**Launch Refresh Token Worker**/
-                scheduleRefreshTokenWorker(it.username,it.userToken,it.username)
+                    if(user.userToken.isEmpty()){
+                        val intent = Intent(this, LoginActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    else{
+                        val intent = Intent(this, DashboardActivity::class.java)
+                        //TODO: Debate if intent is really needed
+                        intent.putExtra(TOKEN, user.userToken)
+                        intent.putExtra(USER, user.username)
 
-                startActivity(intent)
-                finish()
+                        /**Launch Refresh Token Worker**/
+                        scheduleRefreshTokenWorker(it.username,user.userToken,user.username)
+
+                        startActivity(intent)
+                        finish()
+                    }
+                }
             }
         }
     }
