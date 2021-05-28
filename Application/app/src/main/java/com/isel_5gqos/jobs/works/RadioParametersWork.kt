@@ -64,7 +64,7 @@ class RadioParametersWork : IWorks {
                 rsrq = radioParametersDto.rsrq ?: -1,
                 netDataType = radioParametersDto.netDataType.toString(),
                 isServingCell = radioParametersDto.isServingCell,
-                numbOfCellsWithSameTechAsServing = numbOfCellsWithSameTechAsServing.size,
+                numbOfCellsWithSameTechAsServing = numbOfCellsWithSameTechAsServing.size - 1, //Remove Serving Cell
                 sessionId = sessionId,
                 timestamp = System.currentTimeMillis(),
                 isUpToDate = true

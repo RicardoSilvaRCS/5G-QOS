@@ -65,7 +65,10 @@ object StrongestNeighborIndex {
     const val RSSI_GSM: Int = 0
     const val RSSI_WCDMA: Int = 1
     const val RSRP_LTE: Int = 2
-    const val NUMBER: Int = 3
+}
+
+object NumberOfCells {
+    const val NUMBER: Int = 0
 }
 
 /** GLOBAL CONSTANTS   **/

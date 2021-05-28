@@ -37,23 +37,24 @@ class FragmentChartSession : Fragment() {
         inflater.inflate(R.layout.fragment_main_session, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        initLineChart(throughput_chart, initThroughputDataLine())
-        initLineChart(serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
-        initLineChart(strongest_neighbor, lineInitData = initStrongestNeighborData(), isNegative = true)
+
+        initLineChart(lineChart = throughput_chart, lineInitData = initThroughputDataLine(), isNegative = false)
+        initLineChart(lineChart = serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
+        initLineChart(lineChart = strongest_neighbor, lineInitData = initStrongestNeighborData(), isNegative = true)
+        initLineChart(lineChart = number_of_cells_same_tech_as_serving, lineInitData = initNumberOfCells(), isNegative = false)
 
         registerObservers()
     }
 
     //<editor-fold name="OBSERVERS"
-    private fun registerObservers(){
-        registerRadioParametersObserver()
+    private fun registerObservers() {
+        registerServingCellChanges()
         registerThroughputObserver()
-        registerStrongestNeighborObserver()
     }
 
-    private fun registerThroughputObserver(){
+    private fun registerThroughputObserver() {
         testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
-            if (!checkIfLayoutsAreAvailable() ||it == null || it.isEmpty() || throughput_chart == null) return@observe
+            if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || throughput_chart == null) return@observe
             val data = throughput_chart.data ?: return@observe
 
             var auxLastUpdatedValue = min(data.dataSets[ThroughputIndex.RX].entryCount, it.size - 1)
@@ -83,7 +84,7 @@ class FragmentChartSession : Fragment() {
         }
     }
 
-    private fun registerRadioParametersObserver(){
+    private fun registerServingCellChanges() {
 
         testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
 
@@ -95,81 +96,37 @@ class FragmentChartSession : Fragment() {
 
             it.subList(auxLastUpdatedIndex, it.size).forEach { servingCell ->
 
-                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), ServingCellIndex.RSSI)
-                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), ServingCellIndex.RSRP)
-                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq.toFloat()), ServingCellIndex.RSQR)
-                servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr.toFloat()), ServingCellIndex.RSSNR)
+                updateServingCellChart(auxLastUpdatedIndex, servingCell)
 
-                Log.v("aaa", "rssi = ${servingCell.rssi},rsrp = ${servingCell.rsrp}, rsqr = ${servingCell.rsrq}, rssnr = ${servingCell.rssnr}")
+                updateStrongestNeighborChart(auxLastUpdatedIndex, servingCell)
 
-                val minimumValue = min(min(min(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
-                val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
-
-                serving_cell_chart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
-                serving_cell_chart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+                updateNumberOfCellsWithSameTechAsServingCell(auxLastUpdatedIndex, servingCell)
 
                 auxLastUpdatedIndex++
             }
 
             // enable touch gestures
             serving_cell_chart.setTouchEnabled(true)
+            strongest_neighbor.setTouchEnabled(true)
+            number_of_cells_same_tech_as_serving.setTouchEnabled(true)
+
             // limit the number of visible entries
             serving_cell_chart.setVisibleXRangeMaximum(10f)
+            strongest_neighbor.setVisibleXRangeMaximum(10f)
+            number_of_cells_same_tech_as_serving.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
-            serving_cell_chart.moveViewToX(throughput_chart.data.entryCount.toFloat())
-
+            serving_cell_chart.moveViewToX(serving_cell_chart.data.entryCount.toFloat())
             serving_cell_chart.data.notifyDataChanged()
             serving_cell_chart.notifyDataSetChanged()
 
-
-        }
-
-    }
-
-    private fun registerStrongestNeighborObserver() {
-
-        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
-
-            if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
-
-            val strongestNeighborData = strongest_neighbor.data ?: return@observe
-
-            var auxNumberIndex = min(strongestNeighborData.dataSets[StrongestNeighborIndex.NUMBER].entryCount,it.size - 1 )
-
-            it.subList(auxNumberIndex, it.size).forEach { currCell ->
-
-                val cellDataType = RadioParametersUtils.convertStringToNetworkDataType(currCell.netDataType)
-
-                if( cellDataType == NetworkDataTypesEnum.GSM && currCell.rssi != MIN_RSSI ){
-
-                    strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_GSM)
-                }
-                else if( cellDataType == NetworkDataTypesEnum.UMTS && currCell.rssi != MIN_RSSI ){
-
-                    strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_WCDMA)
-                }
-                else if( cellDataType == NetworkDataTypesEnum.LTE && currCell.rsrp != MIN_RSRP ){
-
-                    strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.rsrp.toFloat()), StrongestNeighborIndex.RSRP_LTE)
-                }
-
-                strongestNeighborData.addEntry(Entry(auxNumberIndex.toFloat(), currCell.numbOfCellsWithSameTechAsServing.toFloat()), StrongestNeighborIndex.NUMBER)
-
-                auxNumberIndex++
-            }
-
-
-            // enable touch gestures
-            strongest_neighbor.setTouchEnabled(true)
-            // limit the number of visible entries
-            strongest_neighbor.setVisibleXRangeMaximum(10f)
-
-            // move to the latest entry
-            strongest_neighbor.moveViewToX(throughput_chart.data.entryCount.toFloat())
-
+            strongest_neighbor.moveViewToX(strongest_neighbor.data.entryCount.toFloat())
             strongest_neighbor.data.notifyDataChanged()
             strongest_neighbor.notifyDataSetChanged()
+
+            number_of_cells_same_tech_as_serving.moveViewToX(strongest_neighbor.data.entryCount.toFloat())
+            number_of_cells_same_tech_as_serving.data.notifyDataChanged()
+            number_of_cells_same_tech_as_serving.notifyDataSetChanged()
 
         }
 
@@ -180,6 +137,54 @@ class FragmentChartSession : Fragment() {
     //<editor-fold name="AUX FUNCTIONS">
 
     private fun checkIfLayoutsAreAvailable() = this.isResumed
+
+    private fun updateServingCellChart(auxLastUpdatedIndex: Int, servingCell: RadioParameters) {
+
+        val servingCellData = serving_cell_chart.data ?: return
+
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), ServingCellIndex.RSSI)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), ServingCellIndex.RSRP)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq.toFloat()), ServingCellIndex.RSQR)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr.toFloat()), ServingCellIndex.RSSNR)
+
+        val minimumValue = min(min(min(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+        val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
+
+        serving_cell_chart.axisLeft.axisMaximum = maximumValue.toFloat() + 10f
+        serving_cell_chart.axisLeft.axisMinimum = minimumValue.toFloat() - 10f
+
+    }
+
+    private fun updateStrongestNeighborChart(auxLastUpdatedIndex: Int, servingCell: RadioParameters) {
+
+        val strongestNeighborData = strongest_neighbor.data ?: return
+
+        val cellDataType = RadioParametersUtils.convertStringToNetworkDataType(servingCell.netDataType)
+
+        if (cellDataType == NetworkDataTypesEnum.GSM && servingCell.rssi != MIN_RSSI) {
+
+            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_GSM)
+            strongest_neighbor.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
+        } else if (cellDataType == NetworkDataTypesEnum.UMTS && servingCell.rssi != MIN_RSSI) {
+
+            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_WCDMA)
+            strongest_neighbor.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
+        } else if (cellDataType == NetworkDataTypesEnum.LTE && servingCell.rsrp != MIN_RSRP) {
+
+            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), StrongestNeighborIndex.RSRP_LTE)
+            strongest_neighbor.axisLeft.axisMinimum = servingCell.rsrp.toFloat() - 10f
+        }
+
+    }
+
+    private fun updateNumberOfCellsWithSameTechAsServingCell(auxLastUpdatedIndex: Int, servingCell: RadioParameters) {
+
+        val numberOfCells = number_of_cells_same_tech_as_serving.data ?: return
+
+        numberOfCells.addEntry( Entry(auxLastUpdatedIndex.toFloat(), servingCell.numbOfCellsWithSameTechAsServing.toFloat()), NumberOfCells.NUMBER )
+
+        number_of_cells_same_tech_as_serving.axisLeft.axisMaximum = servingCell.numbOfCellsWithSameTechAsServing.toFloat() + 10f
+    }
 
     //<editor-fold name="CHART FUNCTIONS">
 
@@ -297,9 +302,24 @@ class FragmentChartSession : Fragment() {
         rsrpLte.setDrawValues(false)
 
 
+        val sets = java.util.ArrayList<ILineDataSet>()
+        sets.add(rssiGsm)
+        sets.add(rssiWcdma)
+        sets.add(rsrpLte)
+
+        return LineData(sets)
+    }
+
+    private fun initNumberOfCells(): LineData {
+
+        val numberOfCells = java.util.ArrayList<Entry>()
+
+        numberOfCells.add(Entry(0f, 0f))
+
         val servingCellTechNumberData = java.util.ArrayList<Entry>()
+
         servingCellTechNumberData.add(Entry(0f, 0f))
-        val servingCellTechNumber = LineDataSet(servingCellTechNumberData, "Number")
+        val servingCellTechNumber = LineDataSet(servingCellTechNumberData, "Number(cells with same tech as serving)")
         servingCellTechNumber.lineWidth = 3f
         servingCellTechNumber.circleRadius = 1f
         servingCellTechNumber.highLightColor = Color.rgb(255, 0, 0)
@@ -309,9 +329,6 @@ class FragmentChartSession : Fragment() {
 
 
         val sets = java.util.ArrayList<ILineDataSet>()
-        sets.add(rssiGsm)
-        sets.add(rssiWcdma)
-        sets.add(rsrpLte)
         sets.add(servingCellTechNumber)
 
         return LineData(sets)
@@ -349,6 +366,7 @@ class FragmentChartSession : Fragment() {
 
         lineChart.data = lineInitData
     }
+
     //</editor-fold>
     //</editor-fold>
 }

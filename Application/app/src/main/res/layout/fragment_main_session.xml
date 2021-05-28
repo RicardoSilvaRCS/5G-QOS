@@ -16,8 +16,9 @@
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:paddingTop="16dp"
-            android:paddingBottom="50dp"
+            android:paddingBottom="75dp"
             android:orientation="vertical">
+
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/throughput_chart"
                 android:layout_width="match_parent"
@@ -35,6 +36,14 @@
                 android:layout_height="200dp"
                 android:layout_marginTop="30dp"
                 />
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/number_of_cells_same_tech_as_serving"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="30dp"
+                />
+
         </LinearLayout>
 
     </com.isel_5gqos.common.NestedFocusingScrollView>

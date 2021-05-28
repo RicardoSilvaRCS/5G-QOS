@@ -51,6 +51,7 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             QosApp.db.sessionDao().updateSession(session)
         }) {}
     }
+
     fun endSessionById(owner: LifecycleOwner) {
         val endDate = Timestamp(System.currentTimeMillis())
 
