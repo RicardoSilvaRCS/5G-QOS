@@ -65,6 +65,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         }
 
         val username = intent.getStringExtra(USER)?.toString() ?: ""
+        val token = intent.getStringExtra(TOKEN)?.toString() ?: ""
         startDefaultSession(username)
     }
 

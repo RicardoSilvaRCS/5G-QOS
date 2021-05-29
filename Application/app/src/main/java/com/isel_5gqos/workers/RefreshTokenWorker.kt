@@ -26,7 +26,7 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
 
                 asyncTask({
 
-                    QosApp.db.userDao().updateToken(username,refreshedToken)
+                    QosApp.db.loginDao().updateToken(username,refreshedToken)
 
                 }) {
 
@@ -48,7 +48,7 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
 
                         asyncTask({
 
-                            QosApp.db.userDao().updateToken(username,it.userToken)
+                            QosApp.db.loginDao().updateToken(username,it.userToken)
 
                         }) {
 

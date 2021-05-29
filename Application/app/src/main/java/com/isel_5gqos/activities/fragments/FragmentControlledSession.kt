@@ -47,7 +47,7 @@ class FragmentControlledSession : Fragment() {
         create_session.setOnClickListener { createSessionView ->
             if (!checkIfLayoutIsAvailable()) return@setOnClickListener
             qosViewModel.getLoggedUser().observe(requireActivity()) {
-                testModel.startSession(it.username) {
+                testModel.startSession(it.user.username) {
                     createSessionView.isGone = true
                     end_session.visibility = View.VISIBLE
                 }

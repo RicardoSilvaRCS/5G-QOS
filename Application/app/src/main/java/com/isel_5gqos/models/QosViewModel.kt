@@ -9,6 +9,7 @@ import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.MobileUnit
 import com.isel_5gqos.common.db.entities.User
+import com.isel_5gqos.common.db.entities.Login
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
 import com.isel_5gqos.utils.android_utils.AndroidUtils
@@ -25,21 +26,24 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                 val user = User(
                     regId = QosApp.sessionId,
                     username = username,
-                    token = userDto.userToken,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
                     loggedOut = false,
                     credentials = Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")
                 )
 
+                val login = Login (
+                    user = username,
+                    token = userDto.userToken,
+                    timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
+                )
+
                 asyncTask({
 
                     QosApp.db.userDao().insert(user)
-
                 })
                 {
-
+                    asyncTask({ QosApp.db.loginDao().insertUserLogin(login) }){}
                     loginDevice(userDto)
-
                 }
 
             },
@@ -104,21 +108,18 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                 asyncTask(
                     doInBackground = {
 
-
-                        QosApp.db.userDao().updateToken(token, refreshedToken)
-
+                        QosApp.db.loginDao().updateToken(token, username)
 
                     },
                     onPostExecute = {
-
 
                         liveData.postValue(
                             UserDto(username, refreshedToken)
                         )
 
-
                     }
                 )
+
             },
             onError = {
                 when (it) {
@@ -143,7 +144,6 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
         )
     }
 
-
-    fun getLoggedUser() = QosApp.db.userDao().getLastLoggedUser()
+    fun getLoggedUser() = QosApp.db.userDao().getToken()
 
 }

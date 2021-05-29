@@ -34,7 +34,7 @@ class SplashActivity : AppCompatActivity() {
                 finish()
             }
             else{
-                model.refreshToken(it.username,it.token)
+                model.refreshToken(it.user.username,it.login.token)
 
                 model.liveData.observe(this) { user ->
 
@@ -50,7 +50,7 @@ class SplashActivity : AppCompatActivity() {
                         intent.putExtra(USER, user.username)
 
                         /**Launch Refresh Token Worker**/
-                        scheduleRefreshTokenWorker(it.username,user.userToken,user.username)
+                        scheduleRefreshTokenWorker(user.username,user.userToken,it.user.credentials)
 
                         startActivity(intent)
                         finish()

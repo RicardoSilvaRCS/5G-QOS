@@ -1,5 +1,6 @@
 package com.isel_5gqos.common.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 
@@ -20,6 +21,7 @@ import androidx.room.ForeignKey
 
 class Ping(
     val regId: String,
+    @ColumnInfo(name = "sessionId", index = true)
     val sessionId: String,
     val avg: Int,
     val max: Int,

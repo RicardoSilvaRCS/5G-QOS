@@ -114,7 +114,6 @@ class LoginActivity : AppCompatActivity() {
         val user = User(
             regId = QosApp.sessionId,
             username = "username",
-            token = "userDto.userToken",
             timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
             loggedOut = false,
             credentials = Base64.encodeToString("username:userDto.userToken".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")
@@ -124,8 +123,6 @@ class LoginActivity : AppCompatActivity() {
         asyncTask({ QosApp.db.userDao().insert(user) }){
 
             val intent = Intent(this, DashboardActivity::class.java)
-
-            intent.putExtra(TOKEN, user.token)
             intent.putExtra(USER, user.username)
 
             startActivity(intent)

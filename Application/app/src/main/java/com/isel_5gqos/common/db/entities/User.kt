@@ -7,7 +7,6 @@ import androidx.room.Entity
 class User (
     val regId: String,
     val username: String,
-    val token: String,
     val loggedOut : Boolean,
     val timestamp: Long,
     val credentials : String
