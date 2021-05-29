@@ -13,7 +13,7 @@ import com.isel_5gqos.common.db.entities.*
 
 @Database(
     entities = [Error::class, Ping::class, Session::class, ThroughPut::class, User::class, Location::class , RadioParameters::class, MobileUnit::class],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
