@@ -3,6 +3,7 @@ package com.isel_5gqos.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
 import com.isel_5gqos.R
@@ -16,7 +17,7 @@ class SplashActivity : AppCompatActivity() {
 
     private lateinit var qosFactory: QosFactory
     private val model: QosViewModel by lazy {
-        ViewModelProviders.of(this, qosFactory)[QosViewModel::class.java]
+        ViewModelProvider(this, qosFactory)[QosViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

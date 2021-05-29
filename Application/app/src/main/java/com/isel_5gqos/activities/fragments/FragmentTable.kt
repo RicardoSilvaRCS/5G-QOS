@@ -3,7 +3,6 @@ package com.isel_5gqos.activities.fragments
 import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +10,13 @@ import android.widget.TableRow
 import android.widget.TextView
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.NetworkDataTypesEnum
+import com.isel_5gqos.common.USER
+import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
@@ -23,8 +25,14 @@ import kotlinx.android.synthetic.main.fragment_table.*
 
 class FragmentTable : Fragment(){
 
+    private lateinit var testFactory: TestFactory
     private val testModel by lazy {
-        ViewModelProvider(requireActivity()).get(TestViewModel::class.java)
+        ViewModelProvider(this,testFactory).get(TestViewModel::class.java)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        if(this.isAdded) return
+        super.onCreate(savedInstanceState)
     }
 
     //<editor-fold desc="EVENTS">
@@ -32,6 +40,8 @@ class FragmentTable : Fragment(){
         inflater.inflate(R.layout.fragment_table, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val username = requireActivity().intent.getStringExtra(USER) ?: ""
+        testFactory = TestFactory(savedInstanceState,username)
         distance_txt?.text = "---"
         registerObservers()
 

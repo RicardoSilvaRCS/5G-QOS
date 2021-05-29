@@ -10,8 +10,8 @@ interface SessionDao {
     @Query("Select * from Sessions where id = :sessionId")
     fun get(sessionId: String): LiveData<List<Session>>
 
-    @Query("Select * from Sessions where id <> '-1' order by beginDate desc limit(2)")
-    fun getLastSession():LiveData<List<Session>>
+    @Query("Select * from Sessions where id <> '-1' order by beginDate desc limit(1)")
+    fun getLastSession():LiveData<Session>
 
     @Query("Select * from Sessions where endDate <> 0")
     fun getCompletedSessions():LiveData<List<Session>>
@@ -21,6 +21,9 @@ interface SessionDao {
 
     @Update
     fun updateSession(vararg session: Session)
+
+    @Query("Update Sessions set endDate = :endDate where id = :sessionId")
+    fun finishSessionById(sessionId: String,endDate:Long)
 
     @Delete()
     fun delete(session: Session)

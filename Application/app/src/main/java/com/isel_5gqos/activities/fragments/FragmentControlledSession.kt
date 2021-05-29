@@ -1,6 +1,7 @@
 package com.isel_5gqos.activities.fragments
 
 import android.os.Bundle
+import android.os.Message
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
@@ -11,17 +12,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.adapters.SessionDetailsAdapter
+import com.isel_5gqos.common.USER
 import com.isel_5gqos.factories.QosFactory
+import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.publisher_subscriber.SessionMessageEvent
+import com.isel_5gqos.utils.publisher_subscriber.SessionMessageTypeEnum
 import kotlinx.android.synthetic.main.fragment_controlled_session.*
 import kotlinx.android.synthetic.main.fragment_main_session.*
+import org.greenrobot.eventbus.EventBus
 
 
 class FragmentControlledSession : Fragment() {
-
+    private lateinit var testFactory: TestFactory
     private val testModel by lazy {
-        ViewModelProvider(this).get(TestViewModel::class.java)
+        ViewModelProvider(this,testFactory).get(TestViewModel::class.java)
     }
 
     private lateinit var qosFactory: QosFactory
@@ -35,28 +41,26 @@ class FragmentControlledSession : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         qosFactory = QosFactory(savedInstanceState)
-
+        val username = requireActivity().intent.getStringExtra(USER) ?: ""
+        testFactory = TestFactory(savedInstanceState,username)
         testModel.getLastSession().observe(requireActivity()) {
-            if (!checkIfLayoutIsAvailable() || it.isEmpty()) return@observe
-            val controlledSession = it.firstOrNull() ?: return@observe
-            if (controlledSession.endDate != 0L) return@observe
+            if (!checkIfLayoutIsAvailable() || it == null) return@observe
+            if (it.endDate != 0L) return@observe
             create_session.isGone = true
             end_session.visibility = View.VISIBLE
         }
 
         create_session.setOnClickListener { createSessionView ->
             if (!checkIfLayoutIsAvailable()) return@setOnClickListener
-            qosViewModel.getLoggedUser().observe(requireActivity()) {
-                testModel.startSession(it.user.username) {
-                    createSessionView.isGone = true
-                    end_session.visibility = View.VISIBLE
-                }
-            }
+            EventBus.getDefault().post(SessionMessageEvent(SessionMessageTypeEnum.START_SESSION))
+            end_session.isGone = true
+            createSessionView.visibility = View.VISIBLE
         }
 
         end_session.setOnClickListener { endSessionView ->
             if (!checkIfLayoutIsAvailable()) return@setOnClickListener
-            testModel.endSessionById(requireActivity())
+            EventBus.getDefault().post(SessionMessageEvent(SessionMessageTypeEnum.STOP_SESSION))
+//            testModel.endSessionById(requireActivity())
             endSessionView.isGone = true
             create_session.visibility = View.VISIBLE
         }

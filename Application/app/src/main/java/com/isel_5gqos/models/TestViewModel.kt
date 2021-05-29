@@ -1,7 +1,6 @@
 package com.isel_5gqos.models
 
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.db.asyncTask
@@ -12,9 +11,9 @@ import com.isel_5gqos.utils.DateUtils.Companion.formatDate
 import java.sql.Timestamp
 import java.util.*
 
-class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
+class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
-    fun startSession(userName: String, onPostExecute:()->Unit = {}) {
+    fun startSession(userName: String, onPostExecute: () -> Unit = {}) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
 
         val currentDate = Date(System.currentTimeMillis())
@@ -35,9 +34,13 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
             endDate = sessionDto.endDate.time
         )
 
-        asyncTask({ QosApp.db.sessionDao().insert(session) }) {onPostExecute()}
-
-        liveData.postValue(sessionDto)
+        asyncTask(
+            doInBackground = { QosApp.db.sessionDao().insert(session) },
+            onPostExecute = {
+                onPostExecute()
+                liveData.postValue(sessionDto)
+            }
+        )
     }
 
     fun endSessionByTag(workerTag: String) {
@@ -49,30 +52,15 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
         asyncTask({
             QosApp.db.sessionDao().updateSession(session)
-        }) {}
+        })
     }
 
-    fun endSessionById(owner: LifecycleOwner) {
-        val endDate = Timestamp(System.currentTimeMillis())
-
-        value.endDate = endDate
-
-        val session = value.dtoToDaoMapper()
-        if(value.id != ""){
-            asyncTask({
-                QosApp.db.sessionDao().updateSession(session)
-            }) {}
-        } else {
-            QosApp.db.sessionDao().getLastSession().observe(owner) {
-                val controlledSession = it.firstOrNull()?:return@observe
-                if(controlledSession.endDate != 0L) return@observe
-                controlledSession.endDate = Timestamp(System.currentTimeMillis()).time
-
-                asyncTask({QosApp.db.sessionDao().updateSession(controlledSession)}){
-                    return@asyncTask
-                }
+    fun endSessionById(sessionId: String) {
+        asyncTask(
+            doInBackground = {
+                QosApp.db.sessionDao().finishSessionById(sessionId,Timestamp(System.currentTimeMillis()).time)
             }
-        }
+        )
     }
 
     fun getLastSession() = QosApp.db.sessionDao().getLastSession()
@@ -143,8 +131,7 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
         asyncTask(
             doInBackground = {
                 QosApp.db.sessionDao().deleteSession(sessionId)
-            },
-            onPostExecute = {}
+            }
         )
     }
 }

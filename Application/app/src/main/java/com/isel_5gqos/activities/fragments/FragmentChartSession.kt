@@ -2,12 +2,11 @@ package com.isel_5gqos.activities.fragments
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -18,9 +17,15 @@ import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.RadioParameters
+import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
+import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
+import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.fragment_main_session.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.lang.Long.max
@@ -28,32 +33,52 @@ import java.lang.Long.max
 class FragmentChartSession : Fragment() {
 
     /**INIT UI ELEMENTS**/
-
+    private lateinit var testFactory: TestFactory
     private val testModel by lazy {
-        ViewModelProviders.of(this)[TestViewModel::class.java]
+        ViewModelProvider(this,testFactory)[TestViewModel::class.java]
     }
 
+    //<editor-fold name="EVENTS">
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_main_session, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val username = requireActivity().intent.getStringExtra(USER) ?: ""
+        testFactory = TestFactory(savedInstanceState,username)
+        registerObservers()
+    }
 
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this);
+    }
+
+    override fun onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop()
+    }
+    //</editor-fold>
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessageEvent(messageEvent: MessageEvent) {
+        if (messageEvent !is StringMessageEvent) return
+        registerObservers(messageEvent.message)
+    }
+
+    //<editor-fold name="OBSERVERS"
+    private fun registerObservers(sessionId: String = DEFAULT_SESSION_ID) {
         initLineChart(lineChart = throughput_chart, lineInitData = initThroughputDataLine(), isNegative = false)
         initLineChart(lineChart = serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
         initLineChart(lineChart = strongest_neighbor, lineInitData = initStrongestNeighborData(), isNegative = true)
         initLineChart(lineChart = number_of_cells_same_tech_as_serving, lineInitData = initNumberOfCells(), isNegative = false)
 
-        registerObservers()
+        registerServingCellChanges(sessionId)
+        registerThroughputObserver(sessionId)
     }
 
-    //<editor-fold name="OBSERVERS"
-    private fun registerObservers() {
-        registerServingCellChanges()
-        registerThroughputObserver()
-    }
+    private fun registerThroughputObserver(sessionId: String) {
 
-    private fun registerThroughputObserver() {
-        testModel.registerThroughPutChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
+        testModel.registerThroughPutChanges(sessionId).observe(requireActivity()) {
             if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || throughput_chart == null) return@observe
             val data = throughput_chart.data ?: return@observe
 
@@ -82,11 +107,13 @@ class FragmentChartSession : Fragment() {
             throughput_chart.data.notifyDataChanged()
             throughput_chart.notifyDataSetChanged()
         }
+
+
     }
 
-    private fun registerServingCellChanges() {
+    private fun registerServingCellChanges(sessionId: String) {
 
-        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+        testModel.getServingCell(sessionId).observe(requireActivity()) {
 
             if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
 
@@ -181,7 +208,7 @@ class FragmentChartSession : Fragment() {
 
         val numberOfCells = number_of_cells_same_tech_as_serving.data ?: return
 
-        numberOfCells.addEntry( Entry(auxLastUpdatedIndex.toFloat(), servingCell.numbOfCellsWithSameTechAsServing.toFloat()), NumberOfCells.NUMBER )
+        numberOfCells.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.numbOfCellsWithSameTechAsServing.toFloat()), NumberOfCells.NUMBER)
 
         number_of_cells_same_tech_as_serving.axisLeft.axisMaximum = servingCell.numbOfCellsWithSameTechAsServing.toFloat() + 10f
     }

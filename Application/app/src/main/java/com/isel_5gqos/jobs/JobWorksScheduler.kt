@@ -54,7 +54,7 @@ class JobWorksScheduler : JobService() {
 
                             workInstance.work(createWorkerParams(workInstance))
 
-                        }) {}
+                        })
 
                     }
                 }
@@ -65,7 +65,7 @@ class JobWorksScheduler : JobService() {
             return true
         }
 
-        Thread { work() }.start()
+        Thread{work()}.start()
 
         return true
     }

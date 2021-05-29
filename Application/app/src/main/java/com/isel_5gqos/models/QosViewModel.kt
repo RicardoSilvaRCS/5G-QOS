@@ -42,7 +42,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     QosApp.db.userDao().insert(user)
                 })
                 {
-                    asyncTask({ QosApp.db.loginDao().insertUserLogin(login) }){}
+                    asyncTask({ QosApp.db.loginDao().insertUserLogin(login) })
                     loginDevice(userDto)
                 }
 

@@ -2,13 +2,13 @@ package com.isel_5gqos.factories
 
 import android.os.Bundle
 import androidx.lifecycle.ViewModel
+import com.isel_5gqos.QosApp
+import com.isel_5gqos.models.TestViewModel
 
-class TestFactory(bundle: Bundle):AbstractFactory(bundle) {
-    override fun getModel(): ViewModel {
-        TODO("Not yet implemented")
-    }
+const val TEST_FACTORY = "TEST_FACTORY"
 
-    override fun getParcelableValue(): String {
-        TODO("Not yet implemented")
-    }
+class TestFactory(bundle: Bundle?,val username:String):AbstractFactory(bundle) {
+    override fun getModel(): ViewModel = TestViewModel(username)
+
+    override fun getParcelableValue(): String = TEST_FACTORY
 }

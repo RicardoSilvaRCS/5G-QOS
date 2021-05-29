@@ -4,7 +4,7 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.os.Bundle
 import android.widget.*
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.isel_5gqos.QosApp
@@ -13,27 +13,37 @@ import com.isel_5gqos.activities.adapters.DashboardActivitViewPagerAdapter
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.factories.QosFactory
+import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.jobs.WorkTypesEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
+import com.isel_5gqos.utils.publisher_subscriber.SessionMessageEvent
+import com.isel_5gqos.utils.publisher_subscriber.SessionMessageTypeEnum
+import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
+import kotlinx.android.synthetic.main.activity_main.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 
 open class DashboardActivity : BaseTabLayoutActivityHolder() {
 
     private val model by lazy {
-        ViewModelProviders.of(this)[InternetViewModel::class.java]
+        ViewModelProvider(this)[InternetViewModel::class.java]
     }
 
+    private lateinit var testFactory: TestFactory
     private val testModel by lazy {
-        ViewModelProviders.of(this)[TestViewModel::class.java]
+        ViewModelProvider(this, testFactory)[TestViewModel::class.java]
     }
 
-   private lateinit var qosFactory: QosFactory
+    private lateinit var qosFactory: QosFactory
     private val qosModel by lazy {
-        ViewModelProviders.of(this,qosFactory)[QosViewModel::class.java]
+        ViewModelProvider(this, qosFactory)[QosViewModel::class.java]
     }
 
     private val dashboardActivitViewPagerAdapter by lazy {
@@ -53,6 +63,10 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard2)
+        val username = intent.getStringExtra(USER)?.toString() ?: ""
+        val token = intent.getStringExtra(TOKEN)?.toString() ?: ""
+
+        testFactory = TestFactory(savedInstanceState, username)
         qosFactory = QosFactory(savedInstanceState)
         dashboardActivitViewPager.adapter = dashboardActivitViewPagerAdapter
 
@@ -64,9 +78,31 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             }
         }
 
-        val username = intent.getStringExtra(USER)?.toString() ?: ""
-        val token = intent.getStringExtra(TOKEN)?.toString() ?: ""
-        startDefaultSession(username)
+        startSession(SessionMessageTypeEnum.STOP_SESSION)
+        EventBus.getDefault().register(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSessionStateEvent(messageEvent: MessageEvent) {
+        if (messageEvent !is SessionMessageEvent) return
+
+        when (messageEvent.sessionState) {
+            SessionMessageTypeEnum.START_SESSION -> {
+                cancelAllJobs()
+                startSession(SessionMessageTypeEnum.START_SESSION)
+            }
+            SessionMessageTypeEnum.STOP_SESSION -> {
+                cancelAllJobs()
+                testModel.getLastSession().observe(this){
+                    if(it.endDate == 0L)
+                    testModel.endSessionById(it.id)
+                    startSession(SessionMessageTypeEnum.STOP_SESSION)
+                    testModel.getLastSession().removeObservers(this)
+                }
+
+            }
+        }
+
     }
 
     override fun onDestroy() {
@@ -74,7 +110,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
 
         if (testModel.liveData.value!!.id == DEFAULT_SESSION_ID) {
             cancelAllJobs()
-            asyncTask(doInBackground = { testModel.deleteSessionInfo(DEFAULT_SESSION_ID) }, onPostExecute = {})
+            asyncTask(doInBackground = { testModel.deleteSessionInfo(DEFAULT_SESSION_ID) })
         } else {
             AndroidUtils.notifyOnChannel(
                 getString(R.string.active_session_noti),
@@ -86,7 +122,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     }
 
     override fun onStop() {
-        super.onStop()
+        EventBus.getDefault().unregister(this)
         if (testModel.liveData.value!!.id != DEFAULT_SESSION_ID) {
             AndroidUtils.notifyOnChannel(
                 getString(R.string.active_session_noti),
@@ -95,6 +131,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
                 applicationContext
             )
         }
+        super.onStop()
     }
 
     //</editor-fold>
@@ -113,8 +150,37 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         jobs.clear()
     }
 
+    private fun startSession(sessionTypeState: SessionMessageTypeEnum) {
+
+        when (sessionTypeState) {
+            SessionMessageTypeEnum.START_SESSION -> startControlledSession(testModel.userName)
+            SessionMessageTypeEnum.STOP_SESSION -> startDefaultSession(testModel.userName)
+        }
+    }
+
+    private fun startControlledSession(username: String) {
+        asyncTask(
+            doInBackground = {
+                testModel.startSession(username)
+            },
+            onPostExecute = {
+                testModel.observe(this) {
+                    EventBus.getDefault().post(StringMessageEvent(it.id))
+                    jobs.add(
+                        scheduleJob(
+                            sessionId = it.id,
+                            saveToDb = false,
+                            jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
+                        )
+                    )
+                }
+            }
+        )
+    }
+
     private fun startDefaultSession(username: String) {
         asyncTask({ testModel.startDefaultSession(username) }) {
+            EventBus.getDefault().post(StringMessageEvent(DEFAULT_SESSION_ID))
             jobs.add(
                 scheduleJob(
                     sessionId = DEFAULT_SESSION_ID,
