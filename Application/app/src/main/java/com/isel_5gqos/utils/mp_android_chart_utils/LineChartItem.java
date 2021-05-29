@@ -41,7 +41,7 @@ public class LineChartItem extends ChartItem {
 
             convertView = LayoutInflater.from(c).inflate(
                     R.layout.list_item_linechart, null);
-            holder.chart = convertView.findViewById(R.id.throughput_chart);
+            holder.chart = convertView.findViewById(R.id.session_details_throughput_chart);
 
             convertView.setTag(holder);
 

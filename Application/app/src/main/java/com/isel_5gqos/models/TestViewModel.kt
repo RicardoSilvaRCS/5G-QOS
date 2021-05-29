@@ -77,6 +77,8 @@ class TestViewModel : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
     fun getLastSession() = QosApp.db.sessionDao().getLastSession()
 
+    fun getCompletedSessions() = QosApp.db.sessionDao().getCompletedSessions()
+
     fun registerRadioParametersChanges(sessionId: String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 
     fun getLastLocation(sessionId: String) = QosApp.db.radioParametersDao().getLastLocation(sessionId)

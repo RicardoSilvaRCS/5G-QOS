@@ -5,7 +5,7 @@ import java.util.*
 
 class DateUtils {
     companion object {
-        fun formatDate(date: Date): String = SimpleDateFormat("DD-MMM-YYYY HH:mm:ss").format(date)
+        fun formatDate(date: Date): String = SimpleDateFormat("dd-MMM-yyyy HH:mm").format(date)
     }
 
 }
