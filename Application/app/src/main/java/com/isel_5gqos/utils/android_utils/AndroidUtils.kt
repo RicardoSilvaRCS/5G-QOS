@@ -1,13 +1,18 @@
 package com.isel_5gqos.utils.android_utils
 
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.view.LayoutInflater
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.isel_5gqos.R
 import com.isel_5gqos.common.CHANNEL_ID
+import org.w3c.dom.Text
 
 class AndroidUtils {
 
@@ -44,6 +49,14 @@ class AndroidUtils {
             NotificationManagerCompat
                 .from(context)
                 .notify(10000, notification)
+        }
+
+        fun makeLoadingDialog(context: Context,message: String):AlertDialog{
+            val inflater = LayoutInflater.from(context)
+            val inflatedView = inflater.inflate(R.layout.dialog_loading,null)
+            val textView = inflatedView.findViewById<TextView>(R.id.txt_progress_loading)
+            textView.text = message
+            return AlertDialog.Builder(context).setView(inflatedView).create()
         }
 
     }

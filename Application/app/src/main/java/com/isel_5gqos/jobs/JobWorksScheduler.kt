@@ -29,8 +29,7 @@ class JobWorksScheduler : JobService() {
                 return false
             }
 
-            val saveToDb = params!!.extras.getBoolean(DB_SAVE, false)
-            val sessionId = if (saveToDb) params.extras.getString(SESSION_ID).toString() else "-1"
+            val sessionId = params!!.extras.getString(SESSION_ID).toString()
             val dequeueWork = params.dequeueWork() as JobWorkItem
             val jobsList = dequeueWork.intent.getStringArrayListExtra(JOB_TYPE) ?: arrayListOf()
 
@@ -81,12 +80,11 @@ class JobWorksScheduler : JobService() {
 
 }
 
-fun scheduleJob(sessionId: String, saveToDb: Boolean, jobTypes: ArrayList<String> = arrayListOf()): JobInfo {
+fun scheduleJob(sessionId: String, jobTypes: ArrayList<String> = arrayListOf()): JobInfo {
     val builder = JobInfo.Builder(0, ComponentName(QosApp.msWebApi.ctx, JobWorksScheduler::class.java))
 
     val extras = PersistableBundle(2)
     extras.putString(SESSION_ID, sessionId)
-    extras.putBoolean(DB_SAVE, saveToDb)
 
     val job = builder
         .setExtras(extras)

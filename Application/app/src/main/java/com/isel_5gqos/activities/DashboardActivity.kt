@@ -93,8 +93,8 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             }
             SessionMessageTypeEnum.STOP_SESSION -> {
                 cancelAllJobs()
-                testModel.getLastSession().observe(this){
-                    if(it.endDate == 0L)
+                testModel.getLastSession().observe(this) {
+                    if (it?.endDate != 0L) return@observe
                     testModel.endSessionById(it.id)
                     startSession(SessionMessageTypeEnum.STOP_SESSION)
                     testModel.getLastSession().removeObservers(this)
@@ -110,7 +110,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
 
         if (testModel.liveData.value!!.id == DEFAULT_SESSION_ID) {
             cancelAllJobs()
-            asyncTask(doInBackground = { testModel.deleteSessionInfo(DEFAULT_SESSION_ID) })
+            asyncTask(doInBackground = { testModel.deleteSessionInfo(DEFAULT_SESSION_ID){} })
         } else {
             AndroidUtils.notifyOnChannel(
                 getString(R.string.active_session_noti),
@@ -159,23 +159,19 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     }
 
     private fun startControlledSession(username: String) {
-        asyncTask(
-            doInBackground = {
-                testModel.startSession(username)
-            },
-            onPostExecute = {
-                testModel.observe(this) {
-                    EventBus.getDefault().post(StringMessageEvent(it.id))
-                    jobs.add(
-                        scheduleJob(
-                            sessionId = it.id,
-                            saveToDb = false,
-                            jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
-                        )
-                    )
-                }
-            }
-        )
+        testModel.startSession(username)
+
+        testModel.observe(this) {
+            if (it.id == DEFAULT_SESSION_ID) return@observe
+            EventBus.getDefault().post(StringMessageEvent(it.id))
+            jobs.add(
+                scheduleJob(
+                    sessionId = it.id,
+                    jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
+                )
+            )
+            testModel.liveData.removeObservers(this)
+        }
     }
 
     private fun startDefaultSession(username: String) {
@@ -184,7 +180,6 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             jobs.add(
                 scheduleJob(
                     sessionId = DEFAULT_SESSION_ID,
-                    saveToDb = false,
                     jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
                 )
             )

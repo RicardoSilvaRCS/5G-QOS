@@ -1,5 +1,6 @@
 package com.isel_5gqos.models
 
+import android.app.ProgressDialog
 import androidx.lifecycle.LifecycleOwner
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
@@ -127,11 +128,12 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
         }
     }
 
-    fun deleteSessionInfo(sessionId: String) {
+    fun deleteSessionInfo(sessionId: String,onPostExecute: () -> Unit) {
         asyncTask(
             doInBackground = {
                 QosApp.db.sessionDao().deleteSession(sessionId)
-            }
+            },
+            onPostExecute = onPostExecute
         )
     }
 }

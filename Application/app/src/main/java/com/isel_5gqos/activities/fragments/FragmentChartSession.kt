@@ -2,6 +2,7 @@ package com.isel_5gqos.activities.fragments
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +46,7 @@ class FragmentChartSession : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val username = requireActivity().intent.getStringExtra(USER) ?: ""
         testFactory = TestFactory(savedInstanceState,username)
+
         registerObservers()
     }
 
@@ -62,11 +64,13 @@ class FragmentChartSession : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(messageEvent: MessageEvent) {
         if (messageEvent !is StringMessageEvent) return
+        Log.v("SessionMessageEvent",messageEvent.message)
         registerObservers(messageEvent.message)
     }
 
     //<editor-fold name="OBSERVERS"
     private fun registerObservers(sessionId: String = DEFAULT_SESSION_ID) {
+
         initLineChart(lineChart = throughput_chart, lineInitData = initThroughputDataLine(), isNegative = false)
         initLineChart(lineChart = serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
         initLineChart(lineChart = strongest_neighbor, lineInitData = initStrongestNeighborData(), isNegative = true)
@@ -144,15 +148,15 @@ class FragmentChartSession : Fragment() {
 
             // move to the latest entry
             serving_cell_chart.moveViewToX(serving_cell_chart.data.entryCount.toFloat())
-            serving_cell_chart.data.notifyDataChanged()
-            serving_cell_chart.notifyDataSetChanged()
-
             strongest_neighbor.moveViewToX(strongest_neighbor.data.entryCount.toFloat())
-            strongest_neighbor.data.notifyDataChanged()
-            strongest_neighbor.notifyDataSetChanged()
-
             number_of_cells_same_tech_as_serving.moveViewToX(strongest_neighbor.data.entryCount.toFloat())
+
+            serving_cell_chart.data.notifyDataChanged()
+            strongest_neighbor.data.notifyDataChanged()
             number_of_cells_same_tech_as_serving.data.notifyDataChanged()
+
+            serving_cell_chart.notifyDataSetChanged()
+            strongest_neighbor.notifyDataSetChanged()
             number_of_cells_same_tech_as_serving.notifyDataSetChanged()
 
         }
@@ -362,6 +366,9 @@ class FragmentChartSession : Fragment() {
     }
 
     private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
+        lineChart.data?.clearValues()
+        lineChart.invalidate()
+        lineChart.clear()
 
         lineChart.background = resources.getDrawable(R.drawable.white_background_round_20)
         // disable description text

@@ -72,7 +72,7 @@
                         app:layout_constraintTop_toBottomOf="@id/session_details_throughput_chart"
                         />
                     <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/session_details_number_of_cells"
+                        android:id="@+id/session_details_strongest_neighbor_chart"
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:layout_marginTop="30dp"
@@ -83,14 +83,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:layout_marginTop="30dp"
-                        app:layout_constraintTop_toBottomOf="@id/session_details_number_of_cells"
-                        />
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/g3"
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:layout_marginTop="30dp"
-                        app:layout_constraintTop_toBottomOf="@id/session_details_nr_cells_same_tech_serving_cell"
+                        app:layout_constraintTop_toBottomOf="@id/session_details_strongest_neighbor_chart"
                         />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
