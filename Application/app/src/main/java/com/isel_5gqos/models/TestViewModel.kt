@@ -1,6 +1,5 @@
 package com.isel_5gqos.models
 
-import android.app.ProgressDialog
 import androidx.lifecycle.LifecycleOwner
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
@@ -14,7 +13,7 @@ import java.util.*
 
 class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
 
-    fun startSession(userName: String, onPostExecute: () -> Unit = {}) {
+    fun startSession(userName: String, onPostExecute: (sessionDto : SessionDto) -> Unit = {}) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
 
         val currentDate = Date(System.currentTimeMillis())
@@ -38,7 +37,7 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
         asyncTask(
             doInBackground = { QosApp.db.sessionDao().insert(session) },
             onPostExecute = {
-                onPostExecute()
+                onPostExecute(sessionDto)
                 liveData.postValue(sessionDto)
             }
         )
@@ -135,5 +134,16 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
             },
             onPostExecute = onPostExecute
         )
+    }
+
+    fun updateModel(session: Session){
+        liveData.value =
+            SessionDto(
+                id = session.id,
+                sessionName = session.sessionName,
+                username = session.user,
+                beginDate = Timestamp(session.beginDate),
+                endDate = Timestamp(session.endDate)
+           )
     }
 }

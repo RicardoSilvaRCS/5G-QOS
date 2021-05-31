@@ -10,7 +10,7 @@ interface SessionDao {
     @Query("Select * from Sessions where id = :sessionId")
     fun get(sessionId: String): LiveData<List<Session>>
 
-    @Query("Select * from Sessions where id <> '-1' order by beginDate desc limit(1)")
+    @Query("Select * from Sessions where id <> '-1' and endDate = 0 order by beginDate desc limit(1)")
     fun getLastSession():LiveData<Session>
 
     @Query("Select * from Sessions where endDate <> 0")

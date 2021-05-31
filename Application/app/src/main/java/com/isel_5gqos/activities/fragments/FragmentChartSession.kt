@@ -24,16 +24,20 @@ import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
 import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.fragment_main_session.*
+import kotlinx.android.synthetic.main.fragment_table.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.lang.Long.max
+import kotlin.random.Random
 
 class FragmentChartSession : Fragment() {
 
     /**INIT UI ELEMENTS**/
+
+    private var sessionId = DEFAULT_SESSION_ID
     private lateinit var testFactory: TestFactory
     private val testModel by lazy {
         ViewModelProvider(this,testFactory)[TestViewModel::class.java]
@@ -46,8 +50,6 @@ class FragmentChartSession : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val username = requireActivity().intent.getStringExtra(USER) ?: ""
         testFactory = TestFactory(savedInstanceState,username)
-
-        registerObservers()
     }
 
     override fun onStart() {
@@ -59,25 +61,33 @@ class FragmentChartSession : Fragment() {
         EventBus.getDefault().unregister(this);
         super.onStop()
     }
-    //</editor-fold>
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(messageEvent: MessageEvent) {
         if (messageEvent !is StringMessageEvent) return
-        Log.v("SessionMessageEvent",messageEvent.message)
-        registerObservers(messageEvent.message)
+
+        resetObservers(sessionId)
+        sessionId = messageEvent.message
+        registerObservers(sessionId)
     }
+
+    //</editor-fold>
 
     //<editor-fold name="OBSERVERS"
     private fun registerObservers(sessionId: String = DEFAULT_SESSION_ID) {
 
         initLineChart(lineChart = throughput_chart, lineInitData = initThroughputDataLine(), isNegative = false)
         initLineChart(lineChart = serving_cell_chart, lineInitData = initServingCellData(), isNegative = true)
-        initLineChart(lineChart = strongest_neighbor, lineInitData = initStrongestNeighborData(), isNegative = true)
-        initLineChart(lineChart = number_of_cells_same_tech_as_serving, lineInitData = initNumberOfCells(), isNegative = false)
+        initLineChart(lineChart = strongest_neighbor_chart, lineInitData = initStrongestNeighborData(), isNegative = true)
+        initLineChart(lineChart = number_of_cells_same_tech_as_serving_chart, lineInitData = initNumberOfCells(), isNegative = false)
 
         registerServingCellChanges(sessionId)
         registerThroughputObserver(sessionId)
+    }
+
+    private fun resetObservers(sessionId: String) {
+        testModel.registerThroughPutChanges(sessionId).removeObservers(requireActivity())
+        testModel.getServingCell(sessionId).removeObservers(requireActivity())
     }
 
     private fun registerThroughputObserver(sessionId: String) {
@@ -97,6 +107,7 @@ class FragmentChartSession : Fragment() {
                     throughput_chart.axisLeft.axisMaximum = max(throughput.rxResult, throughput.txResult).toFloat() + 10f
 
                 auxLastUpdatedValue++
+                Log.v("SESSION","$sessionId to ${throughput.sessionId}")
             }
 
             // enable touch gestures
@@ -138,26 +149,26 @@ class FragmentChartSession : Fragment() {
 
             // enable touch gestures
             serving_cell_chart.setTouchEnabled(true)
-            strongest_neighbor.setTouchEnabled(true)
-            number_of_cells_same_tech_as_serving.setTouchEnabled(true)
+            strongest_neighbor_chart.setTouchEnabled(true)
+            number_of_cells_same_tech_as_serving_chart.setTouchEnabled(true)
 
             // limit the number of visible entries
             serving_cell_chart.setVisibleXRangeMaximum(10f)
-            strongest_neighbor.setVisibleXRangeMaximum(10f)
-            number_of_cells_same_tech_as_serving.setVisibleXRangeMaximum(10f)
+            strongest_neighbor_chart.setVisibleXRangeMaximum(10f)
+            number_of_cells_same_tech_as_serving_chart.setVisibleXRangeMaximum(10f)
 
             // move to the latest entry
             serving_cell_chart.moveViewToX(serving_cell_chart.data.entryCount.toFloat())
-            strongest_neighbor.moveViewToX(strongest_neighbor.data.entryCount.toFloat())
-            number_of_cells_same_tech_as_serving.moveViewToX(strongest_neighbor.data.entryCount.toFloat())
+            strongest_neighbor_chart.moveViewToX(strongest_neighbor_chart.data.entryCount.toFloat())
+            number_of_cells_same_tech_as_serving_chart.moveViewToX(strongest_neighbor_chart.data.entryCount.toFloat())
 
             serving_cell_chart.data.notifyDataChanged()
-            strongest_neighbor.data.notifyDataChanged()
-            number_of_cells_same_tech_as_serving.data.notifyDataChanged()
+            strongest_neighbor_chart.data.notifyDataChanged()
+            number_of_cells_same_tech_as_serving_chart.data.notifyDataChanged()
 
             serving_cell_chart.notifyDataSetChanged()
-            strongest_neighbor.notifyDataSetChanged()
-            number_of_cells_same_tech_as_serving.notifyDataSetChanged()
+            strongest_neighbor_chart.notifyDataSetChanged()
+            number_of_cells_same_tech_as_serving_chart.notifyDataSetChanged()
 
         }
 
@@ -188,33 +199,33 @@ class FragmentChartSession : Fragment() {
 
     private fun updateStrongestNeighborChart(auxLastUpdatedIndex: Int, servingCell: RadioParameters) {
 
-        val strongestNeighborData = strongest_neighbor.data ?: return
+        val strongestNeighborData = strongest_neighbor_chart.data ?: return
 
         val cellDataType = RadioParametersUtils.convertStringToNetworkDataType(servingCell.netDataType)
 
         if (cellDataType == NetworkDataTypesEnum.GSM && servingCell.rssi != MIN_RSSI) {
 
             strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_GSM)
-            strongest_neighbor.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
+            strongest_neighbor_chart.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
         } else if (cellDataType == NetworkDataTypesEnum.UMTS && servingCell.rssi != MIN_RSSI) {
 
             strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_WCDMA)
-            strongest_neighbor.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
+            strongest_neighbor_chart.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
         } else if (cellDataType == NetworkDataTypesEnum.LTE && servingCell.rsrp != MIN_RSRP) {
 
             strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), StrongestNeighborIndex.RSRP_LTE)
-            strongest_neighbor.axisLeft.axisMinimum = servingCell.rsrp.toFloat() - 10f
+            strongest_neighbor_chart.axisLeft.axisMinimum = servingCell.rsrp.toFloat() - 10f
         }
 
     }
 
     private fun updateNumberOfCellsWithSameTechAsServingCell(auxLastUpdatedIndex: Int, servingCell: RadioParameters) {
 
-        val numberOfCells = number_of_cells_same_tech_as_serving.data ?: return
+        val numberOfCells = number_of_cells_same_tech_as_serving_chart.data ?: return
 
         numberOfCells.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.numbOfCellsWithSameTechAsServing.toFloat()), NumberOfCells.NUMBER)
 
-        number_of_cells_same_tech_as_serving.axisLeft.axisMaximum = servingCell.numbOfCellsWithSameTechAsServing.toFloat() + 10f
+        number_of_cells_same_tech_as_serving_chart.axisLeft.axisMaximum = servingCell.numbOfCellsWithSameTechAsServing.toFloat() + 10f
     }
 
     //<editor-fold name="CHART FUNCTIONS">
@@ -366,6 +377,7 @@ class FragmentChartSession : Fragment() {
     }
 
     private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
+
         lineChart.data?.clearValues()
         lineChart.invalidate()
         lineChart.clear()
@@ -399,8 +411,10 @@ class FragmentChartSession : Fragment() {
         lineChart.axisRight.isEnabled = false
 
         lineChart.data = lineInitData
+        lineChart.moveViewToX(throughput_chart.data.entryCount.toFloat())
     }
 
     //</editor-fold>
+
     //</editor-fold>
 }

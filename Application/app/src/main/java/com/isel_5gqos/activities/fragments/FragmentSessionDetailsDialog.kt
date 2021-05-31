@@ -26,6 +26,7 @@ import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.models.observeOnce
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
@@ -73,6 +74,7 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
             val inflater = LayoutInflater.from(requireContext())
             val inflatedView = inflater.inflate(resources.getLayout(R.layout.delete_session_alert_dialog), null)
             val confirmButton = inflatedView.findViewById<Button>(R.id.session_delete_confirm_button)
+
             confirmButton.setOnClickListener {
 
                 val loadingDialog = AndroidUtils.makeLoadingDialog(requireContext(),"Deleting...")
@@ -118,13 +120,13 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     }
 
     private fun registerThroughPutChartAndObserver() {
-        testModel.registerThroughPutChanges(session.id).observe(lifecycleOwner) {
-            if (it == null || it.isEmpty()) return@observe
-            val data = sessionDetailsThroughputChart.data ?: return@observe
+        testModel.registerThroughPutChanges(session.id).observeOnce(lifecycleOwner) {
+            if (it == null || it.isEmpty()) return@observeOnce
+            val data = sessionDetailsThroughputChart.data ?: return@observeOnce
 
-            var auxLastUpdatedValue = Integer.min(data.dataSets[ThroughputIndex.RX].entryCount, it.size - 1)
+            var auxLastUpdatedValue = 0
 
-            it.subList(auxLastUpdatedValue, it.size).forEach { throughput ->
+            it.forEach { throughput ->
 
                 data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.rxResult.toFloat()), ThroughputIndex.RX)
                 data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.txResult.toFloat()), ThroughputIndex.TX)
@@ -150,15 +152,15 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     }
 
     private fun registerServingCellChartAndObserver() {
-        testModel.getServingCell(session.id).observe(requireActivity()) {
+        testModel.getServingCell(session.id).observeOnce(requireActivity()) {
 
-            if (it == null || it.isEmpty() || sessionDetailsServingCellChart == null) return@observe
+            if (it == null || it.isEmpty() || sessionDetailsServingCellChart == null) return@observeOnce
 
-            val servingCellData = sessionDetailsServingCellChart.data ?: return@observe
+            sessionDetailsServingCellChart.data ?: return@observeOnce
 
-            var auxLastUpdatedIndex = Integer.min(servingCellData.dataSets[ServingCellIndex.RSSI].entryCount, it.size - 1)
+            var auxLastUpdatedIndex = 0
 
-            it.subList(auxLastUpdatedIndex, it.size).forEach { servingCell ->
+            it.forEach { servingCell ->
 
                 updateServingCellChart(auxLastUpdatedIndex, servingCell)
 
@@ -246,6 +248,7 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     //</editor-fold>
 
     //<editor-fold name="CHART FUNCTIONS">
+
     private fun initThroughputDataLine(): LineData {
 
         val rxValues = java.util.ArrayList<Entry>()
@@ -392,7 +395,6 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
         return LineData(sets)
     }
 
-
     private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
 
         lineChart.background = chartBackground
@@ -425,5 +427,6 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
 
         lineChart.data = lineInitData
     }
+
     //</editor-fold>
 }

@@ -2,15 +2,11 @@ package com.isel_5gqos.activities.fragments
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.os.Message
-import android.util.AndroidException
 import android.util.DisplayMetrics
-import android.util.EventLog
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inspector.IntFlagMapping
-import android.widget.TextView
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -81,7 +77,6 @@ class FragmentControlledSession : Fragment() {
             loadingDialog = AndroidUtils.makeLoadingDialog(requireContext(),"Ending...")
             loadingDialog.show()
             EventBus.getDefault().post(SessionMessageEvent(SessionMessageTypeEnum.STOP_SESSION))
-//            testModel.endSessionById(requireActivity())
             endSessionView.isGone = true
             create_session.visibility = View.VISIBLE
         }
