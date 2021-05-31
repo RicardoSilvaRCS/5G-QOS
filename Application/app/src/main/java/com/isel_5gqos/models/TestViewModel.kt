@@ -63,6 +63,10 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
         )
     }
 
+    fun updateSessionStartDate(sessionId: String) {
+        asyncTask(doInBackground = {QosApp.db.sessionDao().updateStartSession(sessionId,System.currentTimeMillis())})
+    }
+
     fun getLastSession() = QosApp.db.sessionDao().getLastSession()
 
     fun getCompletedSessions() = QosApp.db.sessionDao().getCompletedSessions()

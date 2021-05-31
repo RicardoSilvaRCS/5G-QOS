@@ -13,7 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.adapters.SessionDetailsAdapter
+import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.USER
+import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.QosViewModel
@@ -91,6 +93,7 @@ class FragmentControlledSession : Fragment() {
 
         testModel.getCompletedSessions().observe(requireActivity()) {
             if(sessions_recycler_view.childCount == it.size) return@observe
+            Log.v("RV","recycler view updated")
             sessions_recycler_view.adapter = SessionDetailsAdapter(
                 sessions = it,
                 parentFragmentManager = parentFragmentManager,
@@ -113,6 +116,8 @@ class FragmentControlledSession : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onCreatedSession(messageEvent: MessageEvent){
         if(messageEvent !is StringMessageEvent)return
+        if(messageEvent.message != DEFAULT_SESSION_ID)
+            testModel.updateSessionStartDate(messageEvent.message)
         loadingDialog.dismiss()
     }
 

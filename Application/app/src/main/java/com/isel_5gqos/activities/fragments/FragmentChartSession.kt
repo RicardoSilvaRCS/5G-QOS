@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -18,6 +20,7 @@ import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.RadioParameters
+import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
@@ -30,8 +33,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.lang.Integer.max
 import java.lang.Integer.min
-import java.lang.Long.max
-import kotlin.random.Random
+import java.lang.Long
 
 class FragmentChartSession : Fragment() {
 
@@ -42,6 +44,9 @@ class FragmentChartSession : Fragment() {
     private val testModel by lazy {
         ViewModelProvider(this,testFactory)[TestViewModel::class.java]
     }
+
+    private var throughputLiveData: LiveData<List<ThroughPut>>? = null
+    private var servingCellLiveData: LiveData<List<RadioParameters>>? = null
 
     //<editor-fold name="EVENTS">
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -66,7 +71,7 @@ class FragmentChartSession : Fragment() {
     fun onMessageEvent(messageEvent: MessageEvent) {
         if (messageEvent !is StringMessageEvent) return
 
-        resetObservers(sessionId)
+        resetObservers()
         sessionId = messageEvent.message
         registerObservers(sessionId)
     }
@@ -85,14 +90,16 @@ class FragmentChartSession : Fragment() {
         registerThroughputObserver(sessionId)
     }
 
-    private fun resetObservers(sessionId: String) {
-        testModel.registerThroughPutChanges(sessionId).removeObservers(requireActivity())
-        testModel.getServingCell(sessionId).removeObservers(requireActivity())
+    private fun resetObservers() {
+        Log.v("SESSION","resetted")
+        throughputLiveData?.removeObservers(requireActivity())
+        servingCellLiveData?.removeObservers(requireActivity())
     }
 
     private fun registerThroughputObserver(sessionId: String) {
+        throughputLiveData = testModel.registerThroughPutChanges(sessionId)
 
-        testModel.registerThroughPutChanges(sessionId).observe(requireActivity()) {
+        throughputLiveData?.observe(requireActivity()) {
             if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || throughput_chart == null) return@observe
             val data = throughput_chart.data ?: return@observe
 
@@ -104,7 +111,7 @@ class FragmentChartSession : Fragment() {
                 data.addEntry(Entry(auxLastUpdatedValue.toFloat(), throughput.txResult.toFloat()), ThroughputIndex.TX)
 
                 if (throughput_chart.axisLeft.axisMaximum < throughput.rxResult || throughput_chart.axisLeft.axisMaximum < throughput.txResult)
-                    throughput_chart.axisLeft.axisMaximum = max(throughput.rxResult, throughput.txResult).toFloat() + 10f
+                    throughput_chart.axisLeft.axisMaximum = Long.max(throughput.rxResult, throughput.txResult).toFloat() + 10f
 
                 auxLastUpdatedValue++
                 Log.v("SESSION","$sessionId to ${throughput.sessionId}")
@@ -123,12 +130,12 @@ class FragmentChartSession : Fragment() {
             throughput_chart.notifyDataSetChanged()
         }
 
-
     }
 
     private fun registerServingCellChanges(sessionId: String) {
+        servingCellLiveData = testModel.getServingCell(sessionId)
 
-        testModel.getServingCell(sessionId).observe(requireActivity()) {
+        servingCellLiveData?.observe(requireActivity()){
 
             if (!checkIfLayoutsAreAvailable() || it == null || it.isEmpty() || serving_cell_chart == null) return@observe
 
