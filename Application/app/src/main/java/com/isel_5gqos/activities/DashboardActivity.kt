@@ -30,6 +30,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.sql.Timestamp
 
 
 open class DashboardActivity : BaseTabLayoutActivityHolder() {
@@ -98,17 +99,18 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     fun onSessionStateEvent(messageEvent: MessageEvent) {
         if (messageEvent !is SessionMessageEvent) return
 
+        val endTime = Timestamp(System.currentTimeMillis())
         cancelAllJobs()
 
         when (messageEvent.sessionState) {
             SessionMessageTypeEnum.START_SESSION -> {
-                testModel.endSessionById(DEFAULT_SESSION_ID)
+                testModel.endSessionById(DEFAULT_SESSION_ID,endTime)
                 startControlledSession(testModel.userName)
             }
             SessionMessageTypeEnum.STOP_SESSION -> {
                 testModel.getLastSession().observeOnce(this) {
                     if (it?.endDate != 0L) return@observeOnce
-                    testModel.endSessionById(it.id)
+                    testModel.endSessionById(it.id,endTime)
                     startDefaultSession(testModel.userName)
                 }
             }

@@ -24,18 +24,7 @@ import kotlinx.android.synthetic.main.fragment_info.*
 
 
 class FragmentInfo : Fragment() {
-   /* private val systemInfoModel by lazy {
-        ViewModelProvider(this)[SystemViewModel::class.java]
-    }
 
-    private val testModel by lazy {
-        ViewModelProvider(this).get(TestViewModel::class.java)
-    }
-
-    private val dashboardActivity by lazy {
-        requireActivity() as DashboardActivity
-    }
-*/
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_info, container, false)
 

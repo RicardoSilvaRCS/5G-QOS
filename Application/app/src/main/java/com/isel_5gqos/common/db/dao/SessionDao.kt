@@ -13,7 +13,7 @@ interface SessionDao {
     @Query("Select * from Sessions where id <> '-1' and endDate = 0 order by beginDate desc limit(1)")
     fun getLastSession():LiveData<Session>
 
-    @Query("Select * from Sessions where endDate <> 0 and id <> '-1'")
+    @Query("Select * from Sessions where endDate <> 0 and id <> '-1' order by beginDate desc")
     fun getCompletedSessions():LiveData<List<Session>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -33,6 +33,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 
 class FragmentControlledSession : Fragment() {
+
     private lateinit var testFactory: TestFactory
     private val testModel by lazy {
         ViewModelProvider(this,testFactory).get(TestViewModel::class.java)
@@ -43,6 +44,7 @@ class FragmentControlledSession : Fragment() {
     private val qosViewModel by lazy {
         ViewModelProvider(this, qosFactory).get(QosViewModel::class.java)
     }
+
     //<editor-fold name="EVENTS">
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =

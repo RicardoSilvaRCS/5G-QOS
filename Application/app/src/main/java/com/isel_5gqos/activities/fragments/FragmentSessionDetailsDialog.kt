@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +30,7 @@ import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.models.observeOnce
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
+import com.isel_5gqos.utils.mp_android_chart_utils.ChartUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_session_details_dialog.*
 import java.lang.Long
@@ -49,6 +51,8 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     private lateinit var sessionDetailsStrongestNeighborChart: LineChart
     private lateinit var sessionDetailsNumberOfCellsSameTechServingCellChart: LineChart
 
+
+    //<editor-fold name="EVENTS">
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val username = requireActivity().intent.getStringExtra(USER) ?: ""
@@ -103,16 +107,17 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
         sessionDetailsStrongestNeighborChart = dialogView.findViewById(R.id.session_details_strongest_neighbor_chart)
         sessionDetailsNumberOfCellsSameTechServingCellChart = dialogView.findViewById(R.id.session_details_nr_cells_same_tech_serving_cell)
 
-        initLineChart(sessionDetailsThroughputChart, initThroughputDataLine())
-        initLineChart(sessionDetailsServingCellChart, lineInitData = initServingCellData(), isNegative = true)
-        initLineChart(sessionDetailsStrongestNeighborChart, lineInitData = initStrongestNeighborData(), isNegative = true)
-        initLineChart(sessionDetailsNumberOfCellsSameTechServingCellChart, lineInitData = initNumberOfCells(), isNegative = false)
+        ChartUtils.initLineChart(sessionDetailsThroughputChart, lineInitData = ChartUtils.initThroughputDataLine(), drawable = chartBackground)
+        ChartUtils.initLineChart(sessionDetailsServingCellChart, lineInitData = ChartUtils.initServingCellData(), isNegative = true, drawable = chartBackground)
+        ChartUtils.initLineChart(sessionDetailsStrongestNeighborChart, lineInitData = ChartUtils.initStrongestNeighborData(), isNegative = true, drawable = chartBackground)
+        ChartUtils.initLineChart(sessionDetailsNumberOfCellsSameTechServingCellChart, lineInitData = ChartUtils.initNumberOfCells(), isNegative = false, drawable = chartBackground)
 
         registerObservers()
     }
 
+    //</editor-fold>
 
-    //<editor-fold name="AUX FUNCTIONS">
+    //<editor-fold name="OBSERVERS">
     private fun registerObservers() {
         registerThroughPutChartAndObserver()
         registerServingCellChartAndObserver()
@@ -154,11 +159,13 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     private fun registerServingCellChartAndObserver() {
         testModel.getServingCell(session.id).observeOnce(requireActivity()) {
 
-            if (it == null || it.isEmpty() || sessionDetailsServingCellChart == null) return@observeOnce
+            if (it == null || it.isEmpty()) return@observeOnce
 
             sessionDetailsServingCellChart.data ?: return@observeOnce
 
             var auxLastUpdatedIndex = 0
+
+            Log.v("TESTE",it.size.toString())
 
             it.forEach { servingCell ->
 
@@ -196,6 +203,10 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
 
         }
     }
+
+    //</editor-fold>
+
+    //<editor-fold name="AUX FUNCTIONS">
 
     private fun updateServingCellChart(auxLastUpdatedIndex: Int, servingCell: RadioParameters) {
 
@@ -247,186 +258,4 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
 
     //</editor-fold>
 
-    //<editor-fold name="CHART FUNCTIONS">
-
-    private fun initThroughputDataLine(): LineData {
-
-        val rxValues = java.util.ArrayList<Entry>()
-        val txValues = java.util.ArrayList<Entry>()
-
-        rxValues.add(Entry(0f, 0f))
-        txValues.add(Entry(0f, 0f))
-
-        val rx = LineDataSet(rxValues, "RX Kbit/s")
-        rx.lineWidth = 2.5f
-        rx.circleRadius = 1f
-        rx.highLightColor = Color.rgb(244, 117, 117)
-        rx.setDrawValues(false)
-
-        val tx = LineDataSet(txValues, "TX Kbit/s")
-        tx.lineWidth = 2.5f
-        tx.circleRadius = 1f
-        tx.highLightColor = Color.rgb(244, 117, 117)
-        tx.color = ColorTemplate.VORDIPLOM_COLORS[0]
-        tx.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
-        tx.setDrawValues(false)
-
-
-        val sets = java.util.ArrayList<ILineDataSet>()
-        sets.add(rx)
-        sets.add(tx)
-
-        return LineData(sets)
-    }
-
-    private fun initServingCellData(): LineData {
-
-        val rssiValue = java.util.ArrayList<Entry>()
-        rssiValue.add(Entry(0f, 0f))
-        val rssi = LineDataSet(rssiValue, "RSSI")
-        rssi.lineWidth = 3f
-        rssi.circleRadius = 1f
-        rssi.highLightColor = Color.rgb(163, 145, 3)
-        rssi.setDrawValues(false)
-
-
-        val rsrpValue = java.util.ArrayList<Entry>()
-        rsrpValue.add(Entry(0f, 0f))
-        val rsrp = LineDataSet(rsrpValue, "RSRP")
-        rsrp.lineWidth = 3f
-        rsrp.circleRadius = 1f
-        rsrp.highLightColor = Color.rgb(0, 255, 0)
-        rsrp.color = ColorTemplate.VORDIPLOM_COLORS[1]
-        rsrp.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[1])
-        rsrp.setDrawValues(false)
-
-        val rsqrValue = java.util.ArrayList<Entry>()
-        rsqrValue.add(Entry(0f, 0f))
-        val rsqr = LineDataSet(rsqrValue, "RSQR")
-        rsqr.lineWidth = 3f
-        rsqr.circleRadius = 1f
-        rsqr.highLightColor = Color.rgb(0, 0, 255)
-        rsqr.color = ColorTemplate.VORDIPLOM_COLORS[2]
-        rsqr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[2])
-        rsqr.setDrawValues(false)
-
-
-        val rssnrValue = java.util.ArrayList<Entry>()
-        rssnrValue.add(Entry(0f, 0f))
-        val rssnr = LineDataSet(rssnrValue, "RSSNR")
-        rssnr.lineWidth = 3f
-        rssnr.circleRadius = 1f
-        rssnr.highLightColor = Color.rgb(255, 0, 0)
-        rssnr.color = ColorTemplate.VORDIPLOM_COLORS[0]
-        rssnr.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
-        rssnr.setDrawValues(false)
-
-
-        val sets = java.util.ArrayList<ILineDataSet>()
-        sets.add(rssi)
-        sets.add(rsrp)
-        sets.add(rsqr)
-        sets.add(rssnr)
-
-        return LineData(sets)
-    }
-
-    private fun initStrongestNeighborData(): LineData {
-
-        val rssiGsmData = java.util.ArrayList<Entry>()
-        rssiGsmData.add(Entry(0f, 0f))
-        val rssiGsm = LineDataSet(rssiGsmData, "RSSI GSM")
-        rssiGsm.lineWidth = 3f
-        rssiGsm.circleRadius = 1f
-        rssiGsm.highLightColor = Color.rgb(163, 145, 3)
-        rssiGsm.setDrawValues(false)
-
-
-        val rssiWcdmaData = java.util.ArrayList<Entry>()
-        rssiWcdmaData.add(Entry(0f, 0f))
-        val rssiWcdma = LineDataSet(rssiWcdmaData, "RSSI WCDMA")
-        rssiWcdma.lineWidth = 3f
-        rssiWcdma.circleRadius = 1f
-        rssiWcdma.highLightColor = Color.rgb(0, 255, 0)
-        rssiWcdma.color = ColorTemplate.VORDIPLOM_COLORS[1]
-        rssiWcdma.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[1])
-        rssiWcdma.setDrawValues(false)
-
-        val rsrpLteData = java.util.ArrayList<Entry>()
-        rsrpLteData.add(Entry(0f, 0f))
-        val rsrpLte = LineDataSet(rsrpLteData, "RSRP LTE")
-        rsrpLte.lineWidth = 3f
-        rsrpLte.circleRadius = 1f
-        rsrpLte.highLightColor = Color.rgb(0, 0, 255)
-        rsrpLte.color = ColorTemplate.VORDIPLOM_COLORS[2]
-        rsrpLte.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[2])
-        rsrpLte.setDrawValues(false)
-
-
-        val sets = java.util.ArrayList<ILineDataSet>()
-        sets.add(rssiGsm)
-        sets.add(rssiWcdma)
-        sets.add(rsrpLte)
-
-        return LineData(sets)
-    }
-
-    private fun initNumberOfCells(): LineData {
-
-        val numberOfCells = java.util.ArrayList<Entry>()
-
-        numberOfCells.add(Entry(0f, 0f))
-
-        val servingCellTechNumberData = java.util.ArrayList<Entry>()
-
-        servingCellTechNumberData.add(Entry(0f, 0f))
-        val servingCellTechNumber = LineDataSet(servingCellTechNumberData, "Number(cells with same tech as serving)")
-        servingCellTechNumber.lineWidth = 3f
-        servingCellTechNumber.circleRadius = 1f
-        servingCellTechNumber.highLightColor = Color.rgb(255, 0, 0)
-        servingCellTechNumber.color = ColorTemplate.VORDIPLOM_COLORS[0]
-        servingCellTechNumber.setCircleColor(ColorTemplate.VORDIPLOM_COLORS[0])
-        servingCellTechNumber.setDrawValues(false)
-
-
-        val sets = java.util.ArrayList<ILineDataSet>()
-        sets.add(servingCellTechNumber)
-
-        return LineData(sets)
-    }
-
-    private fun initLineChart(lineChart: LineChart, lineInitData: LineData, isNegative: Boolean = false, granularity: Float = 1f) {
-
-        lineChart.background = chartBackground
-        // disable description text
-        lineChart.description.isEnabled = false
-
-        // enable scaling and dragging
-        lineChart.isDragEnabled = true
-        lineChart.setScaleEnabled(true)
-        lineChart.setDrawGridBackground(false)
-
-        // if disabled, scaling can be done on x- and y-axis separately
-        lineChart.setPinchZoom(true)
-
-        val xAxis = lineChart.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.axisLineWidth = 1.5f
-        xAxis.setDrawGridLines(false)
-        xAxis.setAvoidFirstLastClipping(true)
-        xAxis.isEnabled = true
-        xAxis.granularity = granularity
-
-        val yAxis = lineChart.axisLeft
-        yAxis.axisLineWidth = 1.5f
-        yAxis.setDrawGridLines(true)
-        yAxis.axisMaximum = if (isNegative) 0f else 10f
-        yAxis.axisMinimum = if (isNegative) -10f else 0f
-
-        lineChart.axisRight.isEnabled = false
-
-        lineChart.data = lineInitData
-    }
-
-    //</editor-fold>
 }

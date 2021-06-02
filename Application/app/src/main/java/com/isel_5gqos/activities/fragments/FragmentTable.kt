@@ -10,17 +10,24 @@ import android.widget.TableRow
 import android.widget.TextView
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.USER
+import com.isel_5gqos.common.db.entities.Location
+import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
+import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
+import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_table.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 
 class FragmentTable : Fragment(){
@@ -35,6 +42,10 @@ class FragmentTable : Fragment(){
         super.onCreate(savedInstanceState)
     }
 
+    private var servingCellLiveData : LiveData<List<RadioParameters>>? = null
+    private var radioParametersLiveData : LiveData<List<RadioParameters>>? = null
+    private var lastLocationLiveData : LiveData<Location>? = null
+
     //<editor-fold desc="EVENTS">
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_table, container, false)
@@ -43,15 +54,51 @@ class FragmentTable : Fragment(){
         val username = requireActivity().intent.getStringExtra(USER) ?: ""
         testFactory = TestFactory(savedInstanceState,username)
         distance_txt?.text = "---"
-        registerObservers()
+    }
 
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this);
+    }
+
+    override fun onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessageEvent(messageEvent: MessageEvent) {
+        if (messageEvent !is StringMessageEvent) return
+
+        resetObservers()
+        registerObservers(messageEvent.message)
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="OBSERVERS"
+    private fun registerObservers(sessionId: String) {
+
+        registerServingCellObserver(sessionId)
+        registerRadioParametersTableObserver(sessionId)
+        registerLocationObserver(sessionId)
+
+    }
+
+    private fun resetObservers() {
+        servingCellLiveData?.removeObservers(requireActivity())
+        radioParametersLiveData?.removeObservers(requireActivity())
+        lastLocationLiveData?.removeObservers(requireActivity())
     }
 
     //</editor-fold>
 
     //<editor-fold desc="AUX FUNCTIONS"
-    private fun registerObservers() {
-        testModel.getServingCell(DEFAULT_SESSION_ID).observe(requireActivity()) {
+
+    private  fun registerServingCellObserver(sessionId: String) {
+        servingCellLiveData = testModel.getServingCell(sessionId)
+
+        servingCellLiveData?.observe(requireActivity()) {
             if(!checkIfLayoutsAreAvailable()) return@observe
             val servingCell = it.find { cell -> cell.isServingCell } ?: it.find { cell -> cell.no == 1 } ?: return@observe
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java) as TelephonyManager
@@ -81,9 +128,15 @@ class FragmentTable : Fragment(){
             sim_operator_txt.text = "${telephonyManager.simOperatorName}/${telephonyManager.networkOperatorName}"
 
         }
+    }
+
+    private fun registerRadioParametersTableObserver(sessionId: String) {
 
         val layoutInflater = LayoutInflater.from(requireContext())
-        testModel.registerRadioParametersChanges(DEFAULT_SESSION_ID).observe(requireActivity()) {
+
+        radioParametersLiveData = testModel.registerRadioParametersChanges(sessionId)
+
+        radioParametersLiveData?.observe(requireActivity()) {
             if(!checkIfLayoutsAreAvailable() || neighbors_table_layout == null) return@observe
 
             it
@@ -106,11 +159,17 @@ class FragmentTable : Fragment(){
                         neighbors_table_layout.removeViews(it.size - 1, neighbors_table_layout.childCount - it.size)
                 }
         }
+    }
 
-        testModel.getLastLocation(DEFAULT_SESSION_ID).observe(requireActivity()) {
+    private fun registerLocationObserver(sessionId: String) {
+
+        lastLocationLiveData = testModel.getLastLocation(sessionId)
+
+        lastLocationLiveData?.observe(requireActivity()) {
             if (!checkIfLayoutsAreAvailable() || it == null) return@observe
             lat_lon_txt.text = "${it.latitude}/${it.longitude}"
         }
+
     }
 
     private fun checkIfLayoutsAreAvailable():Boolean = this.isResumed

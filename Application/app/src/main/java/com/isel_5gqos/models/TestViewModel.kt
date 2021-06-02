@@ -55,10 +55,10 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
         })
     }
 
-    fun endSessionById(sessionId: String) {
+    fun endSessionById(sessionId: String, endTime : Timestamp) {
         asyncTask(
             doInBackground = {
-                QosApp.db.sessionDao().finishSessionById(sessionId,Timestamp(System.currentTimeMillis()).time)
+                QosApp.db.sessionDao().finishSessionById(sessionId,endTime.time)
             }
         )
     }

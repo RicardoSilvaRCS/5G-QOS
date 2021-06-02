@@ -107,7 +107,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
-    /**DEBUG TOOLS**/
+    //<editor-fold name="DEBUG TOOLS">
 
     private fun bypassLoginForDebug(savedInstanceState: Bundle?){
         qosFactory = QosFactory(savedInstanceState)
@@ -130,7 +130,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    /**END**/
+    //</editor-fold>
 }
 
 
