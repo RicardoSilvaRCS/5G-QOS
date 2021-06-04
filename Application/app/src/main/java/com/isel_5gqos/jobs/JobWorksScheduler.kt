@@ -20,7 +20,7 @@ class JobWorksScheduler : JobService() {
     private val context = QosApp.msWebApi.ctx
     private var jobCancelled = false;
     private val telephonyManager = ContextCompat.getSystemService(context, TelephonyManager::class.java)
-    private lateinit var allParamsMap: Map<String, Any?>
+    private lateinit var allParamsMap: Map<JobParametersEnum, Any?>
 
     override fun onStartJob(params: JobParameters?): Boolean {
 
@@ -34,9 +34,9 @@ class JobWorksScheduler : JobService() {
             val jobsList = dequeueWork.intent.getStringArrayListExtra(JOB_TYPE) ?: arrayListOf()
 
             allParamsMap = mapOf(
-                "telephonyManager" to telephonyManager,
-                "sessionId" to sessionId,
-                "context" to context
+                JobParametersEnum.TelephonyManager to telephonyManager,
+                JobParametersEnum.SessionId to sessionId,
+                JobParametersEnum.Context  to context
             )
 
             val lastRuns = jobsList.map { 0L }.toMutableList()
@@ -59,7 +59,7 @@ class JobWorksScheduler : JobService() {
                 }
             } while (!jobCancelled)
 
-            Log.v(TAG, "Finished work ascvacnwegdbujoscv adckhijoascjvschjkl dfbvgshdcklsddjbfvh aefjlk jhaskfdyjbdvg")
+            Log.v(TAG, "Job Finished!! The red brown fox jumps over the lazy dog!!!!")
 
             return true
         }
@@ -74,7 +74,7 @@ class JobWorksScheduler : JobService() {
         return true
     }
 
-    private fun createWorkerParams(work: IWorks): Map<String, Any?> = work.getWorkParameters().map {
+    private fun createWorkerParams(work: IWorks): Map<JobParametersEnum, Any?> = work.getWorkParameters().map {
         it to allParamsMap[it]
     }.toMap()
 

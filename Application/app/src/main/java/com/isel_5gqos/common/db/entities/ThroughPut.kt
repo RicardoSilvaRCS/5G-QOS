@@ -23,6 +23,8 @@ class ThroughPut(
     val regId: String,
     val txResult: Long,
     val rxResult: Long,
+    val latitude : String,
+    val longitude : String,
     @ColumnInfo(name = "sessionId", index = true)
     val sessionId: String,
     val timestamp: Long

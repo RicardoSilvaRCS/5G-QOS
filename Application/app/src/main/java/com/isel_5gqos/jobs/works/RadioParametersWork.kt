@@ -2,37 +2,29 @@ package com.isel_5gqos.jobs.works
 
 import android.content.Context
 import android.telephony.TelephonyManager
-import android.util.Log
-import com.isel_5gqos.QosApp
 import com.isel_5gqos.QosApp.Companion.db
-import com.isel_5gqos.common.TAG
-import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.common.db.entities.RadioParameters
-import com.isel_5gqos.dtos.WrapperDto
+import com.isel_5gqos.dtos.RadioParametersDto
+import com.isel_5gqos.jobs.JobParametersEnum
 import com.isel_5gqos.utils.errors.Exceptions
-import com.isel_5gqos.utils.mobile_utils.LocationUtils
-import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import java.util.*
 
 class RadioParametersWork : IWorks {
 
-    override fun work(params: Map<String, Any?>) {
+    override fun work(params: Map<JobParametersEnum, Any?>) {
 
-        val telephonyManager: TelephonyManager = params["telephonyManager"] as TelephonyManager
-        val sessionId: String = params["sessionId"] as String
-        val context: Context = params["context"] as Context
+        val telephonyManager: TelephonyManager = params[JobParametersEnum.TelephonyManager] as TelephonyManager
+        val sessionId: String = params[JobParametersEnum.SessionId] as String
+        val context: Context = params[JobParametersEnum.Context] as Context
 
         try {
 
-            val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager)
+            val cellInfoList = RadioParametersUtils.getRadioParameters(telephonyManager,context)
 
             insertRadioParametersInfoInDb(
                 sessionId,
-                WrapperDto(
-                    radioParametersDtos = cellInfoList,
-                    locationDto = LocationUtils.getLocation(telephonyManager, context)
-                )
+                cellInfoList
             )
 
         } catch (ex: Exception) {
@@ -41,14 +33,14 @@ class RadioParametersWork : IWorks {
 
     }
 
-    private fun insertRadioParametersInfoInDb(sessionId: String, wrapperDto: WrapperDto) {
+    private fun insertRadioParametersInfoInDb(sessionId: String, radioParameters: List<RadioParametersDto>) {
 
         db.radioParametersDao().invalidateRadioParameters(sessionId)
 
-        val servingCell = wrapperDto.radioParametersDtos.find { cell -> cell.isServingCell } ?: wrapperDto.radioParametersDtos.find { cell -> cell.no == 1 }
-        val numbOfCellsWithSameTechAsServing = wrapperDto.radioParametersDtos.filter { it.tech == servingCell?.tech }
+        val servingCell = RadioParametersDto.getServingCell(radioParameters)
+        val numbOfCellsWithSameTechAsServing = radioParameters.filter { it.tech == servingCell?.tech }
 
-        val radioParams = wrapperDto.radioParametersDtos.map { radioParametersDto ->
+        val radioParams = radioParameters.map { radioParametersDto ->
 
             RadioParameters(
                 regId = UUID.randomUUID().toString(),
@@ -65,6 +57,8 @@ class RadioParametersWork : IWorks {
                 netDataType = radioParametersDto.netDataType.toString(),
                 isServingCell = radioParametersDto.isServingCell,
                 numbOfCellsWithSameTechAsServing = numbOfCellsWithSameTechAsServing.size - 1, //Remove Serving Cell
+                latitude =  radioParametersDto.latitude,
+                longitude = radioParametersDto.longitude,
                 sessionId = sessionId,
                 timestamp = System.currentTimeMillis(),
                 isUpToDate = true
@@ -74,26 +68,11 @@ class RadioParametersWork : IWorks {
 
         db.radioParametersDao().insert(*radioParams)
 
-        try {
-
-            val location = Location(
-                regId = UUID.randomUUID().toString(),
-                networkOperatorName = wrapperDto.locationDto.networkOperatorName!!,
-                latitude = wrapperDto.locationDto.latitude!!,
-                longitude = wrapperDto.locationDto.longitude!!,
-                sessionId = sessionId,
-                timestamp = System.currentTimeMillis(),
-            )
-            db.locationDao().insert(location)
-
-        }
-        catch (ex: Exceptions) {
-            Exceptions(ex)
-        }
     }
 
     override fun getWorkTimeout(): Long = 1000L
 
-    override fun getWorkParameters(): Array<String> = arrayOf("telephonyManager", "sessionId", "context")
+    override fun getWorkParameters(): Array<JobParametersEnum> = arrayOf(JobParametersEnum.TelephonyManager, JobParametersEnum.SessionId, JobParametersEnum.Context)
+
 
 }

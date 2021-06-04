@@ -7,7 +7,6 @@ import java.sql.Timestamp
 class SessionDto(val id: String, val sessionName: String, val username: String, val beginDate: Timestamp, var endDate: Timestamp = Timestamp(0L)) {
     val throughPuts: MutableList<ThroughPutDto> = mutableListOf()
     val pings: MutableList<PingDto> = mutableListOf()
-    var radioParameters : WrapperDto = WrapperDto.makeDefault()
 
     companion object {
         fun makeDefault() = SessionDto(

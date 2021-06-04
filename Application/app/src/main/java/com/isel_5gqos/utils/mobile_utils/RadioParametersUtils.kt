@@ -1,6 +1,7 @@
 package com.isel_5gqos.utils.mobile_utils
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import android.telephony.*
 import com.isel_5gqos.common.MIN_RSSI
@@ -14,13 +15,16 @@ class RadioParametersUtils {
     companion object {
 
         @SuppressLint("MissingPermission")
-        fun getRadioParameters(telephonyManager: TelephonyManager): List<RadioParametersDto> {
+        fun getRadioParameters(telephonyManager: TelephonyManager, context : Context): List<RadioParametersDto> {
 
             val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
 
             telephonyManager.allCellInfo?.forEachIndexed { index, cellInfo ->
                 val currentCell = convertCellInfoToRadioParameter(index, cellInfo)
+                val location = LocationUtils.getLocation(telephonyManager, context)
                 if (currentCell != null) {
+                    currentCell.longitude = if (location.longitude == null) "" else location.longitude.toString()
+                    currentCell.latitude = if(location.latitude == null) "" else location.longitude.toString()
                     cellInfoList.add(currentCell)
                 }
             }

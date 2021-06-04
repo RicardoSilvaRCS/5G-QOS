@@ -11,6 +11,7 @@ import com.isel_5gqos.common.TOKEN
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
+import com.isel_5gqos.models.observeOnce
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
 
 class SplashActivity : AppCompatActivity() {
@@ -28,7 +29,7 @@ class SplashActivity : AppCompatActivity() {
 
         WorkManager.getInstance(applicationContext).cancelAllWork()
 
-        model.getLoggedUser().observe(this) {
+        model.getLoggedUser().observeOnce(this) {
             if(it == null){
                 val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
@@ -37,7 +38,7 @@ class SplashActivity : AppCompatActivity() {
             else{
                 model.refreshToken(it.user.username,it.login.token)
 
-                model.liveData.observe(this) { user ->
+                model.liveData.observeOnce(this) { user ->
 
                     if(user.userToken.isEmpty()){
                         val intent = Intent(this, LoginActivity::class.java)
@@ -57,6 +58,7 @@ class SplashActivity : AppCompatActivity() {
                         finish()
                     }
                 }
+
             }
         }
     }

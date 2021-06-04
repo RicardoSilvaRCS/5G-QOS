@@ -14,6 +14,8 @@ class RadioParametersDto(
     val pci: Int? = null,    //Primary cell Identity LTE
     val rssnr: Int? = null,  //Reference Signal Signal-to-noise Ratio
     val rsrq: Int? = null,   //Reference Signal Received Quality
+    var latitude : String = "",   //Location of the values
+    var longitude : String = "",  //Location of the values
     val netDataType: NetworkDataTypesEnum = NetworkDataTypesEnum.LTE,
     val isServingCell: Boolean = false
 ) {
@@ -32,38 +34,24 @@ class RadioParametersDto(
             pci = radioParameter.pci,
             rssnr = radioParameter.rssnr,
             rsrq = radioParameter.rsrq,
+            latitude = radioParameter.latitude,
+            longitude =  radioParameter.longitude,
             netDataType = NetworkDataTypesEnum.valueOf(radioParameter.netDataType.toUpperCase()),
             isServingCell = radioParameter.isServingCell,
         )
 
+        fun getServingCell(radioParams: List<RadioParametersDto>) : RadioParametersDto =
+            if (radioParams.isEmpty()) RadioParametersDto()
+            else radioParams.find { it.isServingCell } ?: radioParams.find { it.no == 1 } ?: RadioParametersDto()
     }
 
     override fun toString(): String = "No = $no, tech = $tech, arfcn = $arfcn, rssi = $rssi, rsrp = $rsrp, cId = $cId, psc = $psc, pci = $pci, rssnr = $rssnr, rsrq = $rsrq"
 
+
 }
 
 class LocationDto(
-    val networkOperatorName: String? = null,
-    val latitude: Double? = null,
-    val longitude: Double? = null
+    val networkOperatorName : String,
+    val latitude : Double?,
+    val longitude : Double?
 )
-
-class WrapperDto(
-    var radioParametersDtos: List<RadioParametersDto>,
-    var servingCell: RadioParametersDto = RadioParametersDto(),
-    var locationDto: LocationDto
-) {
-    override fun toString(): String = "$locationDto\n$servingCell\n$radioParametersDtos"
-
-    companion object {
-        fun makeDefault() = WrapperDto(
-            radioParametersDtos = mutableListOf(),
-            servingCell = RadioParametersDto(),
-            locationDto = LocationDto()
-        )
-
-        private fun getServingCell(cellInfoList: MutableList<RadioParametersDto>) =
-            if (cellInfoList.isEmpty()) RadioParametersDto()
-            else cellInfoList.find { it.isServingCell } ?: cellInfoList[0]
-    }
-}

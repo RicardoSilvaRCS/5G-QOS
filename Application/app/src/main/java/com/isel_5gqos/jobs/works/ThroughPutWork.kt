@@ -1,11 +1,15 @@
 package com.isel_5gqos.jobs.works
 
+import android.content.Context
 import android.net.TrafficStats
+import android.telephony.TelephonyManager
 import android.util.Log
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.ThroughPut
+import com.isel_5gqos.jobs.JobParametersEnum
 import com.isel_5gqos.utils.errors.Exceptions
+import com.isel_5gqos.utils.mobile_utils.LocationUtils
 import java.util.*
 
 class ThroughPutWork : IWorks {
@@ -14,9 +18,13 @@ class ThroughPutWork : IWorks {
         private const val throughputJobTimeout = 2000L
     }
 
-    override fun work(params: Map<String, Any?>) {
+    override fun work(params: Map<JobParametersEnum, Any?>) {
         Log.v("jobType", "Throughput")
-        val sessionId: String = params["sessionId"] as String
+
+        val telephonyManager: TelephonyManager = params[JobParametersEnum.TelephonyManager] as TelephonyManager
+        val sessionId: String = params[JobParametersEnum.SessionId] as String
+        val context: Context = params[JobParametersEnum.Context] as Context
+
         try {
             val oldCountRX = TrafficStats.getMobileRxBytes()
             val oldCountTX = TrafficStats.getMobileTxBytes()
@@ -26,11 +34,15 @@ class ThroughPutWork : IWorks {
             val newCountRx = TrafficStats.getMobileRxBytes()
             val newCountTx = TrafficStats.getMobileTxBytes()
 
-            val mobileTxPackets = TrafficStats.getMobileTxPackets()
+            //val mobileTxPackets = TrafficStats.getMobileTxPackets()
+
+            val location = LocationUtils.getLocation(telephonyManager, context)
 
             insertThroughputInfoInDb(
                 rxResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / (K_BIT * (throughputJobTimeout / 1000).toDouble()).toLong(),
                 txResult = (newCountRx - oldCountRX) * BITS_IN_BYTE / (K_BIT * (throughputJobTimeout / 1000).toDouble()).toLong(),
+                longitude = if (location.longitude == null) "" else location.longitude.toString(),
+                latitude = if(location.latitude == null) "" else location.longitude.toString(),
                 sessionId = sessionId
             )
 
@@ -44,12 +56,14 @@ class ThroughPutWork : IWorks {
         }
     }
 
-    private fun insertThroughputInfoInDb(rxResult: Long, txResult: Long, sessionId: String) {
+    private fun insertThroughputInfoInDb(rxResult: Long, txResult: Long, longitude : String, latitude : String, sessionId: String) {
 
         val throughPut = ThroughPut(
             regId = UUID.randomUUID().toString(),
             txResult = txResult,
             rxResult = rxResult,
+            longitude = longitude,
+            latitude = latitude,
             sessionId = sessionId,
             timestamp = System.currentTimeMillis()
         )
@@ -60,6 +74,6 @@ class ThroughPutWork : IWorks {
 
     override fun getWorkTimeout(): Long = 1000L
 
-    override fun getWorkParameters(): Array<String> = arrayOf("sessionId")
+    override fun getWorkParameters(): Array<JobParametersEnum> = arrayOf(JobParametersEnum.TelephonyManager, JobParametersEnum.SessionId, JobParametersEnum.Context)
 
 }

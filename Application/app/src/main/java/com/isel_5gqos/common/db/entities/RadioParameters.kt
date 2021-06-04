@@ -34,6 +34,8 @@ class RadioParameters (
     val netDataType: String,
     val isServingCell : Boolean,
     val numbOfCellsWithSameTechAsServing : Int,
+    val latitude : String,
+    val longitude : String,
     @ColumnInfo(name = "sessionId", index = true)
     val sessionId: String,
     val timestamp: Long,

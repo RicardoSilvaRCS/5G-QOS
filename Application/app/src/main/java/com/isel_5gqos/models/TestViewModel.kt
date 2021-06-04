@@ -101,36 +101,6 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
         asyncTask({ QosApp.db.sessionDao().insert(session) }) { liveData.postValue(sessionDto) }
     }
 
-    fun updateRadioParameters(id: String = "", lifecycleOwner: LifecycleOwner) {
-        QosApp.db.radioParametersDao().getUpToDateRadioParameters(if (id == "") value.id else id).observe(lifecycleOwner) {
-            val radioParametersDto = mutableListOf<RadioParametersDto>()
-            it.forEach { radioParameters ->
-
-                radioParametersDto.add(
-                    RadioParametersDto(
-                        no = radioParameters.no,
-                        tech = radioParameters.tech,
-                        arfcn = radioParameters.arfcn,
-                        rssi = radioParameters.rssi,
-                        rsrp = radioParameters.rsrp,
-                        cId = radioParameters.cId,
-                        psc = radioParameters.psc,
-                        pci = radioParameters.pci,
-                        rssnr = radioParameters.rssnr,
-                        rsrq = radioParameters.rsrq,
-                        netDataType = enumValueOf(radioParameters.netDataType),
-                        isServingCell = radioParameters.isServingCell
-                    )
-                )
-            }
-
-            //TODO Possible pass this to a mapper
-            val session = value
-            session.radioParameters.radioParametersDtos = radioParametersDto
-            liveData.postValue(session)
-        }
-    }
-
     fun deleteSessionInfo(sessionId: String,onPostExecute: () -> Unit) {
         asyncTask(
             doInBackground = {

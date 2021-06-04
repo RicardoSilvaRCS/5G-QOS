@@ -91,8 +91,6 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
                 startDefaultSession(testModel.userName)
             }
         }
-
-        EventBus.getDefault().register(this)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -132,6 +130,11 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
                 applicationContext
             )
         }
+    }
+
+    override fun onStart() {
+        EventBus.getDefault().register(this)
+        super.onStart()
     }
 
     override fun onStop() {

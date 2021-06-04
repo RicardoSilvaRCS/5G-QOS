@@ -81,7 +81,6 @@ class FragmentTable : Fragment(){
 
         registerServingCellObserver(sessionId)
         registerRadioParametersTableObserver(sessionId)
-        registerLocationObserver(sessionId)
 
     }
 
@@ -103,6 +102,11 @@ class FragmentTable : Fragment(){
             val servingCell = it.find { cell -> cell.isServingCell } ?: it.find { cell -> cell.no == 1 } ?: return@observe
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java) as TelephonyManager
             val networkOperator = telephonyManager.networkOperator
+
+            val latitude = if(servingCell.latitude.isEmpty()) "----" else servingCell.latitude
+            val longitude = if(servingCell.longitude.isEmpty()) "----" else servingCell.longitude
+
+            lat_lon_txt.text = "$latitude/$longitude"
 
             serving_cell_tech.text = servingCell.tech
             rsrp_txt.text = servingCell.rsrp.toString()
@@ -159,17 +163,6 @@ class FragmentTable : Fragment(){
                         neighbors_table_layout.removeViews(it.size - 1, neighbors_table_layout.childCount - it.size)
                 }
         }
-    }
-
-    private fun registerLocationObserver(sessionId: String) {
-
-        lastLocationLiveData = testModel.getLastLocation(sessionId)
-
-        lastLocationLiveData?.observe(requireActivity()) {
-            if (!checkIfLayoutsAreAvailable() || it == null) return@observe
-            lat_lon_txt.text = "${it.latitude}/${it.longitude}"
-        }
-
     }
 
     private fun checkIfLayoutsAreAvailable():Boolean = this.isResumed

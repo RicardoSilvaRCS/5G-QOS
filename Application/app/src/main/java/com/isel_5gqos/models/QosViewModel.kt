@@ -61,7 +61,6 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
     }
 
     private fun loginDevice(user: UserDto) {
-        //TODO: make error handling
         managementSystemApi.registerMobileDevice(
             mobileSerialNumber = MobileInfoUtils.getDeviceSerialNumber(),
             authenticationToken = user.userToken,

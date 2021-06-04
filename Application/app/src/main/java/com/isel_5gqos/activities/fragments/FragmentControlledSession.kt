@@ -105,13 +105,19 @@ class FragmentControlledSession : Fragment() {
             )
             sessions_recycler_view.layoutManager = LinearLayoutManager(requireContext())
         }
+
+    }
+
+    override fun onStart() {
         EventBus.getDefault().register(this)
+        super.onStart()
     }
 
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         super.onStop()
     }
+
     //</editor-fold>
 
     //<editor-fold name="AUX FUNCTIONS">
