@@ -18,13 +18,13 @@ class RadioParametersUtils {
         fun getRadioParameters(telephonyManager: TelephonyManager, context : Context): List<RadioParametersDto> {
 
             val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
+            val location = LocationUtils.getLocation(telephonyManager, context)
 
             telephonyManager.allCellInfo?.forEachIndexed { index, cellInfo ->
                 val currentCell = convertCellInfoToRadioParameter(index, cellInfo)
-                val location = LocationUtils.getLocation(telephonyManager, context)
                 if (currentCell != null) {
                     currentCell.longitude = if (location.longitude == null) "" else location.longitude.toString()
-                    currentCell.latitude = if(location.latitude == null) "" else location.longitude.toString()
+                    currentCell.latitude = if(location.latitude == null) "" else location.latitude.toString()
                     cellInfoList.add(currentCell)
                 }
             }
