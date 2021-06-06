@@ -4,6 +4,7 @@ package com.isel_5gqos.common
 /**        Permissions           **/
 
 const val APP_PERMISSIONS = 10
+const val MOBILE_ID_KEY = "MOBILE_ID_KEY"
 
 /**        In case to make exclusive permissions treatment        **/
 const val ACCESS_FINE_LOCATION_PERMISSION = 1

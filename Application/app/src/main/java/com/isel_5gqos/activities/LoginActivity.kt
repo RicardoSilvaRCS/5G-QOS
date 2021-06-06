@@ -1,5 +1,9 @@
 package com.isel_5gqos.activities
 
+import android.R.attr.label
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -16,7 +20,10 @@ import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
+import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
+import java.util.*
+
 
 class LoginActivity : AppCompatActivity() {
 
@@ -40,6 +47,20 @@ class LoginActivity : AppCompatActivity() {
         val username = findViewById<TextInputEditText>(R.id.username_edit_text)
         val password = findViewById<TextInputEditText>(R.id.password_edit_text)
 
+        val mobileIdText = findViewById<Button>(R.id.mobile_id)
+
+        val mobileId = getMobileID()
+
+
+
+        mobileIdText.text = mobileId
+        mobileIdText.setOnClickListener{
+            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText(MOBILE_ID_KEY, mobileId)
+            clipboard.setPrimaryClip(clip)
+            AndroidUtils.makeRawToast(this,"Copied!")
+        }
+
         loginButton.setOnClickListener {
 
             val user = username.text.toString()
@@ -48,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
             if (pass.isBlank() || user.isBlank()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
             } else {
-                model.login(user, pass)
+                model.login(user, pass, mobileId)
                 model.observe(this) {
                     val intent = Intent(this, DashboardActivity::class.java)
 
@@ -106,6 +127,24 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    //<editor-fold name="AUX FUNCTIONS">
+    private fun getMobileID () : String {
+
+        val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
+        var mobileId = sharedPref.getString( MOBILE_ID_KEY , "")
+
+        if(mobileId.isNullOrEmpty() && sharedPref != null){
+            with (sharedPref.edit()) {
+                mobileId = UUID.randomUUID().toString()
+                putString(MOBILE_ID_KEY, mobileId )
+                apply()
+            }
+        }
+
+        return mobileId ?: ""
+    }
+
+    //</editor-fold>
 
     //<editor-fold name="DEBUG TOOLS">
 

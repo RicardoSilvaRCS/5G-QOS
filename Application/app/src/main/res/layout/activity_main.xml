@@ -86,8 +86,25 @@
                     android:textColor="@color/white"
                     />
 
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="32dp"
+                android:padding="32dp">
+
+                <Button
+                    android:id="@+id/mobile_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/baseline_assignment_24"
+                    android:textColor="@color/black"
+                    android:background="@color/transparent"
+                    />
 
             </RelativeLayout>
+
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

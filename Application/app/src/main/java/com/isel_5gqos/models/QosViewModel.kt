@@ -14,10 +14,11 @@ import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils
+import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils.Companion.getDeviceSerialNumber
 
 class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : AbstractModel<UserDto>({ UserDto("", "") }) {
 
-    fun login(username: String, password: String) {
+    fun login(username: String, password: String,mobileId : String) {
         managementSystemApi.login(
             username = username,
             password = password,
@@ -43,7 +44,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                 })
                 {
                     asyncTask({ QosApp.db.loginDao().insertUserLogin(login) })
-                    loginDevice(userDto)
+                    loginDevice(userDto,mobileId)
                 }
 
             },
@@ -60,9 +61,9 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
         )
     }
 
-    private fun loginDevice(user: UserDto) {
+    private fun loginDevice(user: UserDto, mobileId : String) {
         managementSystemApi.registerMobileDevice(
-            mobileSerialNumber = MobileInfoUtils.getDeviceSerialNumber(),
+            mobileSerialNumber = getDeviceSerialNumber(),//mobileId,
             authenticationToken = user.userToken,
             onSuccess = {
 
