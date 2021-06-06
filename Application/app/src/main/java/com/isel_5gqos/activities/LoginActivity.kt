@@ -53,7 +53,7 @@ class LoginActivity : AppCompatActivity() {
 
 
 
-        mobileIdText.text = mobileId
+        mobileIdText.text = "Mobile Device Identifier"
         mobileIdText.setOnClickListener{
             val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(MOBILE_ID_KEY, mobileId)
@@ -133,7 +133,7 @@ class LoginActivity : AppCompatActivity() {
         val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
         var mobileId = sharedPref.getString( MOBILE_ID_KEY , "")
 
-        if(mobileId.isNullOrEmpty() && sharedPref != null){
+        if(mobileId.isNullOrEmpty()){
             with (sharedPref.edit()) {
                 mobileId = UUID.randomUUID().toString()
                 putString(MOBILE_ID_KEY, mobileId )

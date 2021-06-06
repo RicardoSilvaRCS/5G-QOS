@@ -98,7 +98,7 @@
                     android:id="@+id/mobile_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:icon="@drawable/baseline_assignment_24"
+                    app:icon="@drawable/ic_content_copy_24"
                     android:textColor="@color/black"
                     android:background="@color/transparent"
                     />
