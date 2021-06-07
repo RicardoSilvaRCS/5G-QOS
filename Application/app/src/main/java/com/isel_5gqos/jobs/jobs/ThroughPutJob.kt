@@ -1,4 +1,4 @@
-package com.isel_5gqos.jobs.works
+package com.isel_5gqos.jobs.jobs
 
 import android.content.Context
 import android.net.TrafficStats
@@ -12,13 +12,13 @@ import com.isel_5gqos.utils.errors.Exceptions
 import com.isel_5gqos.utils.mobile_utils.LocationUtils
 import java.util.*
 
-class ThroughPutWork : IWorks {
+class ThroughPutJob : IJobs {
 
     companion object {
         private const val throughputJobTimeout = 2000L
     }
 
-    override fun work(params: Map<JobParametersEnum, Any?>) {
+    override fun job(params: Map<JobParametersEnum, Any?>) {
         Log.v("jobType", "Throughput")
 
         val telephonyManager: TelephonyManager = params[JobParametersEnum.TelephonyManager] as TelephonyManager
@@ -29,7 +29,7 @@ class ThroughPutWork : IWorks {
             val oldCountRX = TrafficStats.getMobileRxBytes()
             val oldCountTX = TrafficStats.getMobileTxBytes()
 
-            Thread.sleep(getWorkTimeout())
+            Thread.sleep(getJobTimeout())
 
             val newCountRx = TrafficStats.getMobileRxBytes()
             val newCountTx = TrafficStats.getMobileTxBytes()
@@ -72,8 +72,8 @@ class ThroughPutWork : IWorks {
 
     }
 
-    override fun getWorkTimeout(): Long = 1000L
+    override fun getJobTimeout(): Long = 1000L
 
-    override fun getWorkParameters(): Array<JobParametersEnum> = arrayOf(JobParametersEnum.TelephonyManager, JobParametersEnum.SessionId, JobParametersEnum.Context)
+    override fun getJobParameters(): Array<JobParametersEnum> = arrayOf(JobParametersEnum.TelephonyManager, JobParametersEnum.SessionId, JobParametersEnum.Context)
 
 }

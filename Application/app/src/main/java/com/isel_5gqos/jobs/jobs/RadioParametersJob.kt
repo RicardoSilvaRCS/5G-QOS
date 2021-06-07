@@ -1,4 +1,4 @@
-package com.isel_5gqos.jobs.works
+package com.isel_5gqos.jobs.jobs
 
 import android.content.Context
 import android.telephony.TelephonyManager
@@ -10,9 +10,9 @@ import com.isel_5gqos.utils.errors.Exceptions
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import java.util.*
 
-class RadioParametersWork : IWorks {
+class RadioParametersJob : IJobs {
 
-    override fun work(params: Map<JobParametersEnum, Any?>) {
+    override fun job(params: Map<JobParametersEnum, Any?>) {
 
         val telephonyManager: TelephonyManager = params[JobParametersEnum.TelephonyManager] as TelephonyManager
         val sessionId: String = params[JobParametersEnum.SessionId] as String
@@ -70,9 +70,9 @@ class RadioParametersWork : IWorks {
 
     }
 
-    override fun getWorkTimeout(): Long = 1000L
+    override fun getJobTimeout(): Long = 1000L
 
-    override fun getWorkParameters(): Array<JobParametersEnum> = arrayOf(JobParametersEnum.TelephonyManager, JobParametersEnum.SessionId, JobParametersEnum.Context)
+    override fun getJobParameters(): Array<JobParametersEnum> = arrayOf(JobParametersEnum.TelephonyManager, JobParametersEnum.SessionId, JobParametersEnum.Context)
 
 
 }

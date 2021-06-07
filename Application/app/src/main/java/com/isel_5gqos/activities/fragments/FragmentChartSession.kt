@@ -63,11 +63,11 @@ class FragmentChartSession : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this);
+        EventBus.getDefault().register(this)
     }
 
     override fun onStop() {
-        EventBus.getDefault().unregister(this);
+        EventBus.getDefault().unregister(this)
         super.onStop()
     }
 

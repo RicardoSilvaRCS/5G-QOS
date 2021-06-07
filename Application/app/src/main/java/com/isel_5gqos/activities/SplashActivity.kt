@@ -13,10 +13,14 @@ import com.isel_5gqos.common.MOBILE_ID_KEY
 import com.isel_5gqos.common.TOKEN
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.factories.QosFactory
+import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.observeOnce
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class SplashActivity : AppCompatActivity() {
 
@@ -42,8 +46,6 @@ class SplashActivity : AppCompatActivity() {
             else{
 
                 val mobileId = AndroidUtils.getPreferences( MOBILE_ID_KEY, applicationContext)
-
-                Log.v("TESTE","The mobile id is : "+mobileId)
 
                 model.refreshToken(it.user.username,it.login.token,mobileId!!)
 

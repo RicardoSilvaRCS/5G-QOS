@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.jobs.works.IWorks
+import com.isel_5gqos.jobs.jobs.IJobs
 
 class JobWorksScheduler : JobService() {
 
@@ -24,7 +24,7 @@ class JobWorksScheduler : JobService() {
 
     override fun onStartJob(params: JobParameters?): Boolean {
 
-        fun work(): Boolean {
+        fun job(): Boolean {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return false
             }
@@ -44,14 +44,14 @@ class JobWorksScheduler : JobService() {
             do {
                 jobsList.forEachIndexed { index, jobType ->
 
-                    val workInstance = WorksMap.worksMap[jobType]
+                    val workInstance = JobsMap.worksMap[jobType]
 
-                    if (System.currentTimeMillis() > (lastRuns[index] + workInstance!!.getWorkTimeout())) {
+                    if (System.currentTimeMillis() > (lastRuns[index] + workInstance!!.getJobTimeout())) {
                         lastRuns[index] = System.currentTimeMillis()
 
                         asyncTask({
 
-                            workInstance.work(createWorkerParams(workInstance))
+                            workInstance.job(createWorkerParams(workInstance))
 
                         })
 
@@ -64,7 +64,7 @@ class JobWorksScheduler : JobService() {
             return true
         }
 
-        Thread{work()}.start()
+        Thread{job()}.start()
 
         return true
     }
@@ -74,7 +74,7 @@ class JobWorksScheduler : JobService() {
         return true
     }
 
-    private fun createWorkerParams(work: IWorks): Map<JobParametersEnum, Any?> = work.getWorkParameters().map {
+    private fun createWorkerParams(work: IJobs): Map<JobParametersEnum, Any?> = work.getJobParameters().map {
         it to allParamsMap[it]
     }.toMap()
 
