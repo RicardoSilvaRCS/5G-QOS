@@ -56,5 +56,6 @@
     <string name="back">Back</string>
     <string name="delete">Delete</string>
     <string name="are_you_sure">Are you sure?</string>
+    <string name="device_id">Device Id</string>
 
 </resources>
