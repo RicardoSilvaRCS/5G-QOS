@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
@@ -47,35 +48,40 @@ class LoginActivity : AppCompatActivity() {
         val username = findViewById<TextInputEditText>(R.id.username_edit_text)
         val password = findViewById<TextInputEditText>(R.id.password_edit_text)
 
-        val mobileIdText = findViewById<Button>(R.id.mobile_id)
+        val mobileIdInput = findViewById<TextInputLayout>(R.id.mobile_id)
+        val mobileIdInputText = findViewById<TextInputEditText>(R.id.mobile_id_edit_text)
 
-        val mobileId = getMobileID()
+        var mobileId = AndroidUtils.getPreferences(MOBILE_ID_KEY,applicationContext)
 
-
-
-        mobileIdText.text = "Mobile Device Identifier"
-        mobileIdText.setOnClickListener{
-            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText(MOBILE_ID_KEY, mobileId)
-            clipboard.setPrimaryClip(clip)
-            AndroidUtils.makeRawToast(this,"Copied!")
+        if(!mobileId.isNullOrEmpty()){
+            mobileIdInput.visibility = TextInputEditText.INVISIBLE
+            mobileIdInputText.visibility = TextInputEditText.INVISIBLE
+            mobileIdInputText.setText(mobileId)
         }
 
         loginButton.setOnClickListener {
 
             val user = username.text.toString()
             val pass = password.text.toString()
+            if(mobileId.isNullOrEmpty()){
+                mobileId = mobileIdInputText.text.toString()
+            }
 
-            if (pass.isBlank() || user.isBlank()) {
+            if (pass.isBlank() || user.isBlank() || mobileId.isNullOrEmpty()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
             } else {
-                model.login(user, pass, mobileId)
+                model.login(user, pass, mobileId!!)
                 model.observe(this) {
+
+                    if(it.userToken.isEmpty()) return@observe
+
                     val intent = Intent(this, DashboardActivity::class.java)
 
                     //TODO: Debate if intent is really needed
                     intent.putExtra(TOKEN, it.userToken)
                     intent.putExtra(USER, it.username)
+
+                    AndroidUtils.setPreferences(MOBILE_ID_KEY,mobileId,applicationContext)
 
                     /**Launch Refresh Token Worker**/
                     scheduleRefreshTokenWorker(it.username,it.userToken,it.username)
@@ -128,21 +134,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     //<editor-fold name="AUX FUNCTIONS">
-    private fun getMobileID () : String {
-
-        val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
-        var mobileId = sharedPref.getString( MOBILE_ID_KEY , "")
-
-        if(mobileId.isNullOrEmpty()){
-            with (sharedPref.edit()) {
-                mobileId = UUID.randomUUID().toString()
-                putString(MOBILE_ID_KEY, mobileId )
-                apply()
-            }
-        }
-
-        return mobileId ?: ""
-    }
 
     //</editor-fold>
 

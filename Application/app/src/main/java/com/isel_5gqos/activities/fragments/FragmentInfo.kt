@@ -1,6 +1,8 @@
 package com.isel_5gqos.activities.fragments
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -18,8 +21,10 @@ import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.DashboardActivity
 import com.isel_5gqos.common.MEGABYTE
+import com.isel_5gqos.common.MOBILE_ID_KEY
 import com.isel_5gqos.models.SystemViewModel
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.utils.android_utils.AndroidUtils
 import kotlinx.android.synthetic.main.fragment_info.*
 
 
@@ -71,5 +76,13 @@ class FragmentInfo : Fragment() {
             }
             operator_txt.text = telephonyManager.networkOperatorName
         }
+
+//        mobileIdText.text = "Mobile Device Identifier"
+//        mobileIdText.setOnClickListener{
+//            val clipboard: ClipboardManager = getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager
+//            val clip = ClipData.newPlainText(MOBILE_ID_KEY, mobileId)
+//            clipboard.setPrimaryClip(clip)
+//            AndroidUtils.makeRawToast(this,"Copied!")
+//        }
     }
 }

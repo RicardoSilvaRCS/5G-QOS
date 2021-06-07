@@ -1,18 +1,26 @@
 package com.isel_5gqos.activities
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
 import com.isel_5gqos.R
+import com.isel_5gqos.common.MOBILE_ID_KEY
 import com.isel_5gqos.common.TOKEN
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.factories.QosFactory
+import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.observeOnce
+import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class SplashActivity : AppCompatActivity() {
 
@@ -36,7 +44,10 @@ class SplashActivity : AppCompatActivity() {
                 finish()
             }
             else{
-                model.refreshToken(it.user.username,it.login.token)
+
+                val mobileId = AndroidUtils.getPreferences( MOBILE_ID_KEY, applicationContext)
+
+                model.refreshToken(it.user.username,it.login.token,mobileId!!)
 
                 model.liveData.observeOnce(this) { user ->
 

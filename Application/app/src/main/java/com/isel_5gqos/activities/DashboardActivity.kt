@@ -3,7 +3,6 @@ package com.isel_5gqos.activities
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.os.Bundle
-import android.util.Log
 import android.widget.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
@@ -15,7 +14,7 @@ import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.factories.TestFactory
-import com.isel_5gqos.jobs.WorkTypesEnum
+import com.isel_5gqos.jobs.JobTypeEnum
 import com.isel_5gqos.jobs.scheduleJob
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
@@ -178,7 +177,7 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         jobs.add(
             scheduleJob(
                 sessionId = sessionId,
-                jobTypes = arrayListOf(WorkTypesEnum.RADIO_PARAMS_TYPES.workType, WorkTypesEnum.THROUGHPUT_TYPE.workType)
+                jobTypes = arrayListOf(JobTypeEnum.RADIO_PARAMS_TYPE.jobType, JobTypeEnum.THROUGHPUT_TYPE.jobType)
             )
         )
     }

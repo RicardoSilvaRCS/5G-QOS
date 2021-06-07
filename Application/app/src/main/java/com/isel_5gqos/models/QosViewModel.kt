@@ -13,8 +13,6 @@ import com.isel_5gqos.common.db.entities.Login
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
 import com.isel_5gqos.utils.android_utils.AndroidUtils
-import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils
-import com.isel_5gqos.utils.mobile_utils.MobileInfoUtils.Companion.getDeviceSerialNumber
 
 class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : AbstractModel<UserDto>({ UserDto("", "") }) {
 
@@ -63,7 +61,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
 
     private fun loginDevice(user: UserDto, mobileId : String) {
         managementSystemApi.registerMobileDevice(
-            mobileSerialNumber = getDeviceSerialNumber(),//mobileId,
+            mobileSerialNumber = mobileId,
             authenticationToken = user.userToken,
             onSuccess = {
 
@@ -95,12 +93,16 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     else -> AndroidUtils.makeRawToast(managementSystemApi.ctx, GENERIC_ERROR)
                 }
 
+                liveData.postValue(
+                    UserDto("", "")
+                )
+
             }
         )
 
     }
 
-    fun refreshToken(username: String, token: String) {
+    fun refreshToken(username: String, token: String, mobileId : String) {
         managementSystemApi.refreshToken(
             authenticationToken = token,
             onSuccess = { refreshedToken ->
@@ -113,10 +115,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     },
                     onPostExecute = {
 
-                        liveData.postValue(
-                            UserDto(username, refreshedToken)
-                        )
-
+                        loginDevice(UserDto(username, refreshedToken),mobileId)
                     }
                 )
 
