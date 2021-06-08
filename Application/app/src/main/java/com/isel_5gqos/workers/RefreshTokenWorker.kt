@@ -17,8 +17,9 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
     override fun doWork(): Result {
 
         val token = inputData.getString(TOKEN).toString()
-        val credentials = inputData.getString(CREDENTIALS).toString()
+        val deviceId = inputData.getInt(DEVICE_SERVICE_ID,-1)
         val username  = inputData.getString(USER).toString()
+        //        val credentials = inputData.getString(CREDENTIALS).toString()
 
         QosApp.msWebApi.refreshToken (
             authenticationToken = token,
@@ -35,39 +36,15 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
                         ,SplashActivity::class.java
                         ,applicationContext)
 
-                    scheduleRefreshTokenWorker(username,refreshedToken,credentials)
+                    scheduleRefreshTokenWorker(username,refreshedToken,deviceId)
                 }
             },
             onError = {
-                val decodedCredentials = Base64.decode(credentials, Base64.DEFAULT)
-                val (username,password) = String(decodedCredentials).split(":")
-                QosApp.msWebApi.login(
-                    username = username,
-                    password = password,
-                    onSuccess = {
 
-                        asyncTask({
-
-                            QosApp.db.loginDao().updateToken(username,it.userToken)
-
-                        }) {
-
-                            notifyOnChannel(context.getString(R.string.token_notification_title)
-                                , context.getString(R.string.token_refreshed_text)
-                                ,SplashActivity::class.java
-                                ,applicationContext)
-
-                            scheduleRefreshTokenWorker(username,it.userToken,credentials)
-                        }
-
-                    },
-                    onError = {
-                        notifyOnChannel(context.getString(R.string.token_notification_title)
-                            , context.getString(R.string.token_noti_text)
-                            ,SplashActivity::class.java
-                            ,applicationContext)
-                    }
-                )
+                notifyOnChannel(context.getString(R.string.token_notification_title)
+                    , context.getString(R.string.token_noti_text)
+                    ,SplashActivity::class.java
+                    ,applicationContext)
 
             }
         )
@@ -77,9 +54,9 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
 
 }
 
-fun scheduleRefreshTokenWorker (username : String, token : String, credentials:String) {
+fun scheduleRefreshTokenWorker (username : String, token : String, mobileId : Int) {
 
-    val inputData = workDataOf(TOKEN to token, CREDENTIALS to credentials)
+    val inputData = workDataOf(USER to username, TOKEN to token, DEVICE_SERVICE_ID to mobileId)
 
     val request = OneTimeWorkRequestBuilder<RefreshTokenWorker>()
         .setInitialDelay(15,TimeUnit.MINUTES)

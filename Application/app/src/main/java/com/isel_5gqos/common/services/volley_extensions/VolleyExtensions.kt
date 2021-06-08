@@ -45,6 +45,7 @@ class JsonObjectRequestBuilder {
         fun build(
             method: Int,
             url: String,
+            bringHeaders : Boolean = true,
             jsonBody: JSONObject? = null,
             onSuccess: (JSONObject) -> Unit,
             onError: (VolleyError) -> Unit,
@@ -74,17 +75,20 @@ class JsonObjectRequestBuilder {
                         e.printStackTrace()
                     }
 
-                    return returnResponseWithHeaders(networkResponse)
+                    return returnResponse(networkResponse)
                 }
 
-                fun returnResponseWithHeaders(networkResponse: NetworkResponse): Response<JSONObject> {
+                fun returnResponse(networkResponse: NetworkResponse): Response<JSONObject> {
                     return try {
                         val jsonString = String(
                             networkResponse.data
                         )
 
                         val jsonResponse = JSONObject(jsonString)
-                        jsonResponse.put("headers", JSONObject(networkResponse.headers as Map<*, *>))
+
+                        if(bringHeaders) {
+                            jsonResponse.put("headers", JSONObject(networkResponse.headers as Map<*, *>))
+                        }
 
                         Response.success(
                             jsonResponse, HttpHeaderParser.parseCacheHeaders(networkResponse)

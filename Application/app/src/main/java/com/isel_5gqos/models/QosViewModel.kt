@@ -14,7 +14,7 @@ import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 
-class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : AbstractModel<UserDto>({ UserDto("", "") }) {
+class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : AbstractModel<UserDto>({ UserDto("", "",-1) }) {
 
     fun login(username: String, password: String,mobileId : String) {
         managementSystemApi.login(
@@ -80,6 +80,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     },
                     onPostExecute = {
 
+                        user.deviceId = it.mobileUnitId
                         liveData.postValue(user)
 
                     }
@@ -94,7 +95,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                 }
 
                 liveData.postValue(
-                    UserDto("", "")
+                    UserDto("", "",-1)
                 )
 
             }
@@ -115,7 +116,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                     },
                     onPostExecute = {
 
-                        loginDevice(UserDto(username, refreshedToken),mobileId)
+                        loginDevice(UserDto(username, refreshedToken,-1),mobileId)
                     }
                 )
 
@@ -137,7 +138,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi) : A
                 }
 
                 liveData.postValue(
-                    UserDto("", "")
+                    UserDto("", "",-1)
                 )
             }
         )

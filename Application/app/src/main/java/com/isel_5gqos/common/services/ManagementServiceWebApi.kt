@@ -3,6 +3,7 @@ package com.isel_5gqos.common.services
 import android.content.Context
 import android.os.AsyncTask
 import android.util.Log
+import com.android.volley.Request.Method.GET
 import com.android.volley.Request.Method.POST
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
@@ -13,6 +14,7 @@ import com.isel_5gqos.common.db.entities.MobileUnit
 import com.isel_5gqos.common.services.volley_extensions.BasicAuthHeader
 import com.isel_5gqos.common.services.volley_extensions.TokenAuthHeader
 import com.isel_5gqos.dtos.MobileDeviceDto
+import com.isel_5gqos.dtos.TestPlanDto
 import com.isel_5gqos.dtos.UserDto
 import org.json.JSONObject
 
@@ -101,10 +103,38 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
-    private fun <T, R> executeAsyncTaskGeneric(function: (T) -> R, param: T, onSuccess: (R) -> Unit): AsyncTask<T, Int, R> =
-        object : AsyncTask<T, Int, R>() {
-            override fun doInBackground(vararg params: T): R = function(param)
-            override fun onPostExecute(result: R) = onSuccess(result)
-        }
+    fun getTestPlan (
+        authenticationToken: String,
+        deviceId : Int,
+        testPlanId : String,
+        onSuccess: (TestPlanDto) -> Unit,
+        onError: (VolleyError) -> Unit
+    ) {
+
+        val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
+            method = GET,
+            url = getTestPlan(deviceId,testPlanId),
+            bringHeaders = false,
+            jsonBody = JSONObject(),
+            onSuccess = { responseBody ->
+
+                convertToTestPlanDtoAsync(response = responseBody.toString(), onSuccess = onSuccess)
+
+            },
+            onError = onError,
+            getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) }
+        )
+
+        queue.add(requestObjectRequest)
+    }
+
+    private fun convertToTestPlanDtoAsync (response: String?, onSuccess: (TestPlanDto) -> Unit) =
+        object : AsyncTask<String, Int, TestPlanDto>() {
+            override fun doInBackground(vararg params: String?): TestPlanDto =
+                gson.fromJson(response, TestPlanDto::class.java)
+
+            override fun onPostExecute(result:TestPlanDto) = onSuccess(result!!)
+        }.execute(response)
+
 
 }

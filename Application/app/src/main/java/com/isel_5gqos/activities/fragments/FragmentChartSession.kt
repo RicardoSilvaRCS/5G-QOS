@@ -45,6 +45,7 @@ class FragmentChartSession : Fragment() {
     /**INIT UI ELEMENTS**/
 
     private lateinit var testFactory: TestFactory
+    private var sessionId : String = DEFAULT_SESSION_ID
     private val testModel by lazy {
         ViewModelProvider(this,testFactory)[TestViewModel::class.java]
     }
@@ -64,9 +65,12 @@ class FragmentChartSession : Fragment() {
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
+        registerObservers(sessionId)
     }
 
     override fun onStop() {
+        resetObservers()
+        resetCharts()
         EventBus.getDefault().unregister(this)
         super.onStop()
     }
@@ -75,9 +79,10 @@ class FragmentChartSession : Fragment() {
     fun onMessageEvent(messageEvent: MessageEvent) {
         if (messageEvent !is StringMessageEvent) return
 
+        sessionId = messageEvent.message
         resetObservers()
         resetCharts()
-        registerObservers(messageEvent.message)
+        registerObservers(sessionId)
     }
 
     //</editor-fold>

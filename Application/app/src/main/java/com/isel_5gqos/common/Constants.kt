@@ -27,6 +27,8 @@ const val DB_SAVE = "DB_SAVE"
 const val PROGRESS = "PROGRESS"
 const val TOKEN = "TOKEN"
 const val CREDENTIALS = "USER_LOGIN_CREDENTIALS"
+const val DEVICE_SERVICE_ID = "DEVICE_SERVICE_ID"
+const val TEST_PLAN_ID = "TEST_PLAN_ID"
 
 const val JOB_TYPE = "JOB_TYPE"
 

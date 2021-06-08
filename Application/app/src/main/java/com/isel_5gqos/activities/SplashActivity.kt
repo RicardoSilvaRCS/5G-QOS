@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
+import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.MOBILE_ID_KEY
 import com.isel_5gqos.common.TOKEN
@@ -17,6 +18,7 @@ import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.observeOnce
 import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.workers.scheduleAutonomousTestWorker
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -63,7 +65,8 @@ class SplashActivity : AppCompatActivity() {
                         intent.putExtra(USER, user.username)
 
                         /**Launch Refresh Token Worker**/
-                        scheduleRefreshTokenWorker(user.username,user.userToken,it.user.credentials)
+                        scheduleRefreshTokenWorker(user.username,user.userToken,user.deviceId)
+                        //scheduleAutonomousTestWorker(user.userToken,user.deviceId,"6cdc9b20-c7c8-11eb-85d8-005056840996")
 
                         startActivity(intent)
                         finish()

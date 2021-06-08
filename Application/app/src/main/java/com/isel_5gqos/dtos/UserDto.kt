@@ -6,12 +6,13 @@ import org.json.JSONObject
 
 class UserDto(
     val username: String,
-    val userToken: String
+    val userToken: String,
+    var deviceId : Int
 ) {
     companion object {
 
         fun jsonObjectToUserDto(token : String, username: String): UserDto {
-            return UserDto(username, token)
+            return UserDto(username, token,-1)
         }
 
     }
