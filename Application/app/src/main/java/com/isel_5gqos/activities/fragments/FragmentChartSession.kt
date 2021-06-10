@@ -1,6 +1,5 @@
 package com.isel_5gqos.activities.fragments
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,15 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.RadioParameters
@@ -142,7 +134,7 @@ class FragmentChartSession : Fragment() {
     }
 
     private fun registerServingCellChanges(sessionId: String) {
-        servingCellLiveData = testModel.getServingCell(sessionId)
+        servingCellLiveData = testModel.getServingCells(sessionId)
 
         servingCellLiveData?.observe(requireActivity()){
 

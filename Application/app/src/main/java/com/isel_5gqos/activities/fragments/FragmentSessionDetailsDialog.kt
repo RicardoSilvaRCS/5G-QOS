@@ -1,7 +1,6 @@
 package com.isel_5gqos.activities.fragments
 
 import android.app.Dialog
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
@@ -9,18 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.RadioParameters
@@ -157,7 +150,7 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     }
 
     private fun registerServingCellChartAndObserver() {
-        testModel.getServingCell(session.id).observeOnce(requireActivity()) {
+        testModel.getServingCells(session.id).observeOnce(requireActivity()) {
 
             if (it == null || it.isEmpty()) return@observeOnce
 

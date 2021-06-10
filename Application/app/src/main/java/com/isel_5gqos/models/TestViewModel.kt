@@ -1,11 +1,9 @@
 package com.isel_5gqos.models
 
-import androidx.lifecycle.LifecycleOwner
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Session
-import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.utils.DateUtils.Companion.formatDate
 import java.sql.Timestamp
@@ -73,7 +71,7 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
 
     fun registerRadioParametersChanges(sessionId: String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 
-    fun getLastLocation(sessionId: String) = QosApp.db.radioParametersDao().getLastLocation(sessionId)
+    fun getServingCells(sessionId: String) = QosApp.db.radioParametersDao().getServingCells(sessionId)
 
     fun getServingCell(sessionId: String) = QosApp.db.radioParametersDao().getServingCell(sessionId)
 

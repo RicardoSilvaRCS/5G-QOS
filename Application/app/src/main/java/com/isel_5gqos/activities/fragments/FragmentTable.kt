@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
-import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.common.db.entities.Location
@@ -42,7 +41,7 @@ class FragmentTable : Fragment(){
         super.onCreate(savedInstanceState)
     }
 
-    private var servingCellLiveData : LiveData<List<RadioParameters>>? = null
+    private var servingCellLiveData : LiveData<RadioParameters>? = null
     private var radioParametersLiveData : LiveData<List<RadioParameters>>? = null
     private var lastLocationLiveData : LiveData<Location>? = null
 
@@ -98,8 +97,8 @@ class FragmentTable : Fragment(){
         servingCellLiveData = testModel.getServingCell(sessionId)
 
         servingCellLiveData?.observe(requireActivity()) {
-            if(!checkIfLayoutsAreAvailable()) return@observe
-            val servingCell = it.find { cell -> cell.isServingCell } ?: it.find { cell -> cell.no == 1 } ?: return@observe
+            if(!checkIfLayoutsAreAvailable() || it == null) return@observe
+            val servingCell = it
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java) as TelephonyManager
             val networkOperator = telephonyManager.networkOperator
 

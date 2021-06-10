@@ -15,7 +15,10 @@ interface RadioParametersDao {
     fun getUpToDateRadioParameters(sessionId: String): LiveData<List<RadioParameters>>
 
     @Query("Select * from RadioParameters where sessionId = :sessionId and ( isServingCell = 1 or `no` = 1 )")
-    fun getServingCell(sessionId: String): LiveData<List<RadioParameters>>
+    fun getServingCells(sessionId: String): LiveData<List<RadioParameters>>
+
+    @Query("Select * from RadioParameters where sessionId = :sessionId and ( isServingCell = 1 or `no` = 1 ) and isUpToDate = 1 order by timestamp desc")
+    fun getServingCell(sessionId: String): LiveData<RadioParameters>
 
     @Query("Select * from Locations where sessionId=:sessionId limit(1)")
     fun getLastLocation(sessionId: String):LiveData<Location>
