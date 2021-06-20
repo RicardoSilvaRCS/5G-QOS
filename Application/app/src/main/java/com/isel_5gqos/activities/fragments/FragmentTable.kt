@@ -2,6 +2,9 @@ package com.isel_5gqos.activities.fragments
 
 import android.os.Build
 import android.os.Bundle
+import android.telephony.CellIdentityLte
+import android.telephony.CellInfoGsm
+import android.telephony.CellInfoLte
 import android.telephony.TelephonyManager
 import android.util.EventLog
 import android.view.LayoutInflater
@@ -10,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.core.view.get
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
@@ -109,28 +113,37 @@ class FragmentTable : Fragment(){
             val latitude = if(servingCell.latitude.isEmpty()) "----" else servingCell.latitude
             val longitude = if(servingCell.longitude.isEmpty()) "----" else servingCell.longitude
 
-            lat_lon_txt.text = "$latitude/$longitude"
+            lat_lon_txt.text = "${latitude.subSequence(0,7)}/${longitude.subSequence(0,7)}"
 
             serving_cell_tech.text = servingCell.tech
-            rsrp_txt.text = servingCell.rsrp.toString()
+
+            val netDataType = NetworkDataTypesEnum.valueOf(servingCell.netDataType.toUpperCase())
+            if(netDataType == NetworkDataTypesEnum.GSM){
+                view_switcher.nextView
+                cid_txt.text = servingCell.cId.toString()
+                rsrp_txt.text = "${servingCell.rssi} dBm"
+                layout_rsrq.isGone = true
+                layout_arfcn.isGone = true
+            } else {
+                rsrp_txt.text = "${servingCell.rsrp} dBm"
+            }
+
             arfcn_txt.text = servingCell.arfcn.toString()
-            rsrq_txt.text = servingCell.rsrq.toString()
-            rssnr_txt.text = servingCell.rssnr.toString()
-            net_data_type_txt.text = NetworkDataTypesEnum.valueOf(servingCell.netDataType.toUpperCase()).toString()
+            rsrq_txt.text = "${ servingCell.rsrq } dB"
+            rssnr_txt.text = "${servingCell.rssnr} dB"
+            net_data_type_txt.text = netDataType.toString()
             mcc_txt.text = "${networkOperator.substring(0, 3)} ${networkOperator.substring(3)}"
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tac_txt.text = telephonyManager.typeAllocationCode
-            } else {
-                tac_txt.text = "---"
             }
 
-            val cellidHex: String = decToHex(servingCell.cId) ?: ""
-            val eNBHex = cellidHex.substring(0, cellidHex.length - 2)
-            val eNB: Int = hexToDec(eNBHex)
-
-            e_node_b_txt.text = eNB.toString()
             pci_txt.text = servingCell.pci.toString()
+
+            if(netDataType == NetworkDataTypesEnum.LTE){
+                val cellIdentity = (telephonyManager.allCellInfo[0] as CellInfoLte).cellIdentity.ci
+                e_node_b_txt.text = ((cellIdentity - servingCell.pci).shr(8)).toString()
+            }
 
             sim_operator_txt.text = "${telephonyManager.simOperatorName}/${telephonyManager.networkOperatorName}"
 
@@ -170,13 +183,9 @@ class FragmentTable : Fragment(){
 
     private fun checkIfLayoutsAreAvailable():Boolean = this.isResumed
 
-    private fun decToHex(dec: Int): String? {
-        return String.format("%x", dec)
-    }
+    private fun decToHex(dec: Int): String = String.format("%x", dec)
 
-    private fun hexToDec(hex: String): Int {
-        return hex.toInt(16)
-    }
+    private fun hexToDec(hex: String): Int = if(hex.isNotEmpty()) hex.toInt(16) else "0".toInt(16)
     //</editor-fold>
 
 }

@@ -30,7 +30,8 @@
     <string name="arfcn">ARFCN</string>
     <string name="rsrq">RSRQ</string>
     <string name="rssnr">RSSNR</string>
-    <string name="net_data_type">Net Data Type:</string>
+    <string name="NA">----</string>
+    <string name="net_data_type">Net Data Type</string>
     <string name="mcc_mnc">MCC MNC</string>
     <string name="tac">TAC</string>
     <string name="enodeb_id">eNodeB Id</string>

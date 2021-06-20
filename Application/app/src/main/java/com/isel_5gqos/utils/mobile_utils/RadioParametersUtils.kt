@@ -154,22 +154,22 @@ class RadioParametersUtils {
 
             if (radioParameter is RadioParameters) {
 
-                 when (convertStringToNetworkDataType(radioParameter.netDataType)) {
-                    NetworkDataTypesEnum.LTE -> auxId = radioParameter.pci
-                    NetworkDataTypesEnum.GSM -> auxId = radioParameter.cId
-                    NetworkDataTypesEnum.UMTS -> auxId = radioParameter.psc
-                    else -> auxId = radioParameter.pci
+                auxId = when (convertStringToNetworkDataType(radioParameter.netDataType)) {
+                    NetworkDataTypesEnum.LTE -> radioParameter.pci
+                    NetworkDataTypesEnum.GSM -> radioParameter.cId
+                    NetworkDataTypesEnum.UMTS -> radioParameter.psc
+                    else -> radioParameter.pci
                 }
 
             }
 
             if (radioParameter is RadioParametersDto) {
 
-                when (radioParameter.netDataType) {
-                    NetworkDataTypesEnum.LTE -> auxId = radioParameter.pci!!
-                    NetworkDataTypesEnum.GSM -> auxId = radioParameter.cId!!
-                    NetworkDataTypesEnum.UMTS -> auxId = radioParameter.psc!!
-                    else -> auxId = radioParameter.pci!!
+                auxId = when (radioParameter.netDataType) {
+                    NetworkDataTypesEnum.LTE -> radioParameter.pci!!
+                    NetworkDataTypesEnum.GSM -> radioParameter.cId!!
+                    NetworkDataTypesEnum.UMTS -> radioParameter.psc!!
+                    else -> radioParameter.pci!!
                 }
 
             }
