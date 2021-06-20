@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LifecycleOwner
@@ -27,6 +28,8 @@ import com.isel_5gqos.utils.mp_android_chart_utils.ChartUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_session_details_dialog.*
 import java.lang.Long
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class FragmentSessionDetailsDialog(val session: Session,private val chartBackground:Drawable,private val lifecycleOwner: LifecycleOwner) : DialogFragment() {
@@ -43,6 +46,8 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
     private lateinit var sessionDetailsServingCellChart: LineChart
     private lateinit var sessionDetailsStrongestNeighborChart: LineChart
     private lateinit var sessionDetailsNumberOfCellsSameTechServingCellChart: LineChart
+    private lateinit var sessionStartDate : TextView
+    private lateinit var sessionEndDate : TextView
 
 
     //<editor-fold name="EVENTS">
@@ -99,6 +104,8 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
         sessionDetailsServingCellChart = dialogView.findViewById(R.id.session_details_serving_cell_chart)
         sessionDetailsStrongestNeighborChart = dialogView.findViewById(R.id.session_details_strongest_neighbor_chart)
         sessionDetailsNumberOfCellsSameTechServingCellChart = dialogView.findViewById(R.id.session_details_nr_cells_same_tech_serving_cell)
+        sessionStartDate = dialogView.findViewById(R.id.start_date_txt)
+        sessionEndDate = dialogView.findViewById(R.id.end_date_txt)
 
         ChartUtils.initLineChart(sessionDetailsThroughputChart, lineInitData = ChartUtils.initThroughputDataLine(), drawable = chartBackground)
         ChartUtils.initLineChart(sessionDetailsServingCellChart, lineInitData = ChartUtils.initServingCellData(), isNegative = true, drawable = chartBackground)
@@ -112,9 +119,22 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
 
     //<editor-fold name="OBSERVERS">
     private fun registerObservers() {
+        registerSessionObserver()
         registerThroughPutChartAndObserver()
         registerServingCellChartAndObserver()
 
+    }
+
+    private fun registerSessionObserver(){
+        testModel.getSessionInfo(session.id).observeOnce(lifecycleOwner) {
+            val format = SimpleDateFormat("yyyy.MM.dd HH:mm")
+
+            val startdate = Date(it.beginDate)
+            sessionStartDate.text = format.format(startdate)
+
+            val endDate = Date(it.endDate)
+            sessionEndDate.text = format.format(endDate)
+        }
     }
 
     private fun registerThroughPutChartAndObserver() {

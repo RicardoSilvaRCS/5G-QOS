@@ -3,6 +3,7 @@ package com.isel_5gqos.activities.fragments
 import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
+import android.util.EventLog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
+import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.common.db.entities.Location
@@ -57,12 +59,14 @@ class FragmentTable : Fragment(){
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this);
+        if(!EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().register(this)
+        }
     }
 
-    override fun onStop() {
+    override fun onDestroy() {
+        super.onDestroy()
         EventBus.getDefault().unregister(this);
-        super.onStop()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

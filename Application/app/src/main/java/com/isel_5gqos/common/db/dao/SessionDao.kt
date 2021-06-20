@@ -8,7 +8,7 @@ import com.isel_5gqos.common.db.entities.Session
 interface SessionDao {
 
     @Query("Select * from Sessions where id = :sessionId")
-    fun get(sessionId: String): LiveData<List<Session>>
+    fun get(sessionId: String): LiveData<Session>
 
     @Query("Select * from Sessions where id <> '-1' and endDate = 0 order by beginDate desc limit(1)")
     fun getLastSession():LiveData<Session>
