@@ -110,10 +110,10 @@ class FragmentTable : Fragment(){
             val telephonyManager = requireContext().getSystemService(TelephonyManager::class.java) as TelephonyManager
             val networkOperator = telephonyManager.networkOperator
 
-            val latitude = if(servingCell.latitude.isEmpty()) "----" else servingCell.latitude
-            val longitude = if(servingCell.longitude.isEmpty()) "----" else servingCell.longitude
+            val latitude = if(servingCell.latitude.isEmpty()) "----" else servingCell.latitude.subSequence(0,7)
+            val longitude = if(servingCell.longitude.isEmpty()) "----" else servingCell.longitude.subSequence(0,7)
 
-            lat_lon_txt.text = "${latitude.subSequence(0,7)}/${longitude.subSequence(0,7)}"
+            lat_lon_txt.text = "${latitude}/${longitude}"
 
             serving_cell_tech.text = servingCell.tech
 
