@@ -36,7 +36,7 @@ class ThroughPutJob : IJobs {
 
             //val mobileTxPackets = TrafficStats.getMobileTxPackets()
 
-            val location = LocationUtils.getLocation(telephonyManager, context)
+            val location = LocationUtils.getLocationDto(telephonyManager, context)
 
             insertThroughputInfoInDb(
                 rxResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / (K_BIT * (throughputJobTimeout / 1000).toDouble()).toLong(),

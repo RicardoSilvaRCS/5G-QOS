@@ -2,6 +2,7 @@ package com.isel_5gqos.utils.mobile_utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.location.LocationManager
 import android.telephony.TelephonyManager
 import com.isel_5gqos.dtos.LocationDto
@@ -11,10 +12,14 @@ class LocationUtils {
     companion object {
 
         @SuppressLint("MissingPermission")
-        fun getLocation(telephonyManager: TelephonyManager?, context: Context): LocationDto {
-
+        fun getLocation (context: Context): Location? {
             val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        }
+
+        fun getLocationDto(telephonyManager: TelephonyManager?, context: Context): LocationDto {
+
+            val lastKnownLocation = getLocation(context = context)
             return LocationDto(
                 networkOperatorName = telephonyManager!!.networkOperatorName,
                 latitude = lastKnownLocation?.latitude,
@@ -22,7 +27,6 @@ class LocationUtils {
             )
 
         }
-
 
     }
 }

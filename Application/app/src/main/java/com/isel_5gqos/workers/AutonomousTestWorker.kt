@@ -1,40 +1,42 @@
 package com.isel_5gqos.workers
 
 import android.content.Context
-import android.util.Base64
-import android.util.Log
+import android.text.format.DateUtils
 import androidx.work.*
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.R
-import com.isel_5gqos.activities.SplashActivity
 import com.isel_5gqos.common.*
-import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.dtos.NavigationDto
 import com.isel_5gqos.dtos.TestDto
 import com.isel_5gqos.dtos.TestPlanDto
-import com.isel_5gqos.dtos.TestResultDto
-import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.dtos.TestPlanResultDto
+import com.isel_5gqos.utils.DateUtils.Companion.getDateIso8601Format
+import com.isel_5gqos.utils.mobile_utils.LocationUtils
 import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
-import java.util.concurrent.TimeUnit
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class AutonomousTestWorker (private val context: Context, private val workerParams: WorkerParameters) : Worker (context, workerParams)  {
 
-    private val results : MutableList<TestResultDto> = mutableListOf()
+    private val results : MutableList<Any> = mutableListOf()
+    private lateinit var token : String
+    private var deviceId : Int = -1
+    private lateinit var testPlanId : String
 
     override fun doWork(): Result {
 
-        val token = inputData.getString(TOKEN).toString()
-        val deviceId = inputData.getInt(DEVICE_SERVICE_ID,-1)
-        val testPlanId = inputData.getString(TEST_PLAN_ID).toString()
+         token = inputData.getString(TOKEN).toString()
+         deviceId = inputData.getInt(DEVICE_SERVICE_ID,-1)
+         testPlanId = inputData.getString(TEST_PLAN_ID).toString()
 
-        getTestPlan(token,deviceId, testPlanId)
+        getTestPlan()
 
         return Result.success()
     }
 
-
-    private fun getTestPlan(token : String, deviceId: Int, testPlanId: String) {
+    private fun getTestPlan() {
 
         QosApp.msWebApi.getTestPlan (
             authenticationToken = token,
@@ -57,25 +59,55 @@ class AutonomousTestWorker (private val context: Context, private val workerPara
         }
     }
 
-    private fun postResultsToApi () {
+    private fun postResultsToApi ( result : TestPlanResultDto, onPostExec : () -> Unit) {
         //guardar na db
-        //enviar para o sistema
+
+        QosApp.msWebApi.postTestPlanResults (
+            authenticationToken = token,
+            deviceId = deviceId,
+            testPlanResult = result,
+            onSuccess = {
+
+                onPostExec()
+            },
+            onError = {
+                var x = it
+                onPostExec()
+            }
+        )
+
     }
 
     private fun runWork (tests : MutableList<TestDto>) {
 
         if(tests.isEmpty()) {
-            postResultsToApi()
             return
         }
 
         val currTest = tests.first()
         val testType = WorkTypeEnum.valueOf(currTest.testType.toUpperCase())
+        val location = LocationUtils.getLocation(context)
 
-        WorksMap.worksMap[testType]?.work(currTest) {
+        val resultDto = TestPlanResultDto(
+            date =  getDateIso8601Format(),
+            navigationDto = NavigationDto(
+               gpsFix = location?.provider ?: "",
+               latitude = location?.latitude ?: 0.0,
+               longitude = location?.longitude ?: 0.0,
+               speed = location?.speed,
+            ),
+            probeId = deviceId,
+            testExecutionId = currTest.id,
+            testPlanId = testPlanId,
+            type = currTest.testType
+        )
+
+        WorksMap.worksMap[testType]?.work(currTest,resultDto) {
             results.add(it)
-            tests.removeFirst()
-            runWork(tests)
+            postResultsToApi(it){
+                tests.removeFirst()
+                runWork(tests)
+            }
         }
 
     }

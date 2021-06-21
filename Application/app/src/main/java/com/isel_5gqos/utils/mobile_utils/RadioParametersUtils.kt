@@ -18,7 +18,7 @@ class RadioParametersUtils {
         fun getRadioParameters(telephonyManager: TelephonyManager, context : Context): List<RadioParametersDto> {
 
             val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
-            val location = LocationUtils.getLocation(telephonyManager, context)
+            val location = LocationUtils.getLocationDto(telephonyManager, context)
 
             telephonyManager.allCellInfo?.forEachIndexed { index, cellInfo ->
                 val currentCell = convertCellInfoToRadioParameter(index, cellInfo)
