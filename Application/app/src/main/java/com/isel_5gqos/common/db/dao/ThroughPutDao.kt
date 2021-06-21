@@ -13,6 +13,9 @@ interface ThroughPutDao {
     @Query("Select * from ThroughPuts where sessionId = :session")
     fun get(session: String): LiveData<List<ThroughPut>>
 
+    @Query("Select * from ThroughPuts")
+    fun getAllThroughputs():LiveData<List<ThroughPut>>
+
     @Query("Select * from ThroughPuts where sessionId = :sessionId order by timestamp desc limit(1)")
     fun getLast(sessionId:String):LiveData<ThroughPut>
 
