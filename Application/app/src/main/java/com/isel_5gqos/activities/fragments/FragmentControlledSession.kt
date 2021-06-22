@@ -16,10 +16,15 @@ import com.isel_5gqos.activities.adapters.SessionDetailsAdapter
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.common.db.entities.RadioParameters
+import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
+import com.isel_5gqos.models.observeOnce
+import com.isel_5gqos.utils.ExcelSheetNamesEnum
+import com.isel_5gqos.utils.ExcelUtils
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
 import com.isel_5gqos.utils.publisher_subscriber.SessionMessageEvent
@@ -27,6 +32,7 @@ import com.isel_5gqos.utils.publisher_subscriber.SessionMessageTypeEnum
 import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.fragment_controlled_session.*
 import kotlinx.android.synthetic.main.fragment_main_session.*
+import kotlinx.android.synthetic.main.fragment_session_details_dialog.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -85,10 +91,26 @@ class FragmentControlledSession : Fragment() {
             create_session.visibility = View.VISIBLE
         }
 
-        btn_ping.setOnClickListener {
-//            val fragmentSessionDetailsDialog =
-//            fragmentSessionDetailsDialog.show(parentFragmentManager,"taguinha")
+        btn_export_all_excel.setOnClickListener {
+            testModel.getAllRadioParameters().observeOnce(requireActivity()) { radioParameters ->
+                testModel.getAllThroughputs().observeOnce(requireActivity()) { throughputs ->
+                    ExcelUtils.exportToExcel(
+                        context = requireContext(),
+                        filename = "Excel",
+                        sheetsMap = mapOf(
+                            ExcelSheetNamesEnum.RADIO_PARAMETERS.sheetName to Triple(radioParameters,
+                                { ExcelUtils.makeRadioParametersHeaderRow(it) },
+                                { row, radioParameter -> ExcelUtils.makeRadioParametersRow(row, radioParameter as RadioParameters) }),
+                            ExcelSheetNamesEnum.THROUGHPUT.sheetName to Triple(throughputs,
+                                { ExcelUtils.makeThroughputHeaderRow(it) },
+                                { row, throughput -> ExcelUtils.makeThroughputRow(row, throughput as ThroughPut) }),
+                        )
+                    )
+                }
+
+            }
         }
+
 
         val metrics = DisplayMetrics()
         requireActivity().windowManager.defaultDisplay.getMetrics(metrics)

@@ -59,26 +59,6 @@ class FragmentTable : Fragment() {
         val username = requireActivity().intent.getStringExtra(USER) ?: ""
         testFactory = TestFactory(savedInstanceState, username)
         distance_txt?.text = "---"
-
-        excelBtn.setOnClickListener {
-            testModel.getAllRadioParameters().observeOnce(requireActivity()) { radioParameters ->
-                testModel.getAllThroughputs().observeOnce(requireActivity()) { throughputs ->
-                    ExcelUtils.exportToExcel(
-                        context = requireContext(),
-                        filename = "Excel",
-                        sheetsMap = mapOf(
-                            "RadioParameters" to Triple(radioParameters,
-                                { ExcelUtils.makeRadioParametersHeaderRow(it) },
-                                { row, radioParameter -> ExcelUtils.makeRadioParametersRow(row, radioParameter as RadioParameters) }),
-                            "Throughputs" to Triple(throughputs,
-                                { ExcelUtils.makeThroughputHeaderRow(it) },
-                                { row, throughput -> ExcelUtils.makeThroughputRow(row, throughput as ThroughPut) }),
-                        )
-                    )
-                }
-
-            }
-        }
     }
 
     override fun onStart() {

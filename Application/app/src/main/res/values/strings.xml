@@ -58,5 +58,6 @@
     <string name="delete">Delete</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="device_id">Device Id</string>
+    <string name="export_excel">Export To Excel</string>
 
 </resources>

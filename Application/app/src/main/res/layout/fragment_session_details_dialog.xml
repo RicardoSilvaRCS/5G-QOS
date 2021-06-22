@@ -89,8 +89,29 @@
     </ScrollView>
 
     <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_back"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/white_background_blue_500_border_round_20"
+        android:textColor="@color/blue_500"
+        android:text="@string/back"
+        />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_export_excel"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_back"
+        app:layout_constraintEnd_toStartOf="@id/btn_delete"
+        android:background="@drawable/white_background_gradient_blue_500_red_blue_500_border_round_20"
+        android:text="@string/export_excel"
+        android:textColor="@color/purple_700"
+        />
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_delete"
-        android:layout_width="150dp"
+        android:layout_width="80dp"
         android:layout_height="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -98,15 +119,5 @@
         android:background="@drawable/white_background_gradient_blue_500_red_blue_500_border_round_20"
         android:text="@string/delete"
         android:textColor="@color/purple_700"
-        />
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_back"
-        android:layout_width="150dp"
-        android:layout_height="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:background="@drawable/white_background_blue_500_border_round_20"
-        android:textColor="@color/blue_500"
-        android:text="@string/back"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>

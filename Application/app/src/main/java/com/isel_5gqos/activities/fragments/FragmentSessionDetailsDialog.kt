@@ -19,14 +19,18 @@ import com.isel_5gqos.R
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
+import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.models.observeOnce
+import com.isel_5gqos.utils.ExcelSheetNamesEnum
+import com.isel_5gqos.utils.ExcelUtils
 import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
 import com.isel_5gqos.utils.mp_android_chart_utils.ChartUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_session_details_dialog.*
+import kotlinx.android.synthetic.main.fragment_table.*
 import java.lang.Long
 import java.text.SimpleDateFormat
 import java.util.*
@@ -87,11 +91,34 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
                 dialog.dismiss()
                 dismiss()
             }
+
             val cancelButton = inflatedView.findViewById<Button>(R.id.session_delete_cancel_button)
             cancelButton.setOnClickListener {
                 dialog.dismiss()
             }
 
+            btn_export_excel.setOnClickListener {
+                testModel.getRadioParametersBySessionId(sessionId = session.id).observeOnce(requireActivity()) { radioParameters ->
+                    testModel.getThroughputBySessionId(sessionId = session.id).observeOnce(requireActivity()) { throughputs ->
+                        ExcelUtils.exportToExcel(
+                            context = requireContext(),
+                            filename = "Session_info_${session.id}",
+                            sheetsMap = mapOf(
+                                ExcelSheetNamesEnum.RADIO_PARAMETERS.sheetName to Triple(
+                                    radioParameters,
+                                    { ExcelUtils.makeRadioParametersHeaderRow(it) },
+                                    { row, radioParameter -> ExcelUtils.makeRadioParametersRow(row, radioParameter as RadioParameters) }
+                                ),
+                                ExcelSheetNamesEnum.THROUGHPUT.sheetName to Triple(
+                                    throughputs,
+                                    { ExcelUtils.makeThroughputHeaderRow(it) },
+                                    { row, throughput -> ExcelUtils.makeThroughputRow(row, throughput as ThroughPut) }
+                                ),
+                            )
+                        )
+                    }
+                }
+            }
 
             dialog.setView(inflatedView)
             dialog.setCanceledOnTouchOutside(false)
