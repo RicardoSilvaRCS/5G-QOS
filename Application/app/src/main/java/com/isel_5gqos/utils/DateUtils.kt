@@ -10,7 +10,7 @@ class DateUtils {
 
         fun getDateIso8601Format() : String {
             val tz = TimeZone.getTimeZone("UTC")
-            val df: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'") // Quoted "Z" to indicate UTC, no timezone offset
+            val df: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
             df.setTimeZone(tz)
             return df.format(Date())
         }

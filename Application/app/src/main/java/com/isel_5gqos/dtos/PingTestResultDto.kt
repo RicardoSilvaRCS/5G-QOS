@@ -8,14 +8,15 @@ class PingTestResultDto (
     val sent: Int,
     val lost: Int,
     val lostPercent: Float,
-    val detailedPing: List<DetailedPingDto>,
+    val pingDetail: List<DetailedPingDto>,
+    id : Int,
     date: String,
     navigationDto: NavigationDto,
     probeId: Int,
-    testExecutionId: String,
+    testId: String,
     testPlanId: String,
     type: String
-) : TestPlanResultDto(date, navigationDto, probeId, testExecutionId, testPlanId, type)
+) : TestPlanResultDto(id,date, navigationDto, probeId, testId, testPlanId, type)
 
 class DetailedPingDto(
     val from: String,

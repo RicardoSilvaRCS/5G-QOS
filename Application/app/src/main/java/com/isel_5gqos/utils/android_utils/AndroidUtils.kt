@@ -59,7 +59,6 @@ class AndroidUtils {
             return AlertDialog.Builder(context).setView(inflatedView).create()
         }
 
-
         fun setPreferences (key: String?, value: String?, context: Context?) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(context)
             val editor = preferences.edit()

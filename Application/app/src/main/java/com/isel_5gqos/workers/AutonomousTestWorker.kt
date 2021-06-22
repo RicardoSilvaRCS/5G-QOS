@@ -1,7 +1,6 @@
 package com.isel_5gqos.workers
 
 import android.content.Context
-import android.text.format.DateUtils
 import androidx.work.*
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
@@ -13,8 +12,6 @@ import com.isel_5gqos.utils.DateUtils.Companion.getDateIso8601Format
 import com.isel_5gqos.utils.mobile_utils.LocationUtils
 import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -60,7 +57,7 @@ class AutonomousTestWorker (private val context: Context, private val workerPara
     }
 
     private fun postResultsToApi ( result : TestPlanResultDto, onPostExec : () -> Unit) {
-        //guardar na db
+        //TODO Guardar Resultados na Db
 
         QosApp.msWebApi.postTestPlanResults (
             authenticationToken = token,
@@ -69,10 +66,12 @@ class AutonomousTestWorker (private val context: Context, private val workerPara
             onSuccess = {
 
                 onPostExec()
+
             },
             onError = {
-                var x = it
+
                 onPostExec()
+
             }
         )
 
@@ -89,6 +88,7 @@ class AutonomousTestWorker (private val context: Context, private val workerPara
         val location = LocationUtils.getLocation(context)
 
         val resultDto = TestPlanResultDto(
+            id = Random().nextInt(),
             date =  getDateIso8601Format(),
             navigationDto = NavigationDto(
                gpsFix = location?.provider ?: "",
@@ -97,7 +97,7 @@ class AutonomousTestWorker (private val context: Context, private val workerPara
                speed = location?.speed,
             ),
             probeId = deviceId,
-            testExecutionId = currTest.id,
+            testId = currTest.id,
             testPlanId = testPlanId,
             type = currTest.testType
         )

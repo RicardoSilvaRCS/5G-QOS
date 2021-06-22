@@ -26,10 +26,6 @@ class PingWork : IWorks {
 
                 val pingLine = line.split(' ')
 
-                Log.v("PINGTEST", pingLine.toString())
-                Log.v("PINGTEST", "time = " + pingLine[6].split('=')[1])
-                Log.v("PINGTEST", "ttl = " +pingLine[5].split('=')[1])
-
                 detailedPing.add(
                     DetailedPingDto(
                         from = pingLine[3],
@@ -40,7 +36,6 @@ class PingWork : IWorks {
                 )
 
             }, {
-                Log.v("PINGTEST", "FINISHED")
                 onPostExecute(
                     PingTestResultDto(
                         avgRtt = it.avg,
@@ -50,11 +45,12 @@ class PingWork : IWorks {
                         sent = it.sent,
                         lost = it.dropped,
                         lostPercent = (it.dropped.toFloat()/detailedPing.size)*100,
-                        detailedPing = detailedPing,
+                        pingDetail = detailedPing,
+                        id = resultDto.id,
                         date = resultDto.date,
                         navigationDto = resultDto.navigationDto,
                         probeId = resultDto.probeId,
-                        testExecutionId = resultDto.testExecutionId,
+                        testId = resultDto.testId,
                         testPlanId = resultDto.testPlanId,
                         type = resultDto.type
                     )

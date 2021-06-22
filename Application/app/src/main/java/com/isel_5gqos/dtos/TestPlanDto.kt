@@ -14,8 +14,6 @@ class TestPlanDto(
     val state: String,
     val startDate: String,
     val stopDate: String,
-    //val scanningSampleTime: String,
-    //val maxRepeats: Int,
     val tests: List<TestDto>,
 )
 
