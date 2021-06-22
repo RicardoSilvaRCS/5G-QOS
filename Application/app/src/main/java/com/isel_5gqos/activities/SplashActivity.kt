@@ -2,6 +2,7 @@ package com.isel_5gqos.activities
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
+import com.isel_5gqos.common.APP_PERMISSIONS
 import com.isel_5gqos.common.MOBILE_ID_KEY
 import com.isel_5gqos.common.TOKEN
 import com.isel_5gqos.common.USER
@@ -39,6 +41,56 @@ class SplashActivity : AppCompatActivity() {
 
         WorkManager.getInstance(applicationContext).cancelAllWork()
 
+        requestAppPermissions()
+
+    }
+
+    //<editor-fold name="EVENTS">
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+
+        if(requestCode == APP_PERMISSIONS && grantResults[0] != PackageManager.PERMISSION_GRANTED){
+            AndroidUtils.makeRawToast(this, "Please Grant All the permissions")
+            finish()
+        }
+        else{
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+            login()
+        }
+    }
+
+    //</editor-fold>
+
+    //<editor-fold name="AUX FUNCTIONS">
+
+    private fun requestAppPermissions () {
+
+        val permissionsToGrant = mutableListOf<String>()
+
+        if(checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGrant.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        if(checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGrant.add(android.Manifest.permission.INTERNET)
+        }
+        if(checkSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGrant.add(android.Manifest.permission.ACCESS_NETWORK_STATE)
+        }
+        if(checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGrant.add(android.Manifest.permission.READ_PHONE_STATE)
+        }
+        if(checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGrant.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+
+        if (permissionsToGrant.isNotEmpty()) {
+            requestPermissions(permissionsToGrant.toTypedArray(), APP_PERMISSIONS)
+        }else{
+            login()
+        }
+    }
+
+    private fun login () {
         model.getLoggedUser().observeOnce(this) {
             if(it == null){
                 val intent = Intent(this, LoginActivity::class.java)
@@ -60,7 +112,7 @@ class SplashActivity : AppCompatActivity() {
                     }
                     else{
                         val intent = Intent(this, DashboardActivity::class.java)
-                        //TODO: Debate if intent is really needed
+
                         intent.putExtra(TOKEN, user.userToken)
                         intent.putExtra(USER, user.username)
 
@@ -76,5 +128,7 @@ class SplashActivity : AppCompatActivity() {
             }
         }
     }
+
+    //</editor-fold>
 
 }
