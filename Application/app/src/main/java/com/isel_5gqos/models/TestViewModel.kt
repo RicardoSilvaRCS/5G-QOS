@@ -77,6 +77,14 @@ class TestViewModel(val userName: String) : AbstractModel<SessionDto>({ SessionD
 
     fun getServingCell(sessionId: String) = QosApp.db.radioParametersDao().getServingCell(sessionId)
 
+    fun getAllRadioParameters() = QosApp.db.radioParametersDao().getAllRadioParameters()
+
+    fun getAllThroughputs() = QosApp.db.throughPutDao().getAllThroughputs()
+
+    fun getRadioParametersBySessionId(sessionId: String) = QosApp.db.radioParametersDao().get(sessionId)
+
+    fun getThroughputBySessionId(sessionId: String) = QosApp.db.throughPutDao().get(sessionId)
+
     fun registerThroughPutChanges(sessionId: String) = QosApp.db.throughPutDao().get(sessionId)
 
     fun startDefaultSession(userName: String) {

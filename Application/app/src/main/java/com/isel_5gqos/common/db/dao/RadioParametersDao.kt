@@ -23,6 +23,9 @@ interface RadioParametersDao {
     @Query("Select * from Locations where sessionId=:sessionId limit(1)")
     fun getLastLocation(sessionId: String):LiveData<Location>
 
+    @Query("Select * from RadioParameters")
+    fun getAllRadioParameters():LiveData<List<RadioParameters>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg radioParameter: RadioParameters)
 

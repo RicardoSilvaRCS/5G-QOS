@@ -9,7 +9,6 @@ import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.dtos.RadioParametersDto
 
-
 class RadioParametersUtils {
 
     companion object {
@@ -72,15 +71,6 @@ class RadioParametersUtils {
             Pair(261519, 262143) to "5800"
         )
 
-        fun getLTEBand(arfcn: Int): String? {
-            lteBands.entries.forEach {
-                val (key, value) = it
-                if (arfcn >= key.first && arfcn <= key.second)
-                    return value
-            }
-            return null
-        }
-
         private val gsmBands = mapOf(
             Pair(0,124) to "900",
             Pair(955,1023) to "900",
@@ -90,8 +80,38 @@ class RadioParametersUtils {
             Pair(259,293) to "450",
         )
 
-        fun getGSMBand(arfcn: Int) : String?{
-            gsmBands.entries.forEach {
+        private val wcdmaBands = mapOf(
+            Pair(10562,10838) to "2100",
+            Pair(9662,9938) to "1900",
+            Pair(1537,1738) to "1800",
+            Pair(4387,4413) to "800",
+            Pair(4357,4458) to "1700",
+            Pair(2237,2563) to "2600",
+            Pair(2937,3088) to "900",
+            Pair(9237,9387) to "1700",
+            Pair(3112,3388) to "1700",
+            Pair(3712,3787) to "1500",
+            Pair(3842,3903) to "700",
+            Pair(4017,4043) to "700",
+            Pair(4117,4143) to "700",
+            Pair(712,763) to "800",
+            Pair(4512,4638) to "800",
+            Pair(862,912) to "1500",
+            Pair(4662,5038) to "3500",
+            Pair(5112,5413) to "1900",
+            Pair(5762,5913) to "850",
+            Pair(6617,6813) to "1500"
+        )
+
+
+        private val networkToBandMap = mapOf(
+            NetworkDataTypesEnum.LTE to lteBands,
+            NetworkDataTypesEnum.GSM to gsmBands,
+            NetworkDataTypesEnum.UMTS to wcdmaBands
+        )
+
+        fun getBand(arfcn: Int,netDataType:NetworkDataTypesEnum):String? {
+            networkToBandMap[netDataType]!!.entries.forEach {
                 val (key, value) = it
                 if (arfcn >= key.first && arfcn <= key.second)
                     return value
@@ -103,7 +123,7 @@ class RadioParametersUtils {
             if (cellInfo is CellInfoGsm) {
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "G${getGSMBand(cellInfo.cellIdentity.arfcn)}",
+                    tech = "G${getBand(cellInfo.cellIdentity.arfcn,NetworkDataTypesEnum.GSM)}",
                     arfcn = cellInfo.cellIdentity.arfcn,
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                     cId = cellInfo.cellIdentity.cid,
@@ -113,7 +133,7 @@ class RadioParametersUtils {
             } else if (cellInfo is CellInfoLte) {
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "L${getLTEBand(cellInfo.cellIdentity.earfcn)}",
+                    tech = "L${getBand(cellInfo.cellIdentity.earfcn,NetworkDataTypesEnum.LTE)}",
                     arfcn = cellInfo.cellIdentity.earfcn,
                     rssi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) cellInfo.cellSignalStrength.rssi else MIN_RSSI,
                     rsrp = cellInfo.cellSignalStrength.rsrp,
@@ -127,7 +147,7 @@ class RadioParametersUtils {
                 //Measure UMTS
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "U${cellInfo.cellSignalStrength}",
+                    tech = "U${getBand(cellInfo.cellIdentity.uarfcn,NetworkDataTypesEnum.UMTS)}",
                     arfcn = cellInfo.cellIdentity.uarfcn,
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                     psc = cellInfo.cellIdentity.psc,
