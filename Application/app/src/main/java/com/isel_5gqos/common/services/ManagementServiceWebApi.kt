@@ -11,10 +11,7 @@ import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
 import com.isel_5gqos.common.services.volley_extensions.BasicAuthHeader
 import com.isel_5gqos.common.services.volley_extensions.TokenAuthHeader
-import com.isel_5gqos.dtos.MobileDeviceDto
-import com.isel_5gqos.dtos.TestPlanDto
-import com.isel_5gqos.dtos.TestPlanResultDto
-import com.isel_5gqos.dtos.UserDto
+import com.isel_5gqos.dtos.*
 import org.json.JSONObject
 
 class ManagementServiceWebApi(val ctx: Context) {
@@ -51,16 +48,18 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
-    fun registerMobileDevice (
+    fun registerMobileDevice(
         mobileSerialNumber: String,
-        authenticationToken : String,
+        authenticationToken: String,
         onSuccess: (MobileDeviceDto) -> Unit,
         onError: (VolleyError) -> Unit
     ) {
 
-        val jsonBody = JSONObject( mapOf(
-            "serialNumber" to mobileSerialNumber
-        ))
+        val jsonBody = JSONObject(
+            mapOf(
+                "serialNumber" to mobileSerialNumber
+            )
+        )
 
         val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
             method = POST,
@@ -78,8 +77,8 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
-    fun refreshToken (
-        authenticationToken : String,
+    fun refreshToken(
+        authenticationToken: String,
         onSuccess: (String) -> Unit,
         onError: (VolleyError) -> Unit
     ) {
@@ -102,17 +101,17 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
-    fun getTestPlan (
+    fun getTestPlan(
         authenticationToken: String,
-        deviceId : Int,
-        testPlanId : String,
+        deviceId: Int,
+        testPlanId: String,
         onSuccess: (TestPlanDto) -> Unit,
         onError: (VolleyError) -> Unit
     ) {
 
         val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
             method = GET,
-            url = TEST_PLAN_URI(deviceId,testPlanId),
+            url = TEST_PLAN_URI(deviceId, testPlanId),
             bringHeaders = false,
             jsonBody = JSONObject(),
             onSuccess = { responseBody ->
@@ -127,16 +126,13 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
-    fun postTestPlanResults (
+    fun postTestPlanResults(
         authenticationToken: String,
-        deviceId : Int,
-        testPlanResult : Any,
+        deviceId: Int,
+        testPlanResult: Any,
         onSuccess: () -> Unit,
         onError: (VolleyError) -> Unit
     ) {
-
-
-        Log.v("PINGTEST", gson.toJson(testPlanResult))
 
         val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
             method = POST,
@@ -156,13 +152,39 @@ class ManagementServiceWebApi(val ctx: Context) {
     }
 
 
+    fun systemLog(
+        authenticationToken: String,
+        deviceId: Int,
+        systemLog: SystemLogDto,
+        onSuccess: () -> Unit,
+        onError: (VolleyError) -> Unit
+    ) {
 
-    private fun convertToTestPlanDtoAsync (response: String?, onSuccess: (TestPlanDto) -> Unit) =
+        Log.v("PINGTEST", gson.toJson(systemLog))
+
+        val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
+            method = POST,
+            url = SYSTEM_LOG(deviceId),
+            bringHeaders = false,
+            jsonBody = JSONObject(gson.toJson(systemLog)),
+            onSuccess = {
+
+                onSuccess()
+
+            },
+            onError = onError,
+            getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) }
+        )
+
+        queue.add(requestObjectRequest)
+    }
+
+    private fun convertToTestPlanDtoAsync(response: String?, onSuccess: (TestPlanDto) -> Unit) =
         object : AsyncTask<String, Int, TestPlanDto>() {
             override fun doInBackground(vararg params: String?): TestPlanDto =
                 gson.fromJson(response, TestPlanDto::class.java)
 
-            override fun onPostExecute(result:TestPlanDto) = onSuccess(result!!)
+            override fun onPostExecute(result: TestPlanDto) = onSuccess(result!!)
         }.execute(response)
 
 

@@ -8,6 +8,7 @@ const val REGISTER_MOBILE_DEVICE_URI = "${MANAGEMENT_SYSTEM_URL}/probe/register"
 const val REFRESH_TOKEN_URI = "${MANAGEMENT_SYSTEM_URL}/user/refresh"
 val TEST_PLAN_URI : (deviceId:Int, testPlanId:String) -> String = {deviceId, testPlanId -> "${MANAGEMENT_SYSTEM_URL}/probe/$deviceId/test-plan/${testPlanId}/complete" }
 val TEST_PLAN_RESULT_URI : ( deviceId:Int ) -> String = {deviceId -> "${MANAGEMENT_SYSTEM_URL}/probe/$deviceId/test-log" }
+val SYSTEM_LOG : ( deviceId:Int ) -> String = {deviceId -> "${MANAGEMENT_SYSTEM_URL}/probe/$deviceId/system-log" }
 
 
 /**END**/
