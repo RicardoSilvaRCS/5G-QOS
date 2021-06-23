@@ -36,7 +36,6 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        requestAppPermissions()
 
         qosFactory = QosFactory(savedInstanceState)
 
@@ -77,7 +76,6 @@ class LoginActivity : AppCompatActivity() {
 
                     val intent = Intent(this, DashboardActivity::class.java)
 
-                    //TODO: Debate if intent is really needed
                     intent.putExtra(TOKEN, it.userToken)
                     intent.putExtra(USER, it.username)
 
@@ -97,39 +95,6 @@ class LoginActivity : AppCompatActivity() {
         cancelButton.setOnClickListener {
             username.setText("")
             password.setText("")
-        }
-
-
-    }
-
-    private fun requestAppPermissions () {
-
-        val permissionsToGrant = mutableListOf<String>()
-
-        if(checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            permissionsToGrant.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-        if(checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
-            permissionsToGrant.add(android.Manifest.permission.INTERNET)
-        }
-        if(checkSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED){
-            permissionsToGrant.add(android.Manifest.permission.ACCESS_NETWORK_STATE)
-        }
-        if(checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
-            permissionsToGrant.add(android.Manifest.permission.READ_PHONE_STATE)
-        }
-
-        if (permissionsToGrant.isNotEmpty())
-            requestPermissions(permissionsToGrant.toTypedArray(), APP_PERMISSIONS)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-
-        if(requestCode == APP_PERMISSIONS && grantResults[0] != PackageManager.PERMISSION_GRANTED){
-            Toast.makeText(this, "Please Grant All the permissions", Toast.LENGTH_SHORT).show()
-        }
-        else{
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
