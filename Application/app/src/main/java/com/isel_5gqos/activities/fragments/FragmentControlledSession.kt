@@ -96,7 +96,7 @@ class FragmentControlledSession : Fragment() {
                 testModel.getAllThroughputs().observeOnce(requireActivity()) { throughputs ->
                     ExcelUtils.exportToExcel(
                         context = requireContext(),
-                        filename = "Excel",
+                        filename = "session_info",
                         sheetsMap = mapOf(
                             ExcelSheetNamesEnum.RADIO_PARAMETERS.sheetName to Triple(radioParameters,
                                 { ExcelUtils.makeRadioParametersHeaderRow(it) },

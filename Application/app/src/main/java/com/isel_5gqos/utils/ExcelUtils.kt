@@ -43,10 +43,13 @@ class ExcelUtils {
             }
 
 
-            // Setting Value and Style to the cell
+            val folder = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)}${File.separator}QoS5G")
+
+            if(!folder.exists())
+                folder.mkdir()
 
             val file =
-                File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "${filename}_${System.currentTimeMillis()}.xls")
+                File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)}${File.separator}QoS5G${File.separator}${DateUtils.getDateByFormat("dd_MMM_yyyy__HH_mm")}_${filename}.xls")
             var fileOutputStream: FileOutputStream? = null
 
             try {

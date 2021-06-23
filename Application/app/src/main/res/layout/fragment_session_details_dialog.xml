@@ -94,7 +94,7 @@
         android:layout_height="40dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:background="@drawable/white_background_blue_500_border_round_20"
+        android:background="@drawable/button_white_background_blue_500_border_round_20"
         android:textColor="@color/blue_500"
         android:text="@string/back"
         />
@@ -115,8 +115,7 @@
         android:layout_height="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-
-        android:background="@drawable/white_background_gradient_blue_500_red_blue_500_border_round_20"
+        android:background="@drawable/button_white_background_blue_500_border_round_20"
         android:text="@string/delete"
         android:textColor="@color/purple_700"
         />

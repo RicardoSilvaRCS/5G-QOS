@@ -97,28 +97,7 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
                 dialog.dismiss()
             }
 
-            btn_export_excel.setOnClickListener {
-                testModel.getRadioParametersBySessionId(sessionId = session.id).observeOnce(requireActivity()) { radioParameters ->
-                    testModel.getThroughputBySessionId(sessionId = session.id).observeOnce(requireActivity()) { throughputs ->
-                        ExcelUtils.exportToExcel(
-                            context = requireContext(),
-                            filename = "Session_info_${session.id}",
-                            sheetsMap = mapOf(
-                                ExcelSheetNamesEnum.RADIO_PARAMETERS.sheetName to Triple(
-                                    radioParameters,
-                                    { ExcelUtils.makeRadioParametersHeaderRow(it) },
-                                    { row, radioParameter -> ExcelUtils.makeRadioParametersRow(row, radioParameter as RadioParameters) }
-                                ),
-                                ExcelSheetNamesEnum.THROUGHPUT.sheetName to Triple(
-                                    throughputs,
-                                    { ExcelUtils.makeThroughputHeaderRow(it) },
-                                    { row, throughput -> ExcelUtils.makeThroughputRow(row, throughput as ThroughPut) }
-                                ),
-                            )
-                        )
-                    }
-                }
-            }
+
 
             dialog.setView(inflatedView)
             dialog.setCanceledOnTouchOutside(false)
@@ -127,6 +106,28 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
 
         }
 
+        btn_export_excel.setOnClickListener {
+            testModel.getRadioParametersBySessionId(sessionId = session.id).observeOnce(requireActivity()) { radioParameters ->
+                testModel.getThroughputBySessionId(sessionId = session.id).observeOnce(requireActivity()) { throughputs ->
+                    ExcelUtils.exportToExcel(
+                        context = requireContext(),
+                        filename = "${session.id}_session_info",
+                        sheetsMap = mapOf(
+                            ExcelSheetNamesEnum.RADIO_PARAMETERS.sheetName to Triple(
+                                radioParameters,
+                                { ExcelUtils.makeRadioParametersHeaderRow(it) },
+                                { row, radioParameter -> ExcelUtils.makeRadioParametersRow(row, radioParameter as RadioParameters) }
+                            ),
+                            ExcelSheetNamesEnum.THROUGHPUT.sheetName to Triple(
+                                throughputs,
+                                { ExcelUtils.makeThroughputHeaderRow(it) },
+                                { row, throughput -> ExcelUtils.makeThroughputRow(row, throughput as ThroughPut) }
+                            ),
+                        )
+                    )
+                }
+            }
+        }
         sessionDetailsThroughputChart = dialogView.findViewById(R.id.session_details_throughput_chart)
         sessionDetailsServingCellChart = dialogView.findViewById(R.id.session_details_serving_cell_chart)
         sessionDetailsStrongestNeighborChart = dialogView.findViewById(R.id.session_details_strongest_neighbor_chart)

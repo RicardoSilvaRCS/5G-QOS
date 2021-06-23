@@ -1,9 +1,9 @@
 package com.isel_5gqos.activities.fragments
 
 import android.Manifest
-import android.content.ClipData
-import android.content.ClipboardManager
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -12,19 +12,11 @@ import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.activities.DashboardActivity
 import com.isel_5gqos.common.MEGABYTE
-import com.isel_5gqos.common.MOBILE_ID_KEY
-import com.isel_5gqos.models.SystemViewModel
-import com.isel_5gqos.models.TestViewModel
-import com.isel_5gqos.utils.android_utils.AndroidUtils
 import kotlinx.android.synthetic.main.fragment_info.*
 
 
@@ -55,6 +47,16 @@ class FragmentInfo : Fragment() {
 
         val internalFree: Long = internalStatFs.availableBlocksLong * internalStatFs.blockSizeLong / (MEGABYTE)
         val externalFree: Long = externalStatFs.availableBlocksLong * externalStatFs.blockSizeLong / (MEGABYTE)
+
+
+        go_to_excel_directory.setOnClickListener {
+            val path = "${Environment.getExternalStorageDirectory()}/Documents/QoS5G"
+            val uri = Uri.parse(path)
+
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.setDataAndType(uri, "*/*")
+            startActivity(intent)
+        }
 
 
         device_free_storage_txt.text = String.format(getString(R.string.mb_of_free_space), internalFree + externalFree)
