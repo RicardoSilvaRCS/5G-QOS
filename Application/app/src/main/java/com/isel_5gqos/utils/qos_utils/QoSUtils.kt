@@ -1,9 +1,9 @@
 package com.isel_5gqos.utils.qos_utils
 
 import android.content.Context
+import android.util.EventLog
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.dtos.NavigationDto
-import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.dtos.SystemLogDto
 import com.isel_5gqos.utils.DateUtils
 import com.isel_5gqos.utils.mobile_utils.LocationUtils
@@ -13,24 +13,37 @@ class QoSUtils {
 
     companion object {
 
+        //<editor-fold name="System Log Description Mapper">
+
+        private val descriptionMap = mapOf(
+            EventEnum.CONTROL_CONNECTION_OK to EmptyMapper(),
+            EventEnum.CONTROL_CONNECTION_ERROR to MapperWithCause(),
+            EventEnum.TESTPLAN_SCHEDULED to MapperWithTestPlanId(),
+            EventEnum.TESTPLAN_STARTED to MapperWithTestPlanId(),
+            EventEnum.TESTPLAN_FINISHED to MapperWithTestPlanId(),
+            EventEnum.TESTPLAN_ERROR to MapperWithTestPlanIdAndCause(),
+            EventEnum.TEST_START to MapperWithTestId(),
+            EventEnum.TEST_END to MapperWithTestId(),
+            EventEnum.TEST_ERROR to MapperWithTestIdAndCause(),
+        )
+
+        //</editor-fold>
+
         fun logToServer(
             token: String,
             deviceId: Int,
             event: EventEnum,
-            level: LevelEnum,
-            description: String, //description not implemented by server
             context : Context,
-            onPostExec: () -> Unit
+            props : SystemLogProperties,
+            onPostExec: () -> Unit,
         ) {
 
             val systemLog = SystemLogDto(
                 date = DateUtils.getDateIso8601Format(),
-                event = event.eventType,
-                id = Random().nextInt(),
-                level = level.levelType,
+                event = event.toString(),
                 navigationDto = getProbeLocation(context),
                 probeId = deviceId,
-                properties = "{}",
+                properties = "{${descriptionMap[event]?.map(props)}}",
             )
 
             QosApp.msWebApi.systemLog(
@@ -60,6 +73,5 @@ class QoSUtils {
                 speed = location?.speed,
             )
         }
-
     }
 }

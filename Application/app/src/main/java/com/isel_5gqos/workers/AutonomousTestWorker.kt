@@ -9,12 +9,11 @@ import com.isel_5gqos.dtos.TestPlanDto
 import com.isel_5gqos.dtos.TestPlanResultDto
 import com.isel_5gqos.utils.DateUtils.Companion.getDateIso8601Format
 import com.isel_5gqos.utils.qos_utils.EventEnum
-import com.isel_5gqos.utils.qos_utils.LevelEnum
 import com.isel_5gqos.utils.qos_utils.QoSUtils
 import com.isel_5gqos.utils.qos_utils.QoSUtils.Companion.getProbeLocation
+import com.isel_5gqos.utils.qos_utils.SystemLogProperties
 import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
-import java.util.*
 
 
 class AutonomousTestWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
@@ -47,10 +46,11 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 QoSUtils.logToServer(
                     token = token,
                     deviceId = deviceId,
-                    event = EventEnum.CONTROL_CONNECTION_OK,
-                    level = LevelEnum.INFO,
-                    description = "Starting test plan $testPlanId execution",
+                    event = EventEnum.TESTPLAN_STARTED,
                     context = context,
+                    props = SystemLogProperties(
+                        testPlanId = testPlanId
+                    )
                 ) {
 
                     /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
@@ -65,12 +65,13 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 QoSUtils.logToServer(
                     token = token,
                     deviceId = deviceId,
-                    event = EventEnum.CONTROL_CONNECTION_ATTEMPT,
-                    level = LevelEnum.CRITICAL,
-                    description = "Error while trying to get a tests from test plan from test plan: $testPlanId",
+                    event = EventEnum.TESTPLAN_ERROR,
                     context = context,
+                    props = SystemLogProperties(
+                        testPlanId = testPlanId,
+                        cause = it.cause.toString()
+                    )
                 ) {}
-
             }
         )
 
@@ -90,43 +91,72 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
         }
 
         val currTest = tests.first()
-        val testType = WorkTypeEnum.valueOf(currTest.testType.toUpperCase())
 
-        val resultDto = TestPlanResultDto(
-            id = Random().nextInt(),
-            date = getDateIso8601Format(),
-            navigationDto = getProbeLocation(context),
-            probeId = deviceId,
-            testId = currTest.id,
-            testPlanId = testPlanId,
-            type = currTest.testType
-        )
+        QoSUtils.logToServer(
+            token = token,
+            deviceId = deviceId,
+            event = EventEnum.TEST_START,
+            context = context,
+            props = SystemLogProperties(
+                testId = currTest.id,
+            )
+        ) {
 
-        try {
+            /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
+            val testType = WorkTypeEnum.valueOf(currTest.testType.toUpperCase())
 
-            WorksMap.worksMap[testType]?.work(currTest, resultDto) {
-                results.add(it)
-                postResultsToApi(it) {
+            val resultDto = TestPlanResultDto(
+                date = getDateIso8601Format(),
+                navigationDto = getProbeLocation(context),
+                probeId = deviceId,
+                testId = currTest.id,
+                testPlanId = testPlanId,
+                type = currTest.testType
+            )
+
+            try {
+
+                WorksMap.worksMap[testType]?.work(currTest, resultDto) {
+                    results.add(it)
+
+                    postResultsToApi(it) {
+                        QoSUtils.logToServer(
+                            token = token,
+                            deviceId = deviceId,
+                            event = EventEnum.TEST_END,
+                            context = context,
+                            props = SystemLogProperties(
+                                testId = currTest.id,
+                            )
+                        ) {
+                            /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
+                            tests.removeFirst()
+                            runWork(tests)
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+
+                /**If test execution throw's and exception will log to Management System*/
+                QoSUtils.logToServer(
+                    token = token,
+                    deviceId = deviceId,
+                    event = EventEnum.TEST_ERROR,
+                    context = context,
+                    props = SystemLogProperties(
+                        testId = currTest.id,
+                        cause = e.toString()
+                    )
+                ) {
+                    /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
                     tests.removeFirst()
                     runWork(tests)
                 }
             }
 
-        } catch (e: Exception) {
-
-            /**If test execution throw's and exception will log to Management System*/
-            QoSUtils.logToServer(
-                token = token,
-                deviceId = deviceId,
-                event = EventEnum.CONTROL_CONNECTION_ATTEMPT,
-                level = LevelEnum.CRITICAL,
-                description = e.stackTrace.toString(),
-                context = context,
-            ) {
-                tests.removeFirst()
-                runWork(tests)
-            }
         }
+
     }
 
     private fun postResultsToApi(result: TestPlanResultDto, onPostExec: () -> Unit) {
@@ -147,10 +177,12 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 QoSUtils.logToServer(
                     token = token,
                     deviceId = deviceId,
-                    event = EventEnum.CONTROL_CONNECTION_ATTEMPT,
-                    level = LevelEnum.CRITICAL,
-                    description = "Error while reporting ${result.testId} from test plan $testPlanId",
+                    event = EventEnum.TEST_ERROR,
                     context = context,
+                    props = SystemLogProperties(
+                        testId = result.testId,
+                        cause = it.cause.toString()
+                    )
                 ) {
                     onPostExec()
                 }

@@ -46,7 +46,6 @@ class PingWork : IWorks {
                         lost = it.dropped,
                         lostPercent = (it.dropped.toFloat()/detailedPing.size)*100,
                         pingDetail = detailedPing,
-                        id = resultDto.id,
                         date = resultDto.date,
                         navigationDto = resultDto.navigationDto,
                         probeId = resultDto.probeId,

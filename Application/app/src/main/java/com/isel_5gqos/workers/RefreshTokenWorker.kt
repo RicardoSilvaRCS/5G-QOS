@@ -1,7 +1,6 @@
 package com.isel_5gqos.workers
 
 import android.content.Context
-import android.util.Base64
 import androidx.work.*
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
@@ -10,8 +9,8 @@ import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.utils.android_utils.AndroidUtils.Companion.notifyOnChannel
 import com.isel_5gqos.utils.qos_utils.EventEnum
-import com.isel_5gqos.utils.qos_utils.LevelEnum
 import com.isel_5gqos.utils.qos_utils.QoSUtils
+import com.isel_5gqos.utils.qos_utils.SystemLogProperties
 import java.util.concurrent.TimeUnit
 
 class RefreshTokenWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
@@ -37,10 +36,9 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
                     QoSUtils.logToServer(
                         token = token,
                         deviceId = deviceId,
-                        event = EventEnum.SERVER_REGISTRATION_OK,
-                        level = LevelEnum.INFO,
-                        description = "Token successfully refreshed!",
+                        event = EventEnum.CONTROL_CONNECTION_OK,
                         context = context,
+                        props = SystemLogProperties()
                     ) {
 
                         notifyOnChannel(
@@ -62,10 +60,11 @@ class RefreshTokenWorker(private val context: Context, private val workerParams:
                 QoSUtils.logToServer(
                     token = token,
                     deviceId = deviceId,
-                    event = EventEnum.SERVER_REGISTRATION_ATTEMPT,
-                    level = LevelEnum.INFO,
-                    description = "Fail while trying to refresh token!",
+                    event = EventEnum.CONTROL_CONNECTION_ERROR,
                     context = context,
+                    props = SystemLogProperties(
+                        cause = it.cause.toString()
+                    )
                 ) {
 
                     notifyOnChannel(
