@@ -118,7 +118,7 @@ class SplashActivity : AppCompatActivity() {
 
                         /**Launch Refresh Token Worker**/
                         //scheduleRefreshTokenWorker(user.username,user.userToken,user.deviceId)
-                        scheduleAutonomousTestWorker(user.userToken,user.deviceId,"6cdc9b20-c7c8-11eb-85d8-005056840996")
+                        scheduleAutonomousTestWorker(user.userToken,user.deviceId,"e4f17256-d3a4-11eb-8504-005056840996")
 
                         startActivity(intent)
                         finish()

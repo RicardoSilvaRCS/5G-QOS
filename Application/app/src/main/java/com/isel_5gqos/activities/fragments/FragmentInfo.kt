@@ -14,13 +14,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.MEGABYTE
+import com.isel_5gqos.factories.SystemFactory
+import com.isel_5gqos.models.SystemViewModel
 import kotlinx.android.synthetic.main.fragment_info.*
 
 
 class FragmentInfo : Fragment() {
+
+    private lateinit var systemFactory: SystemFactory
+
+    private val systemViewModel by lazy {
+        ViewModelProvider(this, systemFactory)[SystemViewModel::class.java]
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_info, container, false)
@@ -29,8 +38,9 @@ class FragmentInfo : Fragment() {
 
         database_file_path_txt.text = QosApp.db.openHelper.readableDatabase.path
 
-        val pageSize = QosApp.db.openHelper.readableDatabase.pageSize
-        val cursor = QosApp.db.openHelper.readableDatabase.query("Select page_count from pragma_page_count")
+        systemFactory = SystemFactory(savedInstanceState)
+        val (pageSize, cursor) = systemViewModel.getDatabaseInfo()
+
         var pageCount = 0L
 
         if (cursor.moveToFirst())
@@ -39,7 +49,6 @@ class FragmentInfo : Fragment() {
         database_size_txt.text =
             if (pageCount == 0L) getString(R.string.na)
             else String.format(getString(R.string.database_size), pageSize * pageCount / 1024)
-
 
         val internalStatFs = StatFs(Environment.getRootDirectory().absolutePath)
 

@@ -1,11 +1,6 @@
 package com.isel_5gqos.activities
 
-import android.R.attr.label
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Base64
 import android.widget.Button
@@ -50,26 +45,26 @@ class LoginActivity : AppCompatActivity() {
         val mobileIdInput = findViewById<TextInputLayout>(R.id.mobile_id)
         val mobileIdInputText = findViewById<TextInputEditText>(R.id.mobile_id_edit_text)
 
-        var mobileId = AndroidUtils.getPreferences(MOBILE_ID_KEY,applicationContext)
+        var serialNumber = AndroidUtils.getPreferences(MOBILE_ID_KEY,applicationContext)
 
-        if(!mobileId.isNullOrEmpty()){
+        if(!serialNumber.isNullOrEmpty()){
             mobileIdInput.visibility = TextInputEditText.INVISIBLE
             mobileIdInputText.visibility = TextInputEditText.INVISIBLE
-            mobileIdInputText.setText(mobileId)
+            mobileIdInputText.setText(serialNumber)
         }
 
         loginButton.setOnClickListener {
 
             val user = username.text.toString()
             val pass = password.text.toString()
-            if(mobileId.isNullOrEmpty()){
-                mobileId = mobileIdInputText.text.toString()
+            if(serialNumber.isNullOrEmpty()){
+                serialNumber = mobileIdInputText.text.toString()
             }
 
-            if (pass.isBlank() || user.isBlank() || mobileId.isNullOrEmpty()) {
+            if (pass.isBlank() || user.isBlank() || serialNumber.isNullOrEmpty()) {
                 Toast.makeText(this, "Please insert your credentials", Toast.LENGTH_SHORT).show()
             } else {
-                model.login(user, pass, mobileId!!)
+                model.login(user, pass, serialNumber!!)
                 model.observe(this) {
 
                     if(it.userToken.isEmpty()) return@observe
@@ -79,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
                     intent.putExtra(TOKEN, it.userToken)
                     intent.putExtra(USER, it.username)
 
-                    AndroidUtils.setPreferences(MOBILE_ID_KEY,mobileId,applicationContext)
+                    AndroidUtils.setPreferences(MOBILE_ID_KEY,serialNumber,applicationContext)
 
                     /**Launch Refresh Token Worker**/
                     scheduleRefreshTokenWorker(it.username,it.userToken,it.deviceId)

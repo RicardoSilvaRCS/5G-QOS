@@ -56,15 +56,24 @@ class FragmentChartSession : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this)
+        }
+
         registerObservers(sessionId)
     }
 
     override fun onStop() {
         resetObservers()
         resetCharts()
-        EventBus.getDefault().unregister(this)
+
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        EventBus.getDefault().unregister(this)
+        super.onDestroy()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

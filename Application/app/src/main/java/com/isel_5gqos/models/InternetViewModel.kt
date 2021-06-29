@@ -8,7 +8,9 @@ import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.db.entities.ThroughPut
 import com.qiniu.android.netdiag.Output
 import com.qiniu.android.netdiag.Ping
-
+/**
+ * Old base code, non used, initial app experimental ping
+ * */
 class InternetViewModel : ViewModel() {
 
     val liveData: MutableLiveData<com.isel_5gqos.models.Ping> by lazy {
