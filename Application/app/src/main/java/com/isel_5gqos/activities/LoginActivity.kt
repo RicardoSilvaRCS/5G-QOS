@@ -75,9 +75,10 @@ class LoginActivity : AppCompatActivity() {
                     intent.putExtra(USER, it.username)
 
                     AndroidUtils.setPreferences(MOBILE_ID_KEY,serialNumber,applicationContext)
+                    AndroidUtils.setPreferences(TOKEN_FOR_WORKER,it.userToken,applicationContext)
 
                     /**Launch Refresh Token Worker**/
-                    scheduleRefreshTokenWorker(it.username,it.userToken,it.deviceId)
+                    scheduleRefreshTokenWorker(it.username,it.userToken,it.deviceId,0)
 
                     startActivity(intent)
 

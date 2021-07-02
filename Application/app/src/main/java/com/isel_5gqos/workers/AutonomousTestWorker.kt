@@ -1,33 +1,46 @@
 package com.isel_5gqos.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.*
+import com.google.gson.Gson
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.common.*
+import com.isel_5gqos.common.DEVICE_SERVICE_ID
+import com.isel_5gqos.common.TEST_PLAN_STRING
+import com.isel_5gqos.common.TOKEN_FOR_WORKER
+import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.dtos.TestDto
 import com.isel_5gqos.dtos.TestPlanDto
 import com.isel_5gqos.dtos.TestPlanResultDto
 import com.isel_5gqos.utils.DateUtils.Companion.getDateIso8601Format
+import com.isel_5gqos.utils.android_utils.AndroidUtils
 import com.isel_5gqos.utils.qos_utils.EventEnum
 import com.isel_5gqos.utils.qos_utils.QoSUtils
 import com.isel_5gqos.utils.qos_utils.QoSUtils.Companion.getProbeLocation
 import com.isel_5gqos.utils.qos_utils.SystemLogProperties
 import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class AutonomousTestWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
 
     private val results: MutableList<Any> = mutableListOf()
-    private lateinit var token: String
+    private val token by lazy {
+        AndroidUtils.getPreferences(TOKEN_FOR_WORKER, applicationContext)!!
+    }
     private var deviceId: Int = -1
-    private lateinit var testPlanId: String
+    private lateinit var testPlanStr: String
 
     override fun doWork(): Result {
-
-        token = inputData.getString(TOKEN).toString()
+//        token = AndroidUtils.getPreferences("TOKEN",context)!!
         deviceId = inputData.getInt(DEVICE_SERVICE_ID, -1)
-        testPlanId = inputData.getString(TEST_PLAN_ID).toString()
+        testPlanStr = inputData.getString(TEST_PLAN_STRING)!!
 
         getTestPlan()
 
@@ -35,46 +48,22 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
     }
 
     private fun getTestPlan() {
-
-        QosApp.msWebApi.getTestPlan(
-            authenticationToken = token,
+        val testPlan = Gson().fromJson(testPlanStr, TestPlanDto::class.java)
+        Log.v("TestTest", testPlan.name)
+        QoSUtils.logToServer(
+            token = token,
             deviceId = deviceId,
-            testPlanId = testPlanId,
-            onSuccess = { testPlan ->
+            event = EventEnum.TESTPLAN_STARTED,
+            context = context,
+            props = SystemLogProperties(
+                testPlanId = testPlan.id
+            )
+        ) {
 
-                /**Reporting test start*/
-                QoSUtils.logToServer(
-                    token = token,
-                    deviceId = deviceId,
-                    event = EventEnum.TESTPLAN_STARTED,
-                    context = context,
-                    props = SystemLogProperties(
-                        testPlanId = testPlanId
-                    )
-                ) {
+            /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
+            executeTestPlan(testPlan = testPlan)
 
-                    /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
-                    executeTestPlan(testPlan = testPlan)
-
-                }
-
-            },
-            onError = {
-
-                /**Reporting get test plan error*/
-                QoSUtils.logToServer(
-                    token = token,
-                    deviceId = deviceId,
-                    event = EventEnum.TESTPLAN_ERROR,
-                    context = context,
-                    props = SystemLogProperties(
-                        testPlanId = testPlanId,
-                        cause = it.cause.toString()
-                    )
-                ) {}
-            }
-        )
-
+        }
     }
 
     private fun executeTestPlan(testPlan: TestPlanDto) {
@@ -110,7 +99,7 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 navigationDto = getProbeLocation(context),
                 probeId = deviceId,
                 testId = currTest.id,
-                testPlanId = testPlanId,
+                testPlanId = testPlanStr,
                 type = currTest.testType
             )
 
@@ -160,8 +149,6 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
     }
 
     private fun postResultsToApi(result: TestPlanResultDto, onPostExec: () -> Unit) {
-        //TODO Guardar Resultados na Db
-
         QosApp.msWebApi.postTestPlanResults(
             authenticationToken = token,
             deviceId = deviceId,
@@ -194,13 +181,17 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
 
 }
 
-fun scheduleAutonomousTestWorker(token: String, deviceId: Int, testPlanId: String) {
+fun scheduleAutonomousTestWorker(deviceId: Int, testPlanDto: TestPlanDto, testPlanStringified: String) { //receber data
 
-    val inputData = workDataOf(TOKEN to token, DEVICE_SERVICE_ID to deviceId, TEST_PLAN_ID to testPlanId)
+    val inputData = workDataOf(DEVICE_SERVICE_ID to deviceId, TEST_PLAN_STRING to testPlanStringified)
 
+    val startDate = LocalDateTime.parse(testPlanDto.startDate).plusHours(1).toEpochSecond(ZoneOffset.UTC)
+    val currentDate = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    Log.v("TestTest", "Current date: ${LocalDateTime.ofEpochSecond(currentDate,0, ZoneOffset.UTC)}, Start date: ${LocalDateTime.ofEpochSecond(startDate,0, ZoneOffset.UTC)} ${if (startDate > currentDate) startDate - currentDate else 0} seconds to test")
     val request = OneTimeWorkRequestBuilder<AutonomousTestWorker>()
         .setInputData(inputData)
+        .setInitialDelay(if (startDate > currentDate) startDate - currentDate else 0, TimeUnit.SECONDS)
         .build()
-
+    Log.v("TesTest", "Queue test ${testPlanDto.name} by ${testPlanDto.creator}")
     WorkManager.getInstance(QosApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE, request)
 }

@@ -11,10 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.work.WorkManager
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
-import com.isel_5gqos.common.APP_PERMISSIONS
-import com.isel_5gqos.common.MOBILE_ID_KEY
-import com.isel_5gqos.common.TOKEN
-import com.isel_5gqos.common.USER
+import com.isel_5gqos.common.*
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
@@ -115,10 +112,11 @@ class SplashActivity : AppCompatActivity() {
 
                         intent.putExtra(TOKEN, user.userToken)
                         intent.putExtra(USER, user.username)
+                        AndroidUtils.setPreferences(TOKEN_FOR_WORKER,user.userToken,applicationContext)
 
                         /**Launch Refresh Token Worker**/
-                        //scheduleRefreshTokenWorker(user.username,user.userToken,user.deviceId)
-                        scheduleAutonomousTestWorker(user.userToken,user.deviceId,"e4f17256-d3a4-11eb-8504-005056840996")
+                        scheduleRefreshTokenWorker(user.username,user.userToken,user.deviceId,0)
+//                        scheduleAutonomousTestWorker(user.userToken,user.deviceId,"e4f17256-d3a4-11eb-8504-005056840996")
 
                         startActivity(intent)
                         finish()

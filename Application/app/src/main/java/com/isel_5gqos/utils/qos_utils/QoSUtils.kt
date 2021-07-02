@@ -35,7 +35,7 @@ class QoSUtils {
             event: EventEnum,
             context : Context,
             props : SystemLogProperties,
-            onPostExec: () -> Unit,
+            onPostExec: () -> Unit = {},
         ) {
 
             val systemLog = SystemLogDto(

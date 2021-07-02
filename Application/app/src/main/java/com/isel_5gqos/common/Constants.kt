@@ -1,44 +1,49 @@
 package com.isel_5gqos.common
 
 
-/**        Permissions           **/
+/**     Permissions                                              **/
 
 const val APP_PERMISSIONS = 10
+/**     Shared Preferences                                          **/
 const val MOBILE_ID_KEY = "MOBILE_ID_KEY"
+const val TOKEN_FOR_WORKER = "TOKEN_FOR_WORKER"
 
-/**        In case to make exclusive permissions treatment        **/
+/**     In case to make exclusive permissions treatment             **/
 const val ACCESS_FINE_LOCATION_PERMISSION = 1
 const val INTERNET_PERMISSION = 2
 const val ACCESS_NETWORK_STATE_PERMISSION = 3
 const val READ_PHONE_STATE_PERMISSION = 4
 
-/**        INTENT VARIABLES           **/
+/**     INTENT VARIABLES                                            **/
 const val USER = "USER"
 //const val TOKEN = "TOKEN"
 
-/**        TAGS           **/
+/**     TAGS                                                        **/
 const val TAG = "5GQosApp"
+const val REFRESH_WORKER_TAG = "REFRESH_WORKER_TAG"
 const val WORKER_TAG = "WORKER_TAG"
 const val RADIO_PARAMETERS_WORKER_ID = "RAD_PAR_ID"
 
-/**   WORKER INPUT DATA   **/
+/**   WORKER INPUT DATA                                             **/
 const val SESSION_ID = "SESSION_ID"
 const val DB_SAVE = "DB_SAVE"
 const val PROGRESS = "PROGRESS"
 const val TOKEN = "TOKEN"
 const val CREDENTIALS = "USER_LOGIN_CREDENTIALS"
 const val DEVICE_SERVICE_ID = "DEVICE_SERVICE_ID"
+const val FIRST_CONNECTION = "FIRST_CONNECTION"
 const val TEST_PLAN_ID = "TEST_PLAN_ID"
+const val TEST_PLAN_STRING = "TEST_PLAN_STRING"
 
 const val JOB_TYPE = "JOB_TYPE"
 
-/** NOTIFICATION CHANNEL **/
+/**     NOTIFICATION CHANNEL                                        **/
 
 const val CHANNEL_ID = "5G_QOS_NOTIFICATION_CHANNEL"
 
-/** END **/
+/**     END                                                         **/
 
-/**      VARIABLES        **/
+/**     VARIABLES                                                   **/
 const val K_BIT = 1024
 const val BITS_IN_BYTE = 8
 const val DEFAULT_SESSION_ID = "-1"
@@ -46,14 +51,14 @@ const val SECRET_PASSWORD = "SECRET_PASSWORD"
 /**Default sessionId for real time*/
 
 
-/**  RADIO PARAMS CONSTANT VALUES **/
+/**  RADIO PARAMS CONSTANT VALUES                                   **/
 const val MIN_RSSI = -113
 const val MIN_RSRP = -140
 const val MIN_RSRQ = -34
 const val MIN_RSSNR = -20
 
 
-/**   CHART SECTIONS INDEX   **/
+/**   CHART SECTIONS INDEX                                          **/
 object ThroughputIndex {
     const val TX = 0
     const val RX = 1
@@ -74,24 +79,24 @@ object NumberOfCells {
     const val NUMBER: Int = 0
 }
 
-/** GLOBAL CONSTANTS   **/
+/**     GLOBAL CONSTANTS                                            **/
 const val DATABASE_NAME = "Qos-Db"
 const val KILOBYTE = 1024
 const val MEGABYTE = KILOBYTE * KILOBYTE
 
 
 //TODO FAZER CLASS QUE RECEBE UM ID E UM CONTEXT E VAI BUSCAR AO "R" A STRING ASSOCIADA
-/**Volley Errors Labels**/
+/**     Volley Errors                                               **/
 
-/**GENERIC ERRORS**/
+/**     GENERIC ERRORS                                              **/
 
 const val NO_CONNECTION_ERROR = "Please check your internet connection"
 const val TIMEOUT_ERROR = "There is a problem with the server"
 const val GENERIC_ERROR = "There is a problem please contact the it team!"
 
-/**END**/
+/**     END                                                         **/
 
-/**CREDENTIALS**/
+/**     CREDENTIALS                                                 **/
 const val AUTH_FAILED_ERROR = "Authentication token is no longer available"
 const val INVALID_CREDENTIALS = "There is a problem with the server"
 const val TOKEN_NOT_REFRESHED = "The token wasn't able to be refreshed please insert your credentials"

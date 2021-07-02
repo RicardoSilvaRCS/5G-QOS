@@ -16,7 +16,7 @@ class PingWork : IWorks {
      * **/
 
     override fun work(test: TestDto, resultDto: TestPlanResultDto, onPostExecute: (TestPlanResultDto) -> Unit) {
-
+        Log.v("TestTest","Ping ${test.name}")
         val detailedPing = mutableListOf<DetailedPingDto>()
 
         Ping.start(test.server.host, test.nPings,
