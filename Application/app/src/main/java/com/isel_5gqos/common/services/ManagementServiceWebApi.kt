@@ -134,6 +134,7 @@ class ManagementServiceWebApi(val ctx: Context) {
         onSuccess: () -> Unit,
         onError: (VolleyError) -> Unit
     ) {
+        Log.v("PINGTEST", gson.toJson(testPlanResult))
 
         val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
             method = POST,
@@ -161,7 +162,7 @@ class ManagementServiceWebApi(val ctx: Context) {
         onError: (VolleyError) -> Unit
     ) {
 
-        Log.v("PINGTEST", gson.toJson(systemLog))
+//        Log.v("PINGTEST", gson.toJson(systemLog))
 
         val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
             method = POST,
@@ -173,7 +174,7 @@ class ManagementServiceWebApi(val ctx: Context) {
                 onSuccess()
 
             },
-            onError = onError,
+            onError = { Log.v("PINGTEST",gson.toJson(systemLog)); onError(it); },
             getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) }
         )
 
@@ -182,7 +183,7 @@ class ManagementServiceWebApi(val ctx: Context) {
 
     fun controlConnection(
         deviceId: Int,
-        controlConnectionDto: ControlConnectionDto,
+        navigationDto: NavigationDto,
         onSuccess: (JSONArray) -> Unit,
         onError: (VolleyError) -> Unit,
         authenticationToken: String
@@ -190,7 +191,7 @@ class ManagementServiceWebApi(val ctx: Context) {
         val requestJsonArray = JsonArrayRequestBuilder(
             method = POST,
             url = CONTROL_CONNECTION(deviceId),
-            jsonBody = JSONObject(gson.toJson(controlConnectionDto)),
+            jsonBody = JSONObject(gson.toJson(navigationDto)),
             getRequestHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) },
             onSuccess = {
 

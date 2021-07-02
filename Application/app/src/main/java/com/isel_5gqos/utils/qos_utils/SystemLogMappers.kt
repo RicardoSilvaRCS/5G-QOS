@@ -9,7 +9,7 @@ class EmptyMapper : ILogMapper {
 }
 
 class MapperWithCause : ILogMapper {
-    override fun map(props: SystemLogProperties): String = " \"details\" : { \"cause\" :  \"${props.cause}\" "
+    override fun map(props: SystemLogProperties): String = " \"details\" : { \"cause\" :  \"${props.cause}\" }"
 }
 
 class MapperWithTestPlanId : ILogMapper {
@@ -17,7 +17,7 @@ class MapperWithTestPlanId : ILogMapper {
 }
 
 class MapperWithTestPlanIdAndCause : ILogMapper{
-    override fun map(props: SystemLogProperties): String = " \"detail\" : { \" testPlanId \" : \"${props.testPlanId}\"}, { \"cause\" :  \"${props.cause}\" }"
+    override fun map(props: SystemLogProperties): String = " \"detail\" : { \" testPlanId \" : \"${props.testPlanId}\",  \"cause\" :  \"${props.cause}\" }"
 }
 
 class MapperWithTestId : ILogMapper {
@@ -25,5 +25,5 @@ class MapperWithTestId : ILogMapper {
 }
 
 class MapperWithTestIdAndCause : ILogMapper {
-    override fun map(props: SystemLogProperties): String = " \"detail\": { \"testId\" : ${props.testId}, { \"cause\" :  \"${props.cause}\" }"
+    override fun map(props: SystemLogProperties): String = " \"detail\": { \"testId\" : ${props.testId},  \"cause\" :  \"${props.cause}\" }"
 }

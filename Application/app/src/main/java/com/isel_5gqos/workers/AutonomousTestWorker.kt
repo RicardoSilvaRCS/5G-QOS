@@ -20,11 +20,8 @@ import com.isel_5gqos.utils.qos_utils.QoSUtils.Companion.getProbeLocation
 import com.isel_5gqos.utils.qos_utils.SystemLogProperties
 import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -35,12 +32,12 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
         AndroidUtils.getPreferences(TOKEN_FOR_WORKER, applicationContext)!!
     }
     private var deviceId: Int = -1
-    private lateinit var testPlanStr: String
+    private lateinit var testPlan: TestPlanDto
 
     override fun doWork(): Result {
 //        token = AndroidUtils.getPreferences("TOKEN",context)!!
         deviceId = inputData.getInt(DEVICE_SERVICE_ID, -1)
-        testPlanStr = inputData.getString(TEST_PLAN_STRING)!!
+        testPlan = Gson().fromJson(inputData.getString(TEST_PLAN_STRING)!!, TestPlanDto::class.java)
 
         getTestPlan()
 
@@ -48,7 +45,6 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
     }
 
     private fun getTestPlan() {
-        val testPlan = Gson().fromJson(testPlanStr, TestPlanDto::class.java)
         Log.v("TestTest", testPlan.name)
         QoSUtils.logToServer(
             token = token,
@@ -61,12 +57,12 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
         ) {
 
             /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
-            executeTestPlan(testPlan = testPlan)
+            executeTestPlan()
 
         }
     }
 
-    private fun executeTestPlan(testPlan: TestPlanDto) {
+    private fun executeTestPlan() {
         if (!testPlan.tests.isNullOrEmpty()) {
             val tests = testPlan.tests.toMutableList()
             runWork(tests)
@@ -99,7 +95,7 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 navigationDto = getProbeLocation(context),
                 probeId = deviceId,
                 testId = currTest.id,
-                testPlanId = testPlanStr,
+                testPlanId = testPlan.id,
                 type = currTest.testType
             )
 
@@ -115,6 +111,7 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                             event = EventEnum.TEST_END,
                             context = context,
                             props = SystemLogProperties(
+                                testPlanId = testPlan.id,
                                 testId = currTest.id,
                             )
                         ) {
