@@ -182,7 +182,7 @@ class ManagementServiceWebApi(val ctx: Context) {
         onError: (VolleyError) -> Unit
     ) {
 
-//        Log.v("PINGTEST", gson.toJson(systemLog))
+        // Log.v("PINGTEST", gson.toJson(systemLog))
 
         val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
             method = POST,
@@ -208,6 +208,9 @@ class ManagementServiceWebApi(val ctx: Context) {
         onError: (VolleyError) -> Unit,
         authenticationToken: String
     ) {
+
+        Log.v("PINGTEST", gson.toJson(navigationDto))
+
         val requestJsonArray = JsonArrayRequestBuilder(
             method = POST,
             url = CONTROL_CONNECTION(deviceId),

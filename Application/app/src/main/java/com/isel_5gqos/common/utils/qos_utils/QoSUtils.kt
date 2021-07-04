@@ -67,7 +67,7 @@ class QoSUtils {
             val location = LocationUtils.getLocation(context)
 
             return NavigationDto(
-                gpsFix = location?.provider ?: "",
+                gpsFix = location?.provider ?: "FIX_3D",
                 latitude = location?.latitude ?: 0.0,
                 longitude = location?.longitude ?: 0.0,
                 speed = location?.speed,

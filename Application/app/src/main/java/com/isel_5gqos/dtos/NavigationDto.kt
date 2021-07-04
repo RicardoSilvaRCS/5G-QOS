@@ -1,7 +1,7 @@
 package com.isel_5gqos.dtos
 
 class NavigationDto(
-    var gpsFix : String = "",
+    var gpsFix : String = "FIX_3D",
     var heading : Int = 0,
     var heightAboveEllipsoid : Int = 0,
     var heightAboveMSL : Int = 0,
