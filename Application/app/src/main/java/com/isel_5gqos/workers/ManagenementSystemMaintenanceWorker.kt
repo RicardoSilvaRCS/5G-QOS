@@ -8,11 +8,11 @@ import com.isel_5gqos.R
 import com.isel_5gqos.activities.SplashActivity
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.utils.android_utils.AndroidUtils
-import com.isel_5gqos.utils.android_utils.AndroidUtils.Companion.notifyOnChannel
-import com.isel_5gqos.utils.qos_utils.EventEnum
-import com.isel_5gqos.utils.qos_utils.QoSUtils
-import com.isel_5gqos.utils.qos_utils.SystemLogProperties
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils.Companion.notifyOnChannel
+import com.isel_5gqos.common.utils.qos_utils.EventEnum
+import com.isel_5gqos.common.utils.qos_utils.QoSUtils
+import com.isel_5gqos.common.utils.qos_utils.SystemLogProperties
 import org.json.JSONArray
 import java.util.concurrent.TimeUnit
 

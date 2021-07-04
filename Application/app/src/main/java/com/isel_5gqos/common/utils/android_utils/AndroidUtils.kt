@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.android_utils
+package com.isel_5gqos.common.utils.android_utils
 
 import android.app.AlertDialog
 import android.app.PendingIntent

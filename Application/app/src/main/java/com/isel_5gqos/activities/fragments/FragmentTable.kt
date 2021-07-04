@@ -19,14 +19,11 @@ import com.isel_5gqos.common.NetworkDataTypesEnum
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.common.db.entities.RadioParameters
-import com.isel_5gqos.common.db.entities.ThroughPut
+import com.isel_5gqos.common.utils.mobile_utils.RadioParametersUtils
+import com.isel_5gqos.common.utils.publisher_subscriber.MessageEvent
+import com.isel_5gqos.common.utils.publisher_subscriber.StringMessageEvent
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
-import com.isel_5gqos.models.observeOnce
-import com.isel_5gqos.utils.ExcelUtils
-import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
-import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
-import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_table.*
 import org.greenrobot.eventbus.EventBus

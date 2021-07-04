@@ -1,13 +1,10 @@
 package com.isel_5gqos.models
 
-import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
-import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Session
 import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.repositories.TestRepository
-import com.isel_5gqos.utils.DateUtils
-import com.isel_5gqos.utils.DateUtils.Companion.formatDate
+import com.isel_5gqos.common.utils.DateUtils
 import java.sql.Timestamp
 import java.util.*
 
@@ -62,7 +59,7 @@ class TestViewModel(val userName: String,private val testRepository:TestReposito
 
     fun getLastSession() = testRepository.getLastSession()
 
-    fun getCompletedSessions() = testRepository.getCompletedSessions()
+    fun getCompletedSessions(userName: String) = testRepository.getCompletedSessions(userName)
 
     fun registerRadioParametersChanges(sessionId: String) = testRepository.registerRadioParametersChanges(sessionId)
 

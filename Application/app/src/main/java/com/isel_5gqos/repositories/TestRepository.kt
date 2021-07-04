@@ -1,13 +1,9 @@
 package com.isel_5gqos.repositories
 
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Session
-import com.isel_5gqos.dtos.SessionDto
-import com.isel_5gqos.utils.DateUtils
 import java.sql.Timestamp
-import java.util.*
 
 class TestRepository {
     fun startSession(session: Session, onPostExecute: () -> Unit = {}) {
@@ -42,7 +38,7 @@ class TestRepository {
 
     fun getLastSession() = QosApp.db.sessionDao().getLastSession()
 
-    fun getCompletedSessions() = QosApp.db.sessionDao().getCompletedSessions()
+    fun getCompletedSessions(userName: String) = QosApp.db.sessionDao().getCompletedSessions(userName)
 
     fun registerRadioParametersChanges(sessionId: String) = QosApp.db.radioParametersDao().getUpToDateRadioParameters(sessionId)
 

@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.mobile_utils
+package com.isel_5gqos.common.utils.mobile_utils
 
 import android.annotation.SuppressLint
 import android.content.Context

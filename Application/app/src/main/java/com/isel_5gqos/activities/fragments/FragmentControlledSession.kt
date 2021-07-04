@@ -23,13 +23,13 @@ import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.models.observeOnce
-import com.isel_5gqos.utils.ExcelSheetNamesEnum
-import com.isel_5gqos.utils.ExcelUtils
-import com.isel_5gqos.utils.android_utils.AndroidUtils
-import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
-import com.isel_5gqos.utils.publisher_subscriber.SessionMessageEvent
-import com.isel_5gqos.utils.publisher_subscriber.SessionMessageTypeEnum
-import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
+import com.isel_5gqos.common.utils.ExcelSheetNamesEnum
+import com.isel_5gqos.common.utils.ExcelUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.publisher_subscriber.MessageEvent
+import com.isel_5gqos.common.utils.publisher_subscriber.SessionMessageEvent
+import com.isel_5gqos.common.utils.publisher_subscriber.SessionMessageTypeEnum
+import com.isel_5gqos.common.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.fragment_controlled_session.*
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_session_details_dialog.*
@@ -115,7 +115,7 @@ class FragmentControlledSession : Fragment() {
         val metrics = DisplayMetrics()
         requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
 
-        testModel.getCompletedSessions().observe(requireActivity()) {
+        testModel.getCompletedSessions(testModel.userName).observe(requireActivity()) {
             if(sessions_recycler_view.childCount == it.size) return@observe
             Log.v("RV","recycler view updated")
             sessions_recycler_view.adapter = SessionDetailsAdapter(

@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.publisher_subscriber
+package com.isel_5gqos.common.utils.publisher_subscriber
 
 class IntentServiceResult(
     val resultCode: Int,

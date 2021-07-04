@@ -61,5 +61,9 @@
     <string name="export_excel">Export To Excel</string>
     <string name="go_to_excel_files">Go To Excel Files</string>
     <string name="documents_qos5g">.../Documents/QoS5G</string>
+    <string name="user_info_lbl">User Info</string>
+    <string name="username_txt">Username:</string>
+    <string name="device_id_lbl">Device Id:</string>
+    <string name="logout_txt">Logout</string>
 
 </resources>

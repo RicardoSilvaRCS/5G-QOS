@@ -1,6 +1,5 @@
 package com.isel_5gqos.models
 
-import android.util.Base64
 import com.android.volley.AuthFailureError
 import com.android.volley.NoConnectionError
 import com.android.volley.TimeoutError
@@ -13,7 +12,7 @@ import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
 import com.isel_5gqos.repositories.QosRepository
-import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 
 class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, private val qosRepository: QosRepository) :
     AbstractModel<UserDto>({ UserDto("", "", -1) }) {
@@ -28,8 +27,6 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
                     regId = QosApp.sessionId,
                     username = username,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
-                    loggedOut = false,
-                    credentials = Base64.encodeToString("${username}:${password}".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")
                 )
 
                 val login = Login(
@@ -37,6 +34,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
                     token = userDto.userToken,
                     timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
                 )
+
                 qosRepository.postLoginResultToDb(user) {
                     qosRepository.insertUserLoginToDb(login) {}
                     loginDevice(userDto, serialNumber)
@@ -120,5 +118,27 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
     }
 
     fun getLoggedUser() = qosRepository.getLoggedUser()
+
+    fun getDeviceId () = qosRepository.getDeviceId()
+
+    fun logoutActiveUser(username: String, token: String, onPostExec : () -> Unit) {
+        qosRepository.logout(
+            token,
+            onSuccess = {
+                asyncTask({qosRepository.deleteUserLogin(username = username)})
+                onPostExec()
+            },
+            onError = {
+                if (it is NoConnectionError) {
+                    AndroidUtils.makeBurnedToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+                }
+                if (it is TimeoutError) {
+                    AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
+                } else {
+                    AndroidUtils.makeRawToast(managementSystemApi.ctx, INVALID_CREDENTIALS)
+                }
+            }
+        )
+    }
 
 }

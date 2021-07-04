@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.qos_utils
+package com.isel_5gqos.common.utils.qos_utils
 
 interface ILogMapper{
     fun map (props : SystemLogProperties) : String
@@ -16,7 +16,7 @@ class MapperWithTestPlanId : ILogMapper {
     override fun map(props: SystemLogProperties): String = " \"detail\" : {\"testPlanId\" : \"${props.testPlanId}\"}"
 }
 
-class MapperWithTestPlanIdAndCause : ILogMapper{
+class MapperWithTestPlanIdAndCause : ILogMapper {
     override fun map(props: SystemLogProperties): String = " \"detail\" : { \" testPlanId \" : \"${props.testPlanId}\",  \"cause\" :  \"${props.cause}\" }"
 }
 

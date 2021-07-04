@@ -2,6 +2,7 @@ package com.isel_5gqos.activities
 
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
+import android.content.Intent
 import android.os.Bundle
 import android.widget.*
 import androidx.lifecycle.ViewModelProvider
@@ -20,11 +21,11 @@ import com.isel_5gqos.models.InternetViewModel
 import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.models.observeOnce
-import com.isel_5gqos.utils.android_utils.AndroidUtils
-import com.isel_5gqos.utils.publisher_subscriber.MessageEvent
-import com.isel_5gqos.utils.publisher_subscriber.SessionMessageEvent
-import com.isel_5gqos.utils.publisher_subscriber.SessionMessageTypeEnum
-import com.isel_5gqos.utils.publisher_subscriber.StringMessageEvent
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.publisher_subscriber.MessageEvent
+import com.isel_5gqos.common.utils.publisher_subscriber.SessionMessageEvent
+import com.isel_5gqos.common.utils.publisher_subscriber.SessionMessageTypeEnum
+import com.isel_5gqos.common.utils.publisher_subscriber.StringMessageEvent
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -33,10 +34,6 @@ import java.sql.Timestamp
 
 
 open class DashboardActivity : BaseTabLayoutActivityHolder() {
-
-    private val model by lazy {
-        ViewModelProvider(this)[InternetViewModel::class.java]
-    }
 
     private lateinit var testFactory: TestFactory
     private val testModel by lazy {
@@ -109,6 +106,21 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
                     if (it?.endDate != 0L) return@observeOnce
                     testModel.endSessionById(it.id,endTime)
                     startDefaultSession(testModel.userName)
+                }
+            }
+            SessionMessageTypeEnum.LOGOUT_USER -> {
+                testModel.getLastSession().observeOnce(this) {
+                    if(it == null) testModel.endSessionById(DEFAULT_SESSION_ID,endTime)
+                    else if (it.endDate == 0L) testModel.endSessionById(it.id,endTime) //Ending unfinished session
+
+                    qosModel.getLoggedUser().observeOnce(this){ login ->
+                        qosModel.logoutActiveUser(login.user, login.token){
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+
                 }
             }
         }

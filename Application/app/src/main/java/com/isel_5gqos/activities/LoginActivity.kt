@@ -16,7 +16,7 @@ import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.models.QosViewModel
-import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 import com.isel_5gqos.workers.scheduleRefreshTokenWorker
 import java.util.*
 
@@ -106,8 +106,6 @@ class LoginActivity : AppCompatActivity() {
             regId = QosApp.sessionId,
             username = "username",
             timestamp = System.currentTimeMillis() + (60 * 1000).toLong(),
-            loggedOut = false,
-            credentials = Base64.encodeToString("username:userDto.userToken".toByteArray(charset("UTF-8")), Base64.DEFAULT).replace("\n", "")
         )
 
 

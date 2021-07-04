@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils
+package com.isel_5gqos.common.utils
 
 import androidx.core.content.FileProvider
 

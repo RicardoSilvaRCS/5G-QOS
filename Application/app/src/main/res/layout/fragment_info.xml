@@ -55,6 +55,7 @@
             android:textSize="12sp"
             android:textColor="@color/blue_500"
             app:layout_constraintEnd_toEndOf="parent"/>
+
         <View
             android:id="@+id/database_info_view"
             android:layout_height="24dp"
@@ -199,6 +200,7 @@
                     />
             </LinearLayout>
         </LinearLayout>
+
         <View
             android:id="@+id/info_sim_info"
             android:layout_height="24dp"
@@ -271,6 +273,83 @@
                     android:layout_height="wrap_content"
                     />
             </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/user_info_vw"
+            android:layout_height="24dp"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/blue_500_background"
+            app:layout_constraintTop_toBottomOf="@id/sim_info_layout"
+            />
+        <TextView
+            android:id="@+id/user_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toTopOf="@+id/user_info_vw"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/user_info_lbl"
+            />
+        <LinearLayout
+            android:id="@+id/user_info_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/user_info"
+            >
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/username_txt"/>
+                <TextView
+                    android:id="@+id/username_edit_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginBottom="12dp"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/device_id_lbl"/>
+                <TextView
+                    android:id="@+id/device_id_edit_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                >
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/logout_session_btn"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_white_background_blue_500_border_round_20"
+                    android:text="@string/logout_txt"
+                    android:textColor="@color/blue_500"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </LinearLayout>
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

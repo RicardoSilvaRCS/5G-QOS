@@ -15,11 +15,11 @@ import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.MobileDeviceDto
 import com.isel_5gqos.dtos.UserDto
-import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 
-class QosRepository(private val managementSystemApi:ManagementServiceWebApi) {
+class QosRepository(private val managementSystemApi: ManagementServiceWebApi) {
 
-    fun login(username:String,password:String,onSuccess:(UserDto) -> Unit,onError:(VolleyError) -> Unit) {
+    fun login(username: String, password: String, onSuccess: (UserDto) -> Unit, onError: (VolleyError) -> Unit) {
         managementSystemApi.login(
             username = username,
             password = password,
@@ -28,39 +28,43 @@ class QosRepository(private val managementSystemApi:ManagementServiceWebApi) {
         )
     }
 
-    fun postLoginResultToDb(user: User,onPostExecute:() -> Unit){
+    fun logout(token: String, onSuccess: () -> Unit, onError: (VolleyError) -> Unit) = managementSystemApi.logout(
+        token = token,
+        onSuccess = onSuccess,
+        onError = onError
+    )
+
+    fun postLoginResultToDb(user: User, onPostExecute: () -> Unit) {
         asyncTask({
             QosApp.db.userDao().insert(user)
         })
         {
-          onPostExecute()
-        }
-    }
-
-    fun insertUserLoginToDb(login: Login,onPostExecute:() -> Unit){
-        asyncTask({ QosApp.db.loginDao().insertUserLogin(login) }){
             onPostExecute()
         }
     }
 
+    fun insertUserLoginToDb(login: Login, onPostExecute: () -> Unit) {
+        asyncTask({ QosApp.db.loginDao().insertUserLogin(login) }) {
+            onPostExecute()
+        }
+    }
 
-
-    fun insertMobileUnitSetting(mobileUnit: MobileUnit,onPostExecute:() -> Unit){
+    fun insertMobileUnitSetting(mobileUnit: MobileUnit, onPostExecute: () -> Unit) {
         asyncTask(
             doInBackground = {
 
                 QosApp.db.mobileUnit().insertMobileUnitSetting(mobileUnit)
 
             },
-            onPostExecute = {onPostExecute()}
+            onPostExecute = { onPostExecute() }
         )
     }
 
-    fun refreshToken(token:String,onSuccess:(String) -> Unit,onError:(VolleyError) -> Unit){
+    fun refreshToken(token: String, onSuccess: (String) -> Unit, onError: (VolleyError) -> Unit) {
         managementSystemApi.refreshToken(token, onSuccess, onError)
     }
 
-    fun updateTokenInDb(username: String, token: String,onPostExecute:() -> Unit){
+    fun updateTokenInDb(username: String, token: String, onPostExecute: () -> Unit) {
         asyncTask(
             doInBackground = {
 
@@ -71,7 +75,7 @@ class QosRepository(private val managementSystemApi:ManagementServiceWebApi) {
         )
     }
 
-    fun loginDevice(serialNumber:String,user: UserDto,onSuccess:(MobileDeviceDto) -> Unit,onError:(VolleyError) -> Unit){
+    fun loginDevice(serialNumber: String, user: UserDto, onSuccess: (MobileDeviceDto) -> Unit, onError: (VolleyError) -> Unit) {
         managementSystemApi.registerMobileDevice(
             mobileSerialNumber = serialNumber,
             authenticationToken = user.userToken,
@@ -80,6 +84,10 @@ class QosRepository(private val managementSystemApi:ManagementServiceWebApi) {
         )
     }
 
-    fun getLoggedUser() = QosApp.db.userDao().getToken()
+    fun getLoggedUser() = QosApp.db.loginDao().getToken()
+
+    fun deleteUserLogin(username: String) = QosApp.db.loginDao().logoutActiveUser(username = username)
+
+    fun getDeviceId() = QosApp.db.mobileUnit().getMobileUnitSettings()
 
 }

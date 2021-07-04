@@ -13,22 +13,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.common.MEGABYTE
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.publisher_subscriber.SessionMessageEvent
+import com.isel_5gqos.common.utils.publisher_subscriber.SessionMessageTypeEnum
+import com.isel_5gqos.factories.QosFactory
 import com.isel_5gqos.factories.SystemFactory
+import com.isel_5gqos.models.QosViewModel
 import com.isel_5gqos.models.SystemViewModel
+import com.isel_5gqos.models.observeOnce
+import kotlinx.android.synthetic.main.fragment_controlled_session.*
 import kotlinx.android.synthetic.main.fragment_info.*
+import org.greenrobot.eventbus.EventBus
 
 
 class FragmentInfo : Fragment() {
 
     private lateinit var systemFactory: SystemFactory
-
     private val systemViewModel by lazy {
         ViewModelProvider(this, systemFactory)[SystemViewModel::class.java]
+    }
+
+    private lateinit var qosFactory: QosFactory
+    private val model: QosViewModel by lazy {
+        ViewModelProvider(this, qosFactory)[QosViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -39,6 +52,8 @@ class FragmentInfo : Fragment() {
         database_file_path_txt.text = QosApp.db.openHelper.readableDatabase.path
 
         systemFactory = SystemFactory(savedInstanceState)
+        qosFactory = QosFactory(savedInstanceState)
+
         val (pageSize, cursor) = systemViewModel.getDatabaseInfo()
 
         var pageCount = 0L
@@ -67,7 +82,6 @@ class FragmentInfo : Fragment() {
             startActivity(intent)
         }
 
-
         device_free_storage_txt.text = String.format(getString(R.string.mb_of_free_space), internalFree + externalFree)
 
         device_name_txt.text = Build.MODEL
@@ -88,12 +102,17 @@ class FragmentInfo : Fragment() {
             operator_txt.text = telephonyManager.networkOperatorName
         }
 
-//        mobileIdText.text = "Mobile Device Identifier"
-//        mobileIdText.setOnClickListener{
-//            val clipboard: ClipboardManager = getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager
-//            val clip = ClipData.newPlainText(MOBILE_ID_KEY, mobileId)
-//            clipboard.setPrimaryClip(clip)
-//            AndroidUtils.makeRawToast(this,"Copied!")
-//        }
+        model.getLoggedUser().observeOnce(this) {
+            username_edit_text.text = it.user
+        }
+
+        model.getDeviceId().observeOnce(this) {
+            device_id_edit_txt.text = it.mobileUnitId.toString()
+        }
+
+        logout_session_btn.setOnClickListener {
+            EventBus.getDefault().post(SessionMessageEvent(SessionMessageTypeEnum.LOGOUT_USER))
+        }
+
     }
 }

@@ -1,12 +1,12 @@
-package com.isel_5gqos.utils.qos_utils
+package com.isel_5gqos.common.utils.qos_utils
 
 import android.content.Context
 import android.util.EventLog
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.dtos.NavigationDto
 import com.isel_5gqos.dtos.SystemLogDto
-import com.isel_5gqos.utils.DateUtils
-import com.isel_5gqos.utils.mobile_utils.LocationUtils
+import com.isel_5gqos.common.utils.DateUtils
+import com.isel_5gqos.common.utils.mobile_utils.LocationUtils
 import java.util.*
 
 class QoSUtils {

@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.errors
+package com.isel_5gqos.common.utils.errors
 
 import com.isel_5gqos.QosApp
 import java.util.*

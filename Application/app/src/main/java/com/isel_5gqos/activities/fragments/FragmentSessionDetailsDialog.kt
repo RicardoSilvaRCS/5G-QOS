@@ -23,11 +23,11 @@ import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.factories.TestFactory
 import com.isel_5gqos.models.TestViewModel
 import com.isel_5gqos.models.observeOnce
-import com.isel_5gqos.utils.ExcelSheetNamesEnum
-import com.isel_5gqos.utils.ExcelUtils
-import com.isel_5gqos.utils.android_utils.AndroidUtils
-import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
-import com.isel_5gqos.utils.mp_android_chart_utils.ChartUtils
+import com.isel_5gqos.common.utils.ExcelSheetNamesEnum
+import com.isel_5gqos.common.utils.ExcelUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.mobile_utils.RadioParametersUtils
+import com.isel_5gqos.common.utils.mp_android_chart_utils.ChartUtils
 import kotlinx.android.synthetic.main.fragment_main_session.*
 import kotlinx.android.synthetic.main.fragment_session_details_dialog.*
 import kotlinx.android.synthetic.main.fragment_table.*

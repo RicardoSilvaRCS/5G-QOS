@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils
+package com.isel_5gqos.common.utils
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat

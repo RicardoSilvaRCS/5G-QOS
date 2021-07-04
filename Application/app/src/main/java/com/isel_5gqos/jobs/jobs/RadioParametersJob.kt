@@ -6,8 +6,8 @@ import com.isel_5gqos.QosApp.Companion.db
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.jobs.JobParametersEnum
-import com.isel_5gqos.utils.errors.Exceptions
-import com.isel_5gqos.utils.mobile_utils.RadioParametersUtils
+import com.isel_5gqos.common.utils.errors.Exceptions
+import com.isel_5gqos.common.utils.mobile_utils.RadioParametersUtils
 import java.util.*
 
 class RadioParametersJob : IJobs {

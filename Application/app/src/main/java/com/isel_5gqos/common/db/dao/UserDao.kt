@@ -9,13 +9,6 @@ import com.isel_5gqos.common.db.entities.UserLogin
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(vararg throughPutDto: User)
-
-    @Query("Select * from Users where loggedOut = 0 order by timestamp desc limit(1)")
-    fun getLastLoggedUser () : LiveData<User>
-
-    @Transaction
-    @Query("Select * from users where loggedOut = 0 order by timestamp desc limit(1)")
-    fun getToken(): LiveData<UserLogin>
+    fun insert(vararg user: User)
 
 }

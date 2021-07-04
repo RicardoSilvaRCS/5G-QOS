@@ -49,6 +49,26 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
+    fun logout(
+        token: String,
+        onSuccess: () -> Unit,
+        onError: (VolleyError) -> Unit
+    ) {
+
+        val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
+            method = POST,
+            url = USER_LOGOUT_URI,
+            jsonBody = null,
+            onSuccess = {
+                onSuccess()
+            },
+            onError = onError,
+            getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(token))) }
+        )
+
+        queue.add(requestObjectRequest)
+    }
+
     fun registerMobileDevice(
         mobileSerialNumber: String,
         authenticationToken: String,
@@ -106,7 +126,7 @@ class ManagementServiceWebApi(val ctx: Context) {
         authenticationToken: String,
         deviceId: Int,
         testPlanId: String,
-        onSuccess: (TestPlanDto,String) -> Unit,
+        onSuccess: (TestPlanDto, String) -> Unit,
         onError: (VolleyError) -> Unit
     ) {
 
@@ -174,7 +194,7 @@ class ManagementServiceWebApi(val ctx: Context) {
                 onSuccess()
 
             },
-            onError = { Log.v("PINGTEST",gson.toJson(systemLog)); onError(it); },
+            onError = { Log.v("PINGTEST", gson.toJson(systemLog)); onError(it); },
             getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) }
         )
 
@@ -204,12 +224,12 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestJsonArray)
     }
 
-    private fun convertToTestPlanDtoAsync(response: String?, onSuccess: (TestPlanDto,String) -> Unit) =
+    private fun convertToTestPlanDtoAsync(response: String?, onSuccess: (TestPlanDto, String) -> Unit) =
         object : AsyncTask<String, Int, TestPlanDto>() {
             override fun doInBackground(vararg params: String?): TestPlanDto =
                 gson.fromJson(response, TestPlanDto::class.java)
 
-            override fun onPostExecute(result: TestPlanDto) = onSuccess(result!!,response.toString())
+            override fun onPostExecute(result: TestPlanDto) = onSuccess(result!!, response.toString())
         }.execute(response)
 
 

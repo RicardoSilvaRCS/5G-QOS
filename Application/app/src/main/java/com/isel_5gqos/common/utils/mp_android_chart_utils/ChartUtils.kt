@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.mp_android_chart_utils
+package com.isel_5gqos.common.utils.mp_android_chart_utils
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable

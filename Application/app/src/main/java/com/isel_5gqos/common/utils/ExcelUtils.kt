@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils
+package com.isel_5gqos.common.utils
 
 import android.content.Context
 import android.os.Environment
@@ -6,7 +6,7 @@ import android.util.Log
 import com.isel_5gqos.common.TAG
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.ThroughPut
-import com.isel_5gqos.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
@@ -49,7 +49,11 @@ class ExcelUtils {
                 folder.mkdir()
 
             val file =
-                File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)}${File.separator}QoS5G${File.separator}${DateUtils.getDateByFormat("dd_MMM_yyyy__HH_mm")}_${filename}.xls")
+                File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)}${File.separator}QoS5G${File.separator}${
+                    DateUtils.getDateByFormat(
+                        "dd_MMM_yyyy__HH_mm"
+                    )
+                }_${filename}.xls")
             var fileOutputStream: FileOutputStream? = null
 
             try {

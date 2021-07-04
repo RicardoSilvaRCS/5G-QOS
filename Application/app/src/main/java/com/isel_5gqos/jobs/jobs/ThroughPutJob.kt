@@ -8,8 +8,8 @@ import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.entities.ThroughPut
 import com.isel_5gqos.jobs.JobParametersEnum
-import com.isel_5gqos.utils.errors.Exceptions
-import com.isel_5gqos.utils.mobile_utils.LocationUtils
+import com.isel_5gqos.common.utils.errors.Exceptions
+import com.isel_5gqos.common.utils.mobile_utils.LocationUtils
 import java.util.*
 
 class ThroughPutJob : IJobs {

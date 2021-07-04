@@ -1,4 +1,4 @@
-package com.isel_5gqos.utils.qos_utils
+package com.isel_5gqos.common.utils.qos_utils
 
 class SystemLogProperties(
     var cause : String = "",
