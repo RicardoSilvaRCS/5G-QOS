@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import com.isel_5gqos.R
-import com.isel_5gqos.common.NetworkDataTypesEnum
+import com.isel_5gqos.common.enums.NetworkDataTypesEnum
 import com.isel_5gqos.common.USER
 import com.isel_5gqos.common.db.entities.Location
 import com.isel_5gqos.common.db.entities.RadioParameters

@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.telephony.*
 import com.isel_5gqos.common.MIN_RSSI
-import com.isel_5gqos.common.NetworkDataTypesEnum
+import com.isel_5gqos.common.enums.NetworkDataTypesEnum
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.dtos.RadioParametersDto
 
@@ -110,7 +110,7 @@ class RadioParametersUtils {
             NetworkDataTypesEnum.UMTS to wcdmaBands
         )
 
-        fun getBand(arfcn: Int,netDataType:NetworkDataTypesEnum):String? {
+        fun getBand(arfcn: Int,netDataType: NetworkDataTypesEnum):String? {
             networkToBandMap[netDataType]!!.entries.forEach {
                 val (key, value) = it
                 if (arfcn >= key.first && arfcn <= key.second)
@@ -123,7 +123,7 @@ class RadioParametersUtils {
             if (cellInfo is CellInfoGsm) {
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "G${getBand(cellInfo.cellIdentity.arfcn,NetworkDataTypesEnum.GSM)}",
+                    tech = "G${getBand(cellInfo.cellIdentity.arfcn, NetworkDataTypesEnum.GSM)}",
                     arfcn = cellInfo.cellIdentity.arfcn,
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                     cId = cellInfo.cellIdentity.cid,
@@ -133,7 +133,7 @@ class RadioParametersUtils {
             } else if (cellInfo is CellInfoLte) {
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "L${getBand(cellInfo.cellIdentity.earfcn,NetworkDataTypesEnum.LTE)}",
+                    tech = "L${getBand(cellInfo.cellIdentity.earfcn, NetworkDataTypesEnum.LTE)}",
                     arfcn = cellInfo.cellIdentity.earfcn,
                     rssi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) cellInfo.cellSignalStrength.rssi else MIN_RSSI,
                     rsrp = cellInfo.cellSignalStrength.rsrp,
@@ -147,7 +147,7 @@ class RadioParametersUtils {
                 //Measure UMTS
                 return RadioParametersDto(
                     no = index + 1,
-                    tech = "U${getBand(cellInfo.cellIdentity.uarfcn,NetworkDataTypesEnum.UMTS)}",
+                    tech = "U${getBand(cellInfo.cellIdentity.uarfcn, NetworkDataTypesEnum.UMTS)}",
                     arfcn = cellInfo.cellIdentity.uarfcn,
                     rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
                     psc = cellInfo.cellIdentity.psc,

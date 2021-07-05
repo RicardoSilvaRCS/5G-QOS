@@ -1,6 +1,6 @@
 package com.isel_5gqos.dtos
 
-import com.isel_5gqos.common.NetworkDataTypesEnum
+import com.isel_5gqos.common.enums.NetworkDataTypesEnum
 import com.isel_5gqos.common.db.entities.RadioParameters
 
 class RadioParametersDto(

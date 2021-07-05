@@ -17,6 +17,7 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.isel_5gqos.R
 import com.isel_5gqos.common.*
+import com.isel_5gqos.common.enums.NetworkDataTypesEnum
 import com.isel_5gqos.common.db.entities.RadioParameters
 import com.isel_5gqos.common.db.entities.Session
 import com.isel_5gqos.common.db.entities.ThroughPut

@@ -1,4 +1,4 @@
-package com.isel_5gqos.common
+package com.isel_5gqos.common.enums
 
 enum class NetworkDataTypesEnum {
     LTE,

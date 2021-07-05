@@ -8,6 +8,8 @@ import com.isel_5gqos.R
 import com.isel_5gqos.activities.SplashActivity
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.common.db.entities.TestPlan
+import com.isel_5gqos.common.enums.TestPlanStatesEnum
 import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 import com.isel_5gqos.common.utils.android_utils.AndroidUtils.Companion.notifyOnChannel
 import com.isel_5gqos.common.utils.qos_utils.EventEnum
@@ -70,9 +72,7 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
                                 )
                             }
                         )
-
                     }
-
                 }
             },
             onError = {
@@ -104,10 +104,9 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
     }
 
     private fun requestControlConnection(deviceId: Int, token: String, onSuccess: (JSONArray) -> Unit, onError: (VolleyError) -> Unit) {
-        //TODO: Falta obter o ControlConnectionDto
         QosApp.msWebApi.controlConnection(
             deviceId = deviceId,
-            navigationDto = QoSUtils.getProbeLocation(applicationContext),// ControlConnectionDto("FIX_3D", 30, 40, 100, 38.687918099, -9.316346627, 55),
+            navigationDto = QoSUtils.getProbeLocation(applicationContext),
             onSuccess = onSuccess,
             onError = onError,
             authenticationToken = token
@@ -120,6 +119,20 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
             deviceId = deviceId,
             testPlanId = testPlanId,
             onSuccess = { testPlan, testPlanStr ->
+
+                val tp = TestPlan(
+                    id = testPlan.id,
+                    name = testPlan.name,
+                    startDate = testPlan.startDate,
+                    testPlanState = TestPlanStatesEnum.SCHEDULED.toString(),
+                    timestamp = System.currentTimeMillis(),
+                )
+
+                asyncTask (
+                    {
+                        QosApp.db.testPlanDao().insert(tp)
+                    }
+                )
 
                 /**Reporting test start*/
                 QoSUtils.logToServer(
@@ -134,7 +147,6 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
 
                     /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
                     //Schedule work
-//                    executeTestPlan(testPlan = testPlan)
                     scheduleAutonomousTestWorker(deviceId, testPlan, testPlanStr)
                 }
             },
@@ -150,8 +162,9 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
                         testPlanId = testPlanId,
                         cause = it.cause.toString()
                     )
-                ) {}
+                )
             }
+
         )
     }
 }

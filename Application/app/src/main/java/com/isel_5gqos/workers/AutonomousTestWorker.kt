@@ -2,6 +2,7 @@ package com.isel_5gqos.workers
 
 import android.content.Context
 import android.util.Log
+import androidx.room.ColumnInfo
 import androidx.work.*
 import com.google.gson.Gson
 import com.isel_5gqos.QosApp
@@ -9,11 +10,14 @@ import com.isel_5gqos.common.DEVICE_SERVICE_ID
 import com.isel_5gqos.common.TEST_PLAN_STRING
 import com.isel_5gqos.common.TOKEN_FOR_WORKER
 import com.isel_5gqos.common.WORKER_TAG
+import com.isel_5gqos.common.db.asyncTask
+import com.isel_5gqos.common.db.entities.TestPlanResult
 import com.isel_5gqos.dtos.TestDto
 import com.isel_5gqos.dtos.TestPlanDto
 import com.isel_5gqos.dtos.TestPlanResultDto
 import com.isel_5gqos.common.utils.DateUtils.Companion.getDateIso8601Format
 import com.isel_5gqos.common.utils.android_utils.AndroidUtils
+import com.isel_5gqos.common.utils.errors.Exceptions
 import com.isel_5gqos.common.utils.qos_utils.EventEnum
 import com.isel_5gqos.common.utils.qos_utils.QoSUtils
 import com.isel_5gqos.common.utils.qos_utils.QoSUtils.Companion.getProbeLocation
@@ -22,6 +26,7 @@ import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -33,9 +38,10 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
     }
     private var deviceId: Int = -1
     private lateinit var testPlan: TestPlanDto
+    private val gson = Gson()
 
     override fun doWork(): Result {
-//        token = AndroidUtils.getPreferences("TOKEN",context)!!
+
         deviceId = inputData.getInt(DEVICE_SERVICE_ID, -1)
         testPlan = Gson().fromJson(inputData.getString(TEST_PLAN_STRING)!!, TestPlanDto::class.java)
 
@@ -139,10 +145,27 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                     tests.removeFirst()
                     runWork(tests)
                 }
+
+                Exceptions(e)
             }
 
         }
 
+    }
+
+    private fun storeTestResult(testPlanResult: TestPlanResultDto, isReported : Boolean) {
+
+        val testResult = TestPlanResult(
+             regId = UUID.randomUUID().toString(),
+             testPlanId = testPlanResult.testPlanId,
+             testId = testPlanResult.testId,
+             result = gson.toJson(testPlanResult),
+             isReported = isReported
+        )
+
+        asyncTask({
+            QosApp.db.testPlanResultDao().insert(testResult)
+        })
     }
 
     private fun postResultsToApi(result: TestPlanResultDto, onPostExec: () -> Unit) {
@@ -152,10 +175,13 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
             testPlanResult = result,
             onSuccess = {
 
+                storeTestResult(result,true)
                 onPostExec()
 
             },
             onError = {
+
+                storeTestResult(result,false)
 
                 /**Reporting test start*/
                 QoSUtils.logToServer(
