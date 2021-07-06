@@ -173,6 +173,34 @@ class ManagementServiceWebApi(val ctx: Context) {
         queue.add(requestObjectRequest)
     }
 
+    /**Temp Solution while db does not have enough tables to support all test results*/
+    fun postUnreportedResults(
+        authenticationToken: String,
+        deviceId: Int,
+        testPlanResult: String,
+        onSuccess: () -> Unit,
+        onError: (VolleyError) -> Unit
+    ) {
+
+        Log.v("PINGTEST", gson.toJson(testPlanResult))
+
+        val requestObjectRequest: JsonObjectRequest = JsonObjectRequestBuilder.build(
+            method = POST,
+            url = TEST_PLAN_RESULT_URI(deviceId),
+            bringHeaders = false,
+            jsonBody = JSONObject(testPlanResult),
+            onSuccess = {
+
+                onSuccess()
+
+            },
+            onError = onError,
+            getHeaders = { VolleyExtensions.getHeaders(listOf(TokenAuthHeader(authenticationToken))) }
+        )
+
+        queue.add(requestObjectRequest)
+    }
+
 
     fun systemLog(
         authenticationToken: String,

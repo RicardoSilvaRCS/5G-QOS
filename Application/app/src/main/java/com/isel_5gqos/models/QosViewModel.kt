@@ -8,6 +8,7 @@ import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Login
 import com.isel_5gqos.common.db.entities.MobileUnit
+import com.isel_5gqos.common.db.entities.TestPlanResult
 import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.UserDto
@@ -141,4 +142,30 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
         )
     }
 
+    fun getUnreportedTestsByTestPlanId (testPlanId : String) = qosRepository.getUnreportedTestsByTestPlanId(testPlanId)
+
+    fun getAllTestPlans () = qosRepository.getAllTestPlans()
+
+    fun reportTestResults (token : String, deviceId : Int, testResults : List<TestPlanResult>) {
+
+        testResults.forEach {result ->
+            qosRepository.postTestPlanResult(
+                result,
+                token,
+                deviceId,
+                onPostExecute = {
+                    qosRepository.updateTestPlanResultState(testResult = result)
+                },
+                onError = { error ->
+                    when (error) {
+                        is NoConnectionError -> AndroidUtils.makeRawToast(managementSystemApi.ctx, NO_CONNECTION_ERROR)
+                        is TimeoutError -> AndroidUtils.makeRawToast(managementSystemApi.ctx, TIMEOUT_ERROR)
+                        else -> AndroidUtils.makeRawToast(managementSystemApi.ctx, GENERIC_ERROR)
+                    }
+                }
+            )
+        }
+
+
+    }
 }
