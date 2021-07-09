@@ -1,8 +1,8 @@
 package com.isel_5gqos.workers
 
 import android.content.Context
+import android.os.Looper
 import android.util.Log
-import androidx.room.ColumnInfo
 import androidx.work.*
 import com.google.gson.Gson
 import com.isel_5gqos.QosApp
@@ -12,9 +12,7 @@ import com.isel_5gqos.common.TOKEN_FOR_WORKER
 import com.isel_5gqos.common.WORKER_TAG
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.TestPlanResult
-import com.isel_5gqos.dtos.TestDto
-import com.isel_5gqos.dtos.TestPlanDto
-import com.isel_5gqos.dtos.TestPlanResultDto
+import com.isel_5gqos.common.enums.TestPlanStatesEnum
 import com.isel_5gqos.common.utils.DateUtils.Companion.getDateIso8601Format
 import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 import com.isel_5gqos.common.utils.errors.Exceptions
@@ -22,6 +20,9 @@ import com.isel_5gqos.common.utils.qos_utils.EventEnum
 import com.isel_5gqos.common.utils.qos_utils.QoSUtils
 import com.isel_5gqos.common.utils.qos_utils.QoSUtils.Companion.getProbeLocation
 import com.isel_5gqos.common.utils.qos_utils.SystemLogProperties
+import com.isel_5gqos.dtos.TestDto
+import com.isel_5gqos.dtos.TestPlanDto
+import com.isel_5gqos.dtos.TestPlanResultDto
 import com.isel_5gqos.workers.work.WorkTypeEnum
 import com.isel_5gqos.workers.work.WorksMap
 import java.time.LocalDateTime
@@ -44,9 +45,8 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
 
         deviceId = inputData.getInt(DEVICE_SERVICE_ID, -1)
         testPlan = Gson().fromJson(inputData.getString(TEST_PLAN_STRING)!!, TestPlanDto::class.java)
-
         getTestPlan()
-
+        Log.v("THREAD_ID", "SCHEDULE IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}")
         return Result.success()
     }
 
@@ -61,10 +61,11 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 testPlanId = testPlan.id
             )
         ) {
+            Log.v("THREAD_ID", "START IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}")
 
+            asyncTask({ QosApp.db.testPlanDao().updateTestPLan(testPlan.id, TestPlanStatesEnum.STARTED.toString()) })
             /**Needs to be on "onPostExecution" to  avoid disturbing mobile network usage*/
             executeTestPlan()
-
         }
     }
 
@@ -78,6 +79,24 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
     private fun runWork(tests: MutableList<TestDto>) {
 
         if (tests.isEmpty()) {
+            QoSUtils.logToServer(
+                token = token,
+                deviceId = deviceId,
+                event = EventEnum.TESTPLAN_FINISHED,
+                context = context,
+                props = SystemLogProperties(
+                    testPlanId = testPlan.id
+                )
+            ){
+                Log.v("CONTROL_C", "Jácabou Jéssica")
+                Log.v("THREAD_ID", "FINISH IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}")
+                val t = Thread {
+                    QosApp.db.testPlanDao().updateTestPLan(testPlan.id, TestPlanStatesEnum.FINISHED.toString())
+                }
+                t.start()
+                t.join()
+            }
+
             return
         }
 
@@ -153,19 +172,33 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
 
     }
 
-    private fun storeTestResult(testPlanResult: TestPlanResultDto, isReported : Boolean) {
+    private fun storeTestResult(testPlanResult: TestPlanResultDto, isReported: Boolean) {
 
         val testResult = TestPlanResult(
-             regId = UUID.randomUUID().toString(),
-             testPlanId = testPlanResult.testPlanId,
-             testId = testPlanResult.testId,
-             result = gson.toJson(testPlanResult),
-             isReported = isReported
+            regId = UUID.randomUUID().toString(),
+            testPlanId = testPlanResult.testPlanId,
+            testId = testPlanResult.testId,
+            result = gson.toJson(testPlanResult),
+            isReported = isReported,
+            type = testPlanResult.type
         )
+        Log.v("CONTROL_C", "Vou inserir, tudo a postos")
 
-        asyncTask({
-            QosApp.db.testPlanResultDao().insert(testResult)
-        })
+        val t = Thread {
+//        asyncTask(
+//            doInBackground = {
+                Log.v(
+                    "THREAD_ID",
+                    "INSERT IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}"
+                )
+                QosApp.db.testPlanResultDao().insert(testResult)
+//            }
+//        )
+//
+        }
+//
+        t.start()
+        t.join()
     }
 
     private fun postResultsToApi(result: TestPlanResultDto, onPostExec: () -> Unit) {
@@ -175,13 +208,13 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
             testPlanResult = result,
             onSuccess = {
 
-                storeTestResult(result,true)
+                storeTestResult(result, true)
                 onPostExec()
 
             },
             onError = {
 
-                storeTestResult(result,false)
+                storeTestResult(result, false)
 
                 /**Reporting test start*/
                 QoSUtils.logToServer(
@@ -210,7 +243,16 @@ fun scheduleAutonomousTestWorker(deviceId: Int, testPlanDto: TestPlanDto, testPl
 
     val startDate = LocalDateTime.parse(testPlanDto.startDate).plusHours(1).toEpochSecond(ZoneOffset.UTC)
     val currentDate = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-    Log.v("TestTest", "Current date: ${LocalDateTime.ofEpochSecond(currentDate,0, ZoneOffset.UTC)}, Start date: ${LocalDateTime.ofEpochSecond(startDate,0, ZoneOffset.UTC)} ${if (startDate > currentDate) startDate - currentDate else 0} seconds to test")
+    Log.v(
+        "TestTest",
+        "Current date: ${LocalDateTime.ofEpochSecond(currentDate, 0, ZoneOffset.UTC)}, Start date: ${
+            LocalDateTime.ofEpochSecond(
+                startDate,
+                0,
+                ZoneOffset.UTC
+            )
+        } ${if (startDate > currentDate) startDate - currentDate else 0} seconds to test"
+    )
     val request = OneTimeWorkRequestBuilder<AutonomousTestWorker>()
         .setInputData(inputData)
         .setInitialDelay(if (startDate > currentDate) startDate - currentDate else 0, TimeUnit.SECONDS)

@@ -65,5 +65,6 @@
     <string name="username_txt">Username:</string>
     <string name="device_id_lbl">Device Id:</string>
     <string name="logout_txt">Logout</string>
+    <string name="test_plans">Test Plans</string>
 
 </resources>

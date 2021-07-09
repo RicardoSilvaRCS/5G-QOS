@@ -99,7 +99,6 @@ class FragmentSessionDetailsDialog(val session: Session,private val chartBackgro
             }
 
 
-
             dialog.setView(inflatedView)
             dialog.setCanceledOnTouchOutside(false)
             dialog.window!!.setBackgroundDrawableResource(R.drawable.white_background_gradient_blue_500_purple_500_red_border_round_20)

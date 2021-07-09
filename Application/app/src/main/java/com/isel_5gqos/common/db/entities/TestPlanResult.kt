@@ -24,5 +24,6 @@ class TestPlanResult (
     val testPlanId: String,
     val testId : String,
     val result : String,
-    val isReported : Boolean
+    val isReported : Boolean,
+    val type: String
 )

@@ -142,13 +142,13 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
         )
     }
 
-    fun getUnreportedTestsByTestPlanId (testPlanId : String) = qosRepository.getUnreportedTestsByTestPlanId(testPlanId)
+    fun getTestsByTestPlanId (testPlanId : String) = qosRepository.getTestsByTestPlanId(testPlanId)
 
     fun getAllTestPlans () = qosRepository.getAllTestPlans()
 
     fun reportTestResults (token : String, deviceId : Int, testResults : List<TestPlanResult>) {
 
-        testResults.forEach {result ->
+        testResults.forEach { result ->
             qosRepository.postTestPlanResult(
                 result,
                 token,

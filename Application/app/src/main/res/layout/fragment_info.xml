@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/background_gradient_blue_50_blue_200"
+    android:background="@drawable/background_gradient_blue_200_white_blue_200"
     >
 <ScrollView
     android:layout_width="match_parent"

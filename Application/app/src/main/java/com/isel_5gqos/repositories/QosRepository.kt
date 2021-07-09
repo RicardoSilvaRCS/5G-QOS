@@ -94,7 +94,7 @@ class QosRepository(private val managementSystemApi: ManagementServiceWebApi) {
 
     fun getDeviceId() = QosApp.db.mobileUnit().getMobileUnitSettings()
 
-    fun getUnreportedTestsByTestPlanId(testPlanId: String) = QosApp.db.testPlanResultDao().getTestPlanResults(testPlanId)
+    fun getTestsByTestPlanId(testPlanId: String) = QosApp.db.testPlanResultDao().getTestPlanResults(testPlanId)
 
     fun getAllTestPlans() = QosApp.db.testPlanDao().getTestPlans()
 

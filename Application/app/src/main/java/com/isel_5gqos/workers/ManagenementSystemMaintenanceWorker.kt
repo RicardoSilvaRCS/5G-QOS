@@ -1,8 +1,11 @@
 package com.isel_5gqos.workers
 
 import android.content.Context
+import android.os.Looper
+import android.util.Log
 import androidx.work.*
 import com.android.volley.VolleyError
+import com.google.gson.Gson
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.SplashActivity
@@ -104,6 +107,8 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
     }
 
     private fun requestControlConnection(deviceId: Int, token: String, onSuccess: (JSONArray) -> Unit, onError: (VolleyError) -> Unit) {
+        Log.v("CONTROL",token)
+        Log.v("CONTROL", Gson().toJson(QoSUtils.getProbeLocation(applicationContext)))
         QosApp.msWebApi.controlConnection(
             deviceId = deviceId,
             navigationDto = QoSUtils.getProbeLocation(applicationContext),
@@ -127,7 +132,7 @@ class ManagenementSystemMaintenanceWorker(private val context: Context, private 
                     testPlanState = TestPlanStatesEnum.SCHEDULED.toString(),
                     timestamp = System.currentTimeMillis(),
                 )
-
+                Log.v("THREAD_ID","GETTESTPLAN IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}")
                 asyncTask (
                     {
                         QosApp.db.testPlanDao().insert(tp)
