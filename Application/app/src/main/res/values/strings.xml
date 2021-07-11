@@ -66,5 +66,6 @@
     <string name="device_id_lbl">Device Id:</string>
     <string name="logout_txt">Logout</string>
     <string name="test_plans">Test Plans</string>
+    <string name="report_unreported_tests">Report unreported tests</string>
 
 </resources>

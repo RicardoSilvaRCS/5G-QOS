@@ -146,7 +146,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
 
     fun getAllTestPlans () = qosRepository.getAllTestPlans()
 
-    fun reportTestResults (token : String, deviceId : Int, testResults : List<TestPlanResult>) {
+    fun reportTestResults (token : String, deviceId : Int, testResults : List<TestPlanResult>,onPostExecute: () -> Unit = {}) {
 
         testResults.forEach { result ->
             qosRepository.postTestPlanResult(
@@ -155,6 +155,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
                 deviceId,
                 onPostExecute = {
                     qosRepository.updateTestPlanResultState(testResult = result)
+                    onPostExecute()
                 },
                 onError = { error ->
                     when (error) {
