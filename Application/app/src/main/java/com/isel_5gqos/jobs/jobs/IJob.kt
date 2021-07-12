@@ -2,7 +2,7 @@ package com.isel_5gqos.jobs.jobs
 
 import com.isel_5gqos.jobs.JobParametersEnum
 
-interface IJobs {
+interface IJob {
 
     fun job (params: Map<JobParametersEnum, Any?>)
 

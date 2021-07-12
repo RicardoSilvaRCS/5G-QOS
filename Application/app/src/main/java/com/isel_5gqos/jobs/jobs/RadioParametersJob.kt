@@ -10,7 +10,7 @@ import com.isel_5gqos.common.utils.errors.Exceptions
 import com.isel_5gqos.common.utils.mobile_utils.RadioParametersUtils
 import java.util.*
 
-class RadioParametersJob : IJobs {
+class RadioParametersJob : IJob {
 
     override fun job(params: Map<JobParametersEnum, Any?>) {
 

@@ -5,7 +5,7 @@ import com.isel_5gqos.dtos.*
 import com.qiniu.android.netdiag.Ping
 import java.util.*
 
-class PingWork : IWorks {
+class PingWork : IWork {
 
 
     /**

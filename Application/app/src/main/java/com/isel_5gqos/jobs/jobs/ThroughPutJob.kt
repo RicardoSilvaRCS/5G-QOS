@@ -12,7 +12,7 @@ import com.isel_5gqos.common.utils.errors.Exceptions
 import com.isel_5gqos.common.utils.mobile_utils.LocationUtils
 import java.util.*
 
-class ThroughPutJob : IJobs {
+class ThroughPutJob : IJob {
 
     companion object {
         private const val throughputJobTimeout = 2000L

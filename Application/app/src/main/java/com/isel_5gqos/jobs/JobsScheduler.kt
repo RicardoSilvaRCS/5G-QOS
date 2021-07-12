@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import com.isel_5gqos.QosApp
 import com.isel_5gqos.common.*
 import com.isel_5gqos.common.db.asyncTask
-import com.isel_5gqos.jobs.jobs.IJobs
+import com.isel_5gqos.jobs.jobs.IJob
 
 class JobWorksScheduler : JobService() {
 
@@ -74,7 +74,7 @@ class JobWorksScheduler : JobService() {
         return true
     }
 
-    private fun createWorkerParams(work: IJobs): Map<JobParametersEnum, Any?> = work.getJobParameters().map {
+    private fun createWorkerParams(work: IJob): Map<JobParametersEnum, Any?> = work.getJobParameters().map {
         it to allParamsMap[it]
     }.toMap()
 

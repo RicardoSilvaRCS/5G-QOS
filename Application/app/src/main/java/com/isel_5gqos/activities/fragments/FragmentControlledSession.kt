@@ -51,6 +51,7 @@ class FragmentControlledSession : Fragment() {
         ViewModelProvider(this, qosFactory).get(QosViewModel::class.java)
     }
 
+
     //<editor-fold name="EVENTS">
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -59,7 +60,7 @@ class FragmentControlledSession : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         qosFactory = QosFactory(savedInstanceState)
         val username = requireActivity().intent.getStringExtra(USER) ?: ""
-
+        listOf<Int>().joinToString { "$it " }
         loadingDialog = AlertDialog.Builder(requireContext()).create()
         inflater = LayoutInflater.from(requireContext())
 
