@@ -1,0 +1,12 @@
+Mu->Sistema de Gestão: Realiza um pedido de controlo.
+Sistema de Gestão ->Mu : Retorna os planos testes que o dispositivo \n tem para realizar.
+Mu->Mu: Agenda os planos \n de testes.
+
+Mu->Sistema de Gestão: Comunica o começo da execução \n do plano de testes
+
+group ciclo [i < numberOfTests]
+Mu->Mu: Executa o teste do \n plano de testes.
+Mu->Sistema de Gestão: Comunica resultado do teste.
+end
+
+Mu->Sistema de Gestão: Comunica o fim da execução \n do plano de testes.
