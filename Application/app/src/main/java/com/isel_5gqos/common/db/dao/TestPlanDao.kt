@@ -19,7 +19,7 @@ interface TestPlanDao {
     @Query("Update TestPlans set testPlanState = :testPlantState where id = :testPlanId")
     fun updateTestPLan(testPlanId: String, testPlantState: String)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(vararg testPlan: TestPlan)
 
     @Query("delete from TestPlans where id = :testPlanId")

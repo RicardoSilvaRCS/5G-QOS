@@ -59,11 +59,6 @@ class FragmentTestPlanDetailsDialog(private val testPlan: TestPlan,private val m
             test_plan_details_recycler_view.layoutManager = LinearLayoutManager(requireContext())
         }
 
-        qosModel.getTestsByTestPlanId(testPlan.id).observeOnce(requireActivity()){ testPlanResults ->
-            if(testPlanResults.any { test -> !test.isReported })
-                btn_delete_test_plan_details_dialog_fragment.visibility = View.VISIBLE
-        }
-
         btn_delete_test_plan_details_dialog_fragment.setOnClickListener {
             val loadingDialog = AndroidUtils.makeLoadingDialog(requireContext(),"Deleting...")
             loadingDialog.show()

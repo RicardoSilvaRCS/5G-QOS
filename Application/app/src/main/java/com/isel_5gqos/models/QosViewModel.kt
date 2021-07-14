@@ -149,8 +149,7 @@ class QosViewModel(private val managementSystemApi: ManagementServiceWebApi, pri
     fun getFinishedTestPlans () = qosRepository.getFinishedTestPlans()
 
     fun deleteTestPlanById(testPlanId: String, onPostExecute: () -> Unit){
-        qosRepository.deleteTestPlanById(testPlanId)
-        onPostExecute()
+        qosRepository.deleteTestPlanById(testPlanId, onPostExecute)
     }
 
     fun reportTestResults (token : String, deviceId : Int, testResults : List<TestPlanResult>,onPostExecute: () -> Unit = {}) {

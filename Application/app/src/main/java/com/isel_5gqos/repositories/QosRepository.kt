@@ -109,11 +109,12 @@ class QosRepository(private val managementSystemApi: ManagementServiceWebApi) {
         )
     }
 
-    fun deleteTestPlanById(testPlanId: String) {
+    fun deleteTestPlanById(testPlanId: String, onPostExecute: () -> Unit = {}) {
         asyncTask(
             doInBackground = {
                 QosApp.db.testPlanDao().deleteTestPlanById(testPlanId)
-            }
+            },
+            onPostExecute = onPostExecute
         )
     }
 }

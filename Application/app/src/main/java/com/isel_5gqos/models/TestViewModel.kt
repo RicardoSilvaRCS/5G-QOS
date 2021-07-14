@@ -9,7 +9,7 @@ import java.util.*
 
 class TestViewModel(val userName: String,private val testRepository:TestRepository) : AbstractModel<Session>({ Session() }) {
 
-    fun startSession(userName: String) {
+    fun startSession(userName: String, onPostExecute: (session: Session) -> Unit) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
 
         val currentDate = Date(System.currentTimeMillis())
@@ -24,6 +24,7 @@ class TestViewModel(val userName: String,private val testRepository:TestReposito
 
         testRepository.startSession(session) {
             liveData.postValue(session)
+            onPostExecute(session)
         }
     }
 

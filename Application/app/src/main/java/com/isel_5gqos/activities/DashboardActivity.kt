@@ -191,9 +191,8 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
     }
 
     private fun startControlledSession(username: String) {
-        testModel.startSession(username)
-        testModel.observeOnce(this){
-            if (it.id == DEFAULT_SESSION_ID) return@observeOnce
+        testModel.startSession(username){
+            if (it.id == DEFAULT_SESSION_ID) return@startSession
             launchJobScheduler(it.id)
             EventBus.getDefault().post(StringMessageEvent(it.id))
         }
