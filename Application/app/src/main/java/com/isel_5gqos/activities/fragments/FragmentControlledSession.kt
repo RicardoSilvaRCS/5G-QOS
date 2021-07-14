@@ -108,7 +108,6 @@ class FragmentControlledSession : Fragment() {
                         )
                     )
                 }
-
             }
         }
 

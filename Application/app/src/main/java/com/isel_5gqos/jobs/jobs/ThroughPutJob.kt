@@ -36,13 +36,13 @@ class ThroughPutJob : IJob {
 
             //val mobileTxPackets = TrafficStats.getMobileTxPackets()
 
-            val location = LocationUtils.getLocationDto(telephonyManager, context)
+            val (_,latitude,longitude) = LocationUtils.getLocationDto(telephonyManager, context)
 
             insertThroughputInfoInDb(
                 rxResult = (newCountTx - oldCountTX) * BITS_IN_BYTE / (K_BIT * (throughputJobTimeout / 1000).toDouble()).toLong(),
                 txResult = (newCountRx - oldCountRX) * BITS_IN_BYTE / (K_BIT * (throughputJobTimeout / 1000).toDouble()).toLong(),
-                longitude = if (location.longitude == null) "" else location.longitude.toString(),
-                latitude = if(location.latitude == null) "" else location.longitude.toString(),
+                longitude = longitude?.toString() ?: "",
+                latitude = latitude?.toString() ?: "",
                 sessionId = sessionId
             )
 

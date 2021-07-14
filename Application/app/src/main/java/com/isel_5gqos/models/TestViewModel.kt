@@ -2,47 +2,37 @@ package com.isel_5gqos.models
 
 import com.isel_5gqos.common.DEFAULT_SESSION_ID
 import com.isel_5gqos.common.db.entities.Session
-import com.isel_5gqos.dtos.SessionDto
 import com.isel_5gqos.repositories.TestRepository
 import com.isel_5gqos.common.utils.DateUtils
 import java.sql.Timestamp
 import java.util.*
 
-class TestViewModel(val userName: String,private val testRepository:TestRepository) : AbstractModel<SessionDto>({ SessionDto.makeDefault() }) {
+class TestViewModel(val userName: String,private val testRepository:TestRepository) : AbstractModel<Session>({ Session() }) {
 
-    fun startSession(userName: String, onPostExecute: (sessionDto : SessionDto) -> Unit = {}) {
+    fun startSession(userName: String) {
         if (userName.isBlank()) throw IllegalArgumentException("Username can't be empty")
 
         val currentDate = Date(System.currentTimeMillis())
         val dateFormatted: String = DateUtils.formatDate(currentDate)
 
-        val sessionDto = SessionDto(
+        val session = Session(
             id = UUID.randomUUID().toString(),
             sessionName = "Session $dateFormatted",
-            username = userName,
-            beginDate = Timestamp(System.currentTimeMillis())
-        )
-
-        val session = Session(
-            id = sessionDto.id,
-            sessionName = sessionDto.sessionName,
-            user = sessionDto.username,
-            beginDate = sessionDto.beginDate.time,
-            endDate = sessionDto.endDate.time
+            user = userName,
+            beginDate = System.currentTimeMillis()
         )
 
         testRepository.startSession(session) {
-            liveData.postValue(sessionDto)
-            onPostExecute(sessionDto)
+            liveData.postValue(session)
         }
     }
 
     fun endSessionByTag(workerTag: String) {
-        val endDate = Timestamp(System.currentTimeMillis())
+        val endDate = System.currentTimeMillis()
 
         value.endDate = endDate
 
-        val session = value.dtoToDaoMapper()
+        val session = value
 
         testRepository.endSessionByTag(workerTag,session)
     }
@@ -81,22 +71,15 @@ class TestViewModel(val userName: String,private val testRepository:TestReposito
         val currentDate = Date(System.currentTimeMillis())
         val dateFormatted: String = DateUtils.formatDate(currentDate)
 
-        val sessionDto = SessionDto(
+        val session = Session(
             id = DEFAULT_SESSION_ID,
             sessionName = "Session $dateFormatted",
-            username = userName,
-            beginDate = Timestamp(System.currentTimeMillis())
+            user = userName,
+            beginDate = System.currentTimeMillis()
         )
 
-        val session = Session(
-            id = sessionDto.id,
-            sessionName = sessionDto.sessionName,
-            user = sessionDto.username,
-            beginDate = sessionDto.beginDate.time,
-            endDate = sessionDto.endDate.time
-        )
         testRepository.startDefaultSession(session){
-            liveData.postValue(sessionDto)
+            liveData.postValue(session)
         }
 
     }
@@ -107,12 +90,12 @@ class TestViewModel(val userName: String,private val testRepository:TestReposito
 
     fun updateModel(session: Session){
         liveData.value =
-            SessionDto(
+            Session(
                 id = session.id,
                 sessionName = session.sessionName,
-                username = session.user,
-                beginDate = Timestamp(session.beginDate),
-                endDate = Timestamp(session.endDate)
+                user = session.user,
+                beginDate = session.beginDate,
+                endDate = session.endDate
            )
     }
 }

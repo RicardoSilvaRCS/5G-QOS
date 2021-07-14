@@ -1,10 +1,9 @@
 package com.isel_5gqos.models
 
-import com.isel_5gqos.QosApp
-import com.isel_5gqos.dtos.SystemInfoDto
+import androidx.lifecycle.ViewModel
 import com.isel_5gqos.repositories.SystemRepository
 
-class SystemViewModel(private val systemRepository: SystemRepository):AbstractModel<SystemInfoDto>({ SystemInfoDto(0,0) }){
+class SystemViewModel(private val systemRepository: SystemRepository):ViewModel(){
 
     fun getDatabaseInfo() = systemRepository.getDatabaseInfo()
 }

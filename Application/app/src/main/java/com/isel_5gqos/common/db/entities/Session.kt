@@ -20,10 +20,10 @@ import androidx.room.ForeignKey
 )
 
 class Session(
-    val id: String,
-    val sessionName: String,
+    val id: String = "",
+    val sessionName: String = "",
     @ColumnInfo(name = "user", index = true)
-    val user: String,
-    val beginDate: Long,
-    var endDate: Long
+    val user: String = "",
+    val beginDate: Long = 0L,
+    var endDate: Long = 0L
 )

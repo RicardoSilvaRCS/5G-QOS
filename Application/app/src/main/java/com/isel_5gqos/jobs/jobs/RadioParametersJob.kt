@@ -4,7 +4,6 @@ import android.content.Context
 import android.telephony.TelephonyManager
 import com.isel_5gqos.QosApp.Companion.db
 import com.isel_5gqos.common.db.entities.RadioParameters
-import com.isel_5gqos.dtos.RadioParametersDto
 import com.isel_5gqos.jobs.JobParametersEnum
 import com.isel_5gqos.common.utils.errors.Exceptions
 import com.isel_5gqos.common.utils.mobile_utils.RadioParametersUtils
@@ -33,12 +32,12 @@ class RadioParametersJob : IJob {
 
     }
 
-    private fun insertRadioParametersInfoInDb(sessionId: String, radioParameters: List<RadioParametersDto>) {
+    private fun insertRadioParametersInfoInDb(sessionId: String, radioParameters: List<RadioParameters>) {
 
         db.radioParametersDao().invalidateRadioParameters(sessionId)
 
-        val servingCell = RadioParametersDto.getServingCell(radioParameters)
-        val numbOfCellsWithSameTechAsServing = radioParameters.filter { it.tech == servingCell?.tech }
+        val servingCell = RadioParametersUtils.getServingCell(radioParameters)
+        val numbOfCellsWithSameTechAsServing = radioParameters.filter { it.tech == servingCell.tech }
 
         val radioParams = radioParameters.map { radioParametersDto ->
 

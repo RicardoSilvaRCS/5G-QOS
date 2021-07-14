@@ -2,7 +2,6 @@ package com.isel_5gqos.activities.fragments
 
 import android.app.Dialog
 import android.os.Bundle
-import android.os.SharedMemory
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
@@ -15,8 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.isel_5gqos.R
 import com.isel_5gqos.activities.adapters.TestAdapter
-import com.isel_5gqos.common.MOBILE_ID_KEY
-import com.isel_5gqos.common.TOKEN_FOR_WORKER
 import com.isel_5gqos.common.db.entities.TestPlan
 import com.isel_5gqos.common.utils.android_utils.AndroidUtils
 import com.isel_5gqos.factories.QosFactory
@@ -64,20 +61,15 @@ class FragmentTestPlanDetailsDialog(private val testPlan: TestPlan,private val m
 
         qosModel.getTestsByTestPlanId(testPlan.id).observeOnce(requireActivity()){ testPlanResults ->
             if(testPlanResults.any { test -> !test.isReported })
-                btn_report_unreported_test_plan_details_dialog_fragment.visibility = View.VISIBLE
+                btn_delete_test_plan_details_dialog_fragment.visibility = View.VISIBLE
         }
 
-        btn_report_unreported_test_plan_details_dialog_fragment.setOnClickListener {
-            val loadingDialog = AndroidUtils.makeLoadingDialog(requireContext(),"Reporting...")
+        btn_delete_test_plan_details_dialog_fragment.setOnClickListener {
+            val loadingDialog = AndroidUtils.makeLoadingDialog(requireContext(),"Deleting...")
             loadingDialog.show()
-            qosModel.observeOnce(this){ user ->
-                qosModel.getTestsByTestPlanId(testPlan.id).observeOnce(this){ testPlanResults ->
-//                    val serialNumber = AndroidUtils.getPreferences(MOBILE_ID_KEY, requireContext())!!
-                    qosModel.reportTestResults(user.userToken,user.deviceId,testPlanResults.filter { !it.isReported }){
-                        loadingDialog.dismiss()
-                        dialog.dismiss()
-                    }
-                }
+            qosModel.deleteTestPlanById(testPlan.id){
+                loadingDialog.dismiss()
+                dialog.dismiss()
             }
         }
     }

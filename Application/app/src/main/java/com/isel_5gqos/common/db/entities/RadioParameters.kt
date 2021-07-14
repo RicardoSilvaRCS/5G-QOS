@@ -20,24 +20,24 @@ import androidx.room.ForeignKey
 )
 
 class RadioParameters (
-    val regId: String,
-    val no : Int,
-    val tech: String,
-    val arfcn: Int,
-    val rssi: Int,
-    val rsrp: Int,
-    val cId: Int,
-    val psc: Int,
-    val pci: Int,
-    val rssnr: Int,
-    val rsrq: Int,
-    val netDataType: String,
-    val isServingCell : Boolean,
-    val numbOfCellsWithSameTechAsServing : Int,
-    val latitude : String,
-    val longitude : String,
+    val regId: String = "",
+    val no : Int = -1,
+    val tech: String = "",
+    val arfcn: Int? = null,
+    val rssi: Int? = null,
+    val rsrp: Int? = null,
+    val cId: Int? = null,
+    val psc: Int? = null,
+    val pci: Int? = null,
+    val rssnr: Int? = null,
+    val rsrq: Int? = null,
+    val netDataType: String = "",
+    val isServingCell : Boolean = false,
+    val numbOfCellsWithSameTechAsServing : Int? = null,
+    var latitude : String = "",
+    var longitude : String = "",
     @ColumnInfo(name = "sessionId", index = true)
-    val sessionId: String,
-    val timestamp: Long,
-    val isUpToDate:Boolean
+    val sessionId: String = "",
+    val timestamp: Long? = null,
+    val isUpToDate:Boolean = false
 )

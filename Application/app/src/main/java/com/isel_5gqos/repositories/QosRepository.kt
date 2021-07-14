@@ -1,13 +1,7 @@
 package com.isel_5gqos.repositories
 
-import android.util.Base64
-import com.android.volley.NoConnectionError
-import com.android.volley.TimeoutError
 import com.android.volley.VolleyError
 import com.isel_5gqos.QosApp
-import com.isel_5gqos.common.INVALID_CREDENTIALS
-import com.isel_5gqos.common.NO_CONNECTION_ERROR
-import com.isel_5gqos.common.TIMEOUT_ERROR
 import com.isel_5gqos.common.db.asyncTask
 import com.isel_5gqos.common.db.entities.Login
 import com.isel_5gqos.common.db.entities.MobileUnit
@@ -16,10 +10,6 @@ import com.isel_5gqos.common.db.entities.User
 import com.isel_5gqos.common.services.ManagementServiceWebApi
 import com.isel_5gqos.dtos.MobileDeviceDto
 import com.isel_5gqos.dtos.UserDto
-import com.isel_5gqos.common.utils.android_utils.AndroidUtils
-import com.isel_5gqos.common.utils.qos_utils.EventEnum
-import com.isel_5gqos.common.utils.qos_utils.QoSUtils
-import com.isel_5gqos.common.utils.qos_utils.SystemLogProperties
 
 class QosRepository(private val managementSystemApi: ManagementServiceWebApi) {
 
@@ -98,21 +88,32 @@ class QosRepository(private val managementSystemApi: ManagementServiceWebApi) {
 
     fun getAllTestPlans() = QosApp.db.testPlanDao().getTestPlans()
 
-    fun updateTestPlanResultState (testResult: TestPlanResult, isReported : Boolean = true) {
+    fun getFinishedTestPlans() = QosApp.db.testPlanDao().getFinishedTestPlans()
+
+    fun updateTestPlanResultState(testResult: TestPlanResult, isReported: Boolean = true) {
         asyncTask(
             doInBackground = {
-                QosApp.db.testPlanResultDao().updateIsReported(testPlanId = testResult.testPlanId, testId = testResult.testId, isReported = isReported)
+                QosApp.db.testPlanResultDao()
+                    .updateIsReported(testPlanId = testResult.testPlanId, testId = testResult.testId, isReported = isReported)
             }
         )
     }
 
-    fun postTestPlanResult (testResult: TestPlanResult, token: String, deviceId : Int, onPostExecute: () -> Unit, onError: (VolleyError) -> Unit) {
+    fun postTestPlanResult(testResult: TestPlanResult, token: String, deviceId: Int, onPostExecute: () -> Unit, onError: (VolleyError) -> Unit) {
         QosApp.msWebApi.postUnreportedResults(
             authenticationToken = token,
             deviceId = deviceId,
             testPlanResult = testResult.result,
             onSuccess = onPostExecute,
             onError = onError
+        )
+    }
+
+    fun deleteTestPlanById(testPlanId: String) {
+        asyncTask(
+            doInBackground = {
+                QosApp.db.testPlanDao().deleteTestPlanById(testPlanId)
+            }
         )
     }
 }

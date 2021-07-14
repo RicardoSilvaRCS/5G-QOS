@@ -5,25 +5,28 @@ import android.content.Context
 import android.os.Build
 import android.telephony.*
 import com.isel_5gqos.common.MIN_RSSI
-import com.isel_5gqos.common.enums.NetworkDataTypesEnum
 import com.isel_5gqos.common.db.entities.RadioParameters
-import com.isel_5gqos.dtos.RadioParametersDto
+import com.isel_5gqos.common.enums.NetworkDataTypesEnum
 
 class RadioParametersUtils {
 
     companion object {
 
-        @SuppressLint("MissingPermission")
-        fun getRadioParameters(telephonyManager: TelephonyManager, context : Context): List<RadioParametersDto> {
+        fun getServingCell(radioParams: List<RadioParameters>) : RadioParameters =
+            if (radioParams.isEmpty()) RadioParameters()
+            else radioParams.find { it.isServingCell } ?: radioParams.find { it.no == 1 } ?: RadioParameters()
 
-            val cellInfoList: MutableList<RadioParametersDto> = mutableListOf()
-            val location = LocationUtils.getLocationDto(telephonyManager, context)
+        @SuppressLint("MissingPermission")
+        fun getRadioParameters(telephonyManager: TelephonyManager, context: Context): List<RadioParameters> {
+
+            val cellInfoList: MutableList<RadioParameters> = mutableListOf()
+            val (_,latitude,longitude) = LocationUtils.getLocationDto(telephonyManager, context)
 
             telephonyManager.allCellInfo?.forEachIndexed { index, cellInfo ->
                 val currentCell = convertCellInfoToRadioParameter(index, cellInfo)
                 if (currentCell != null) {
-                    currentCell.longitude = if (location.longitude == null) "" else location.longitude.toString()
-                    currentCell.latitude = if(location.latitude == null) "" else location.latitude.toString()
+                    currentCell.longitude = longitude?.toString() ?: ""
+                    currentCell.latitude = latitude?.toString() ?: ""
                     cellInfoList.add(currentCell)
                 }
             }
@@ -72,35 +75,35 @@ class RadioParametersUtils {
         )
 
         private val gsmBands = mapOf(
-            Pair(0,124) to "900",
-            Pair(955,1023) to "900",
-            Pair(128,251) to "850",
-            Pair(438,511) to "750",
-            Pair(306,340) to "480",
-            Pair(259,293) to "450",
+            Pair(0, 124) to "900",
+            Pair(955, 1023) to "900",
+            Pair(128, 251) to "850",
+            Pair(438, 511) to "750",
+            Pair(306, 340) to "480",
+            Pair(259, 293) to "450",
         )
 
         private val wcdmaBands = mapOf(
-            Pair(10562,10838) to "2100",
-            Pair(9662,9938) to "1900",
-            Pair(1537,1738) to "1800",
-            Pair(4387,4413) to "800",
-            Pair(4357,4458) to "1700",
-            Pair(2237,2563) to "2600",
-            Pair(2937,3088) to "900",
-            Pair(9237,9387) to "1700",
-            Pair(3112,3388) to "1700",
-            Pair(3712,3787) to "1500",
-            Pair(3842,3903) to "700",
-            Pair(4017,4043) to "700",
-            Pair(4117,4143) to "700",
-            Pair(712,763) to "800",
-            Pair(4512,4638) to "800",
-            Pair(862,912) to "1500",
-            Pair(4662,5038) to "3500",
-            Pair(5112,5413) to "1900",
-            Pair(5762,5913) to "850",
-            Pair(6617,6813) to "1500"
+            Pair(10562, 10838) to "2100",
+            Pair(9662, 9938) to "1900",
+            Pair(1537, 1738) to "1800",
+            Pair(4387, 4413) to "800",
+            Pair(4357, 4458) to "1700",
+            Pair(2237, 2563) to "2600",
+            Pair(2937, 3088) to "900",
+            Pair(9237, 9387) to "1700",
+            Pair(3112, 3388) to "1700",
+            Pair(3712, 3787) to "1500",
+            Pair(3842, 3903) to "700",
+            Pair(4017, 4043) to "700",
+            Pair(4117, 4143) to "700",
+            Pair(712, 763) to "800",
+            Pair(4512, 4638) to "800",
+            Pair(862, 912) to "1500",
+            Pair(4662, 5038) to "3500",
+            Pair(5112, 5413) to "1900",
+            Pair(5762, 5913) to "850",
+            Pair(6617, 6813) to "1500"
         )
 
 
@@ -110,7 +113,7 @@ class RadioParametersUtils {
             NetworkDataTypesEnum.UMTS to wcdmaBands
         )
 
-        fun getBand(arfcn: Int,netDataType: NetworkDataTypesEnum):String? {
+        fun getBand(arfcn: Int, netDataType: NetworkDataTypesEnum): String? {
             networkToBandMap[netDataType]!!.entries.forEach {
                 val (key, value) = it
                 if (arfcn >= key.first && arfcn <= key.second)
@@ -119,19 +122,19 @@ class RadioParametersUtils {
             return null
         }
 
-        private fun convertCellInfoToRadioParameter(index: Int, cellInfo: CellInfo): RadioParametersDto? {
+        private fun convertCellInfoToRadioParameter(index: Int, cellInfo: CellInfo): RadioParameters? {
             if (cellInfo is CellInfoGsm) {
-                return RadioParametersDto(
+                return RadioParameters(
                     no = index + 1,
                     tech = "G${getBand(cellInfo.cellIdentity.arfcn, NetworkDataTypesEnum.GSM)}",
                     arfcn = cellInfo.cellIdentity.arfcn,
-                    rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
+                    rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else -1,
                     cId = cellInfo.cellIdentity.cid,
-                    netDataType = NetworkDataTypesEnum.GSM,
+                    netDataType = NetworkDataTypesEnum.GSM.name,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING
                 )
             } else if (cellInfo is CellInfoLte) {
-                return RadioParametersDto(
+                return RadioParameters(
                     no = index + 1,
                     tech = "L${getBand(cellInfo.cellIdentity.earfcn, NetworkDataTypesEnum.LTE)}",
                     arfcn = cellInfo.cellIdentity.earfcn,
@@ -140,27 +143,27 @@ class RadioParametersUtils {
                     pci = cellInfo.cellIdentity.pci,
                     rssnr = (MIN_RSSI + cellInfo.cellSignalStrength.rsrq) / cellInfo.cellSignalStrength.rsrp,//cellInfo.cellSignalStrength.rssnr, //corrigir isto quando não é válido o gráfico fica muito grande
                     rsrq = cellInfo.cellSignalStrength.rsrq,
-                    netDataType = NetworkDataTypesEnum.LTE,
+                    netDataType = NetworkDataTypesEnum.LTE.name,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING
                 )
             } else if (cellInfo is CellInfoWcdma) {
                 //Measure UMTS
-                return RadioParametersDto(
+                return RadioParameters(
                     no = index + 1,
                     tech = "U${getBand(cellInfo.cellIdentity.uarfcn, NetworkDataTypesEnum.UMTS)}",
                     arfcn = cellInfo.cellIdentity.uarfcn,
-                    rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
+                    rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else -1,
                     psc = cellInfo.cellIdentity.psc,
-                    netDataType = NetworkDataTypesEnum.UMTS,
+                    netDataType = NetworkDataTypesEnum.UMTS.name,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING
                 )
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && cellInfo is CellInfoNr) {
                 //Measure 5G
-                return RadioParametersDto(
+                return RadioParameters(
                     no = index + 1,
                     tech = "5G${cellInfo.cellIdentity}",
-                    rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else null,
-                    netDataType = NetworkDataTypesEnum.FIVEG,
+                    rssi = if (cellInfo.cellConnectionStatus == CellInfo.CONNECTION_UNKNOWN || cellInfo.cellConnectionStatus == CellInfo.CONNECTION_NONE) MIN_RSSI else -1,
+                    netDataType = NetworkDataTypesEnum.FIVEG.name,
                     isServingCell = cellInfo.cellConnectionStatus == CellInfo.CONNECTION_PRIMARY_SERVING
                 )
             }
@@ -168,63 +171,29 @@ class RadioParametersUtils {
             return null
         }
 
-        fun getCellId(radioParameter: Any): String {
+        fun getCellId(radioParameter: RadioParameters): String {
 
-            var auxId = -1
 
-            if (radioParameter is RadioParameters) {
-
-                auxId = when (convertStringToNetworkDataType(radioParameter.netDataType)) {
-                    NetworkDataTypesEnum.LTE -> radioParameter.pci
-                    NetworkDataTypesEnum.GSM -> radioParameter.cId
-                    NetworkDataTypesEnum.UMTS -> radioParameter.psc
-                    else -> radioParameter.pci
-                }
-
+            val auxId: Int = when (convertStringToNetworkDataType(radioParameter.netDataType)) {
+                NetworkDataTypesEnum.LTE -> radioParameter.pci!!
+                NetworkDataTypesEnum.GSM -> radioParameter.cId!!
+                NetworkDataTypesEnum.UMTS -> radioParameter.psc!!
+                else -> radioParameter.pci!!
             }
 
-            if (radioParameter is RadioParametersDto) {
-
-                auxId = when (radioParameter.netDataType) {
-                    NetworkDataTypesEnum.LTE -> radioParameter.pci!!
-                    NetworkDataTypesEnum.GSM -> radioParameter.cId!!
-                    NetworkDataTypesEnum.UMTS -> radioParameter.psc!!
-                    else -> radioParameter.pci!!
-                }
-
-            }
-
-            return if(auxId == Int.MAX_VALUE || auxId == Int.MIN_VALUE) return "" else auxId.toString()
+            return if (auxId == Int.MAX_VALUE || auxId == Int.MIN_VALUE) "" else auxId.toString()
         }
 
-        fun getReferenceStrength(radioParameter: Any): Int? {
-
-            if (radioParameter is RadioParameters) {
-
-                return when (convertStringToNetworkDataType(radioParameter.netDataType)) {
-                    NetworkDataTypesEnum.LTE -> radioParameter.rsrp
-                    NetworkDataTypesEnum.GSM -> radioParameter.rssi
-                    else -> radioParameter.rssi
-                }
-
+        fun getReferenceStrength(radioParameter: RadioParameters): Int? =
+            when (convertStringToNetworkDataType(radioParameter.netDataType)) {
+                NetworkDataTypesEnum.LTE -> radioParameter.rsrp
+                NetworkDataTypesEnum.GSM -> radioParameter.rssi
+                else -> radioParameter.rssi
             }
 
-            if (radioParameter is RadioParametersDto) {
+        fun convertStringToNetworkDataType(dataType: String): NetworkDataTypesEnum =
+            NetworkDataTypesEnum.valueOf(dataType.toUpperCase())
 
-                return when (radioParameter.netDataType) {
-                    NetworkDataTypesEnum.LTE -> radioParameter.rsrp
-                    NetworkDataTypesEnum.GSM -> radioParameter.rssi
-                    else -> radioParameter.rssi
-                }
-
-            }
-
-            return null
-        }
-
-        fun convertStringToNetworkDataType(dataType: String): NetworkDataTypesEnum {
-            return NetworkDataTypesEnum.valueOf(dataType.toUpperCase())
-        }
     }
 }
 

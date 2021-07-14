@@ -139,7 +139,7 @@ class FragmentTable : Fragment() {
 
             if (netDataType == NetworkDataTypesEnum.LTE) {
                 val cellIdentity = (telephonyManager.allCellInfo[0] as CellInfoLte).cellIdentity.ci
-                e_node_b_txt.text = ((cellIdentity - servingCell.pci).shr(8)).toString()
+                e_node_b_txt.text = ((cellIdentity - (servingCell?.pci ?: 0)).shr(8)).toString()
             }
 
             sim_operator_txt.text = "${telephonyManager.simOperatorName}/${telephonyManager.networkOperatorName}"
@@ -158,15 +158,15 @@ class FragmentTable : Fragment() {
 
             it
                 .filter { cell -> cell.no != 1 }
-                .forEachIndexed { index, radioParametersDto ->
+                .forEachIndexed { index, radioParameter ->
 
                     val tableRow =
                         layoutInflater.inflate(R.layout.neighbors_table_row, null).findViewById<TableRow>(R.id.neighbor_row) ?: return@observe
-                    (tableRow[0] as TextView).text = radioParametersDto.no.toString()
-                    (tableRow[2] as TextView).text = radioParametersDto.tech
-                    (tableRow[4] as TextView).text = radioParametersDto.arfcn.toString()
-                    (tableRow[6] as TextView).text = RadioParametersUtils.getReferenceStrength(radioParametersDto).toString()
-                    (tableRow[8] as TextView).text = RadioParametersUtils.getCellId(radioParametersDto)
+                    (tableRow[0] as TextView).text = radioParameter.no.toString()
+                    (tableRow[2] as TextView).text = radioParameter.tech
+                    (tableRow[4] as TextView).text = radioParameter.arfcn.toString()
+                    (tableRow[6] as TextView).text = RadioParametersUtils.getReferenceStrength(radioParameter).toString()
+                    (tableRow[8] as TextView).text = RadioParametersUtils.getCellId(radioParameter)
 
                     if (neighbors_table_layout.childCount > 1 && neighbors_table_layout.childCount > index + 1)
                         neighbors_table_layout.removeViewAt(index + 1)

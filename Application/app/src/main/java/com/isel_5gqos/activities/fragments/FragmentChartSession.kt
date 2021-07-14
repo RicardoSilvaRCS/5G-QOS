@@ -202,10 +202,10 @@ class FragmentChartSession : Fragment() {
 
         val servingCellData = serving_cell_chart.data ?: return
 
-        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), ServingCellIndex.RSSI)
-        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), ServingCellIndex.RSRP)
-        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq.toFloat()), ServingCellIndex.RSQR)
-        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr.toFloat()), ServingCellIndex.RSSNR)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi!!.toFloat()), ServingCellIndex.RSSI)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp!!.toFloat()), ServingCellIndex.RSRP)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrq!!.toFloat()), ServingCellIndex.RSQR)
+        servingCellData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssnr!!.toFloat()), ServingCellIndex.RSSNR)
 
         val minimumValue = min(min(min(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
         val maximumValue = max(max(max(servingCell.rssi, servingCell.rsrp), servingCell.rsrq), servingCell.rssnr)
@@ -223,15 +223,15 @@ class FragmentChartSession : Fragment() {
 
         if (cellDataType == NetworkDataTypesEnum.GSM && servingCell.rssi != MIN_RSSI) {
 
-            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_GSM)
+            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi!!.toFloat()), StrongestNeighborIndex.RSSI_GSM)
             strongest_neighbor_chart.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
         } else if (cellDataType == NetworkDataTypesEnum.UMTS && servingCell.rssi != MIN_RSSI) {
 
-            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi.toFloat()), StrongestNeighborIndex.RSSI_WCDMA)
+            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rssi!!.toFloat()), StrongestNeighborIndex.RSSI_WCDMA)
             strongest_neighbor_chart.axisLeft.axisMinimum = servingCell.rssi.toFloat() - 10f
         } else if (cellDataType == NetworkDataTypesEnum.LTE && servingCell.rsrp != MIN_RSRP) {
 
-            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp.toFloat()), StrongestNeighborIndex.RSRP_LTE)
+            strongestNeighborData.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.rsrp!!.toFloat()), StrongestNeighborIndex.RSRP_LTE)
             strongest_neighbor_chart.axisLeft.axisMinimum = servingCell.rsrp.toFloat() - 10f
         }
 
@@ -241,7 +241,7 @@ class FragmentChartSession : Fragment() {
 
         val numberOfCells = number_of_cells_same_tech_as_serving_chart.data ?: return
 
-        numberOfCells.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.numbOfCellsWithSameTechAsServing.toFloat()), NumberOfCells.NUMBER)
+        numberOfCells.addEntry(Entry(auxLastUpdatedIndex.toFloat(), servingCell.numbOfCellsWithSameTechAsServing!!.toFloat()), NumberOfCells.NUMBER)
 
         number_of_cells_same_tech_as_serving_chart.axisLeft.axisMaximum = servingCell.numbOfCellsWithSameTechAsServing.toFloat() + 10f
     }

@@ -44,14 +44,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         >
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_report_unreported_test_plan_details_dialog_fragment"
+            android:id="@+id/btn_delete_test_plan_details_dialog_fragment"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginEnd="12dp"
             android:padding="8dp"
             android:visibility="gone"
             android:background="@drawable/white_background_blue_500_border_round_20"
-            android:text="@string/report_unreported_tests"
+            android:text="@string/delete"
             android:textColor="@color/purple_500"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

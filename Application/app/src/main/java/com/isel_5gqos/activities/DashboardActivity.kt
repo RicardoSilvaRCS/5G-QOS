@@ -70,6 +70,8 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
         qosFactory = QosFactory(savedInstanceState)
         dashboardActivitViewPager.adapter = dashboardActivitViewPagerAdapter
 
+        reportUnreportedTests()
+
         tabLayout = dashboardActivityTabLayout.apply {
             setupWithViewPager(dashboardActivitViewPager)
             addOnTabSelectedListener(this@DashboardActivity)
@@ -85,6 +87,18 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
                 EventBus.getDefault().post(StringMessageEvent(it.id))
             }else{
                 startDefaultSession(testModel.userName)
+            }
+        }
+    }
+
+    private fun reportUnreportedTests(){
+        qosModel.getFinishedTestPlans().observeOnce(this) {
+            it.forEach { testPlan ->
+                qosModel.observeOnce(this){ user ->
+                    qosModel.getTestsByTestPlanId(testPlan.id).observeOnce(this){ testPlanResults ->
+                        qosModel.reportTestResults(user.userToken,user.deviceId,testPlanResults.filter { testPlanResult -> !testPlanResult.isReported })
+                    }
+                }
             }
         }
     }
@@ -170,16 +184,16 @@ open class DashboardActivity : BaseTabLayoutActivityHolder() {
             val systemService = QosApp.msWebApi.ctx.getSystemService(JobScheduler::class.java)
 
             it.extras.get("args")
-            systemService
-                .cancel(it.id)
+            systemService?.cancel(it.id)
         }
 
         jobs.clear()
     }
 
     private fun startControlledSession(username: String) {
-        testModel.startSession(username){
-            if (it.id == DEFAULT_SESSION_ID)return@startSession
+        testModel.startSession(username)
+        testModel.observeOnce(this){
+            if (it.id == DEFAULT_SESSION_ID) return@observeOnce
             launchJobScheduler(it.id)
             EventBus.getDefault().post(StringMessageEvent(it.id))
         }

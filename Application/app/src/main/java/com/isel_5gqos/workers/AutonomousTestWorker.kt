@@ -87,9 +87,11 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
                 props = SystemLogProperties(
                     testPlanId = testPlan.id
                 )
-            ){
-                Log.v("CONTROL_C", "Jácabou Jéssica")
-                Log.v("THREAD_ID", "FINISH IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}")
+            ) {
+                Log.v(
+                    "THREAD_ID",
+                    "FINISH IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}"
+                )
                 val t = Thread {
                     QosApp.db.testPlanDao().updateTestPLan(testPlan.id, TestPlanStatesEnum.FINISHED.toString())
                 }
@@ -182,21 +184,14 @@ class AutonomousTestWorker(private val context: Context, private val workerParam
             isReported = isReported,
             type = testPlanResult.type
         )
-        Log.v("CONTROL_C", "Vou inserir, tudo a postos")
 
         val t = Thread {
-//        asyncTask(
-//            doInBackground = {
-                Log.v(
-                    "THREAD_ID",
-                    "INSERT IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}"
-                )
-                QosApp.db.testPlanResultDao().insert(testResult)
-//            }
-//        )
-//
+            Log.v(
+                "THREAD_ID",
+                "INSERT IsMain=${Looper.myLooper() == Looper.getMainLooper()} ThreadId=${Thread.currentThread().id} ${testPlan.name}"
+            )
+            QosApp.db.testPlanResultDao().insert(testResult)
         }
-//
         t.start()
         t.join()
     }
@@ -257,6 +252,7 @@ fun scheduleAutonomousTestWorker(deviceId: Int, testPlanDto: TestPlanDto, testPl
         .setInputData(inputData)
         .setInitialDelay(if (startDate > currentDate) startDate - currentDate else 0, TimeUnit.SECONDS)
         .build()
+
     Log.v("TesTest", "Queue test ${testPlanDto.name} by ${testPlanDto.creator}")
     WorkManager.getInstance(QosApp.msWebApi.ctx).enqueueUniqueWork(WORKER_TAG, ExistingWorkPolicy.REPLACE, request)
 }
