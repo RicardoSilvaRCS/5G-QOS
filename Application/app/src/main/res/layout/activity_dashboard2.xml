@@ -92,7 +92,7 @@
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/dashboard_tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tabBackground="@drawable/blue_300_background"
                 app:tabGravity="fill"

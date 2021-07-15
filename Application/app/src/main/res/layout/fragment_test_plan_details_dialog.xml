@@ -40,15 +40,13 @@
         android:id="@+id/buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:paddingTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         >
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_delete_test_plan_details_dialog_fragment"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:layout_marginEnd="12dp"
-            android:padding="8dp"
             android:background="@drawable/white_background_blue_500_border_round_20"
             android:text="@string/delete"
             android:textColor="@color/purple_500"

@@ -116,6 +116,7 @@ class FragmentControlledSession : Fragment() {
         requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
 
         testModel.getCompletedSessions(testModel.userName).observe(requireActivity()) {
+            //To avoid updating unnecessarily
             if(sessions_recycler_view.childCount == it.size) return@observe
             Log.v("RV","recycler view updated")
             sessions_recycler_view.adapter = SessionDetailsAdapter(
